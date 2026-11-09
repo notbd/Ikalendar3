@@ -9,14 +9,17 @@ import Foundation
 
 // MARK: - SalmonRunScreen
 
-/// What the Salmon Run screen shows at an instant: a running Eggstra Work on top, then the
-/// current Shift, or why none is, the next Shift and every later one, with a Big Run among them
-/// where it falls. Each Shift carries its kind, Stage, four weapons, King Salmonid and times, as
-/// ids and times only; names and images resolve at display time.
+/// What the Salmon Run screen shows at an instant: a running or next Eggstra Work on top, then
+/// the current Shift, or why none is, the next Shift and every later one, with a Big Run among
+/// them where it falls. Each Shift carries its kind, Stage, four weapons, King Salmonid and
+/// times, as ids and times only; names and images resolve at display time.
 public struct SalmonRunScreen: Hashable, Sendable {
   /// The Eggstra Work running at the instant, apart from the Shifts: it is never Salmon Run's
   /// current or next Shift.
   public let eggstraWork: Running<Shift>?
+  /// The next Eggstra Work while none runs: announced and not started. It shows on top, where it
+  /// will run.
+  public let nextEggstraWork: Shift?
   /// The regular Shift or Big Run on now with how far it has run, or nothing current.
   public let current: OnNow<Shift>
   /// The first Shift after the current one, or after the instant when none is current.
@@ -35,9 +38,11 @@ extension Snapshot {
     guard let schedules else { return nil }
 
     let lineup = schedules.content.salmonRunLineup(at: instant)
-    let eggstraWork = schedules.content.eggstraWorkLineup(at: instant).current.item
+    let eggstraWorks = schedules.content.eggstraWorkLineup(at: instant)
+    let eggstraWork = eggstraWorks.current.item
     return SalmonRunScreen(
       eggstraWork: eggstraWork.map { Running(item: $0, progress: $0.progress(at: instant)) },
+      nextEggstraWork: eggstraWork == nil ? eggstraWorks.next : nil,
       current: OnNow(lineup.current, at: instant),
       next: lineup.next,
       later: lineup.later,
