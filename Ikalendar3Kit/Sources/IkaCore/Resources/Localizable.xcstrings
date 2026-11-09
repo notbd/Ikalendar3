@@ -182,7 +182,7 @@
       }
     },
     "answer.notPublished.now" : {
-      "comment" : "Siri's answer when the published Schedule does not reach back to now. %1$@: the Mode.",
+      "comment" : "Siri's answer when the published Schedule does not reach back to now, which VoiceOver also reads for a Mode summary with nothing current. %1$@: the Mode.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {

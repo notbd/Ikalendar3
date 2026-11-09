@@ -27,16 +27,16 @@ struct InkShiftPanel: View {
 
   var body: some View {
     let shift: Shift = entry.item
-    let modeColor: ModeColor = .init(shift.kind)
+    let accent: InkAccent = .init(ModeColor(shift.kind))
 
     VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
       InkPanelHeader(timeRange: timeRange, arrangement: metrics.arrangement) {
         if let label = shift.kind.label {
-          InkModeTag(Text(verbatim: label.text(in: language)), modeColor: modeColor)
+          InkModeTag(Text(verbatim: label.text(in: language)), accent: accent)
         }
-        InkStateTag(place: entry.place, modeColor: modeColor)
+        InkStateTag(place: entry.place, accent: accent)
       }
-      stageAndWeapons(of: shift)
+      InkStageAndWeapons(shift: shift, terms: terms, metrics: metrics)
       if let kingSalmonid = shift.kingSalmonid {
         kingSalmonidRow(kingSalmonid)
       }
@@ -44,56 +44,12 @@ struct InkShiftPanel: View {
         InkProgressBar(
           progress: progress,
           countdown: writer.countdown(progress),
-          modeColor: modeColor,
+          accent: accent,
           arrangement: metrics.arrangement)
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .inkPanel(isTaped: entry.place.progress != nil)
-  }
-
-  /// The Stage card with the weapons two by two beside it, or under it as one row when stacked.
-  @ViewBuilder
-  private func stageAndWeapons(of shift: Shift) -> some View {
-    let stageCard: InkStageCard = .init(
-      stage: shift.stage,
-      name: Text(verbatim: terms.name(of: shift.stage)),
-      imageSize: .large)
-
-    switch metrics.arrangement {
-      case .sideBySide:
-        HStack(alignment: .top, spacing: InkScreenMetrics.cardSpacing) {
-          stageCard
-          weapons(shift.weapons, columns: 2)
-            .frame(width: metrics.length(InkScreenMetrics.weaponsWidth))
-        }
-
-      case .stacked:
-        VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
-          stageCard
-          weapons(shift.weapons, columns: shift.weapons.count)
-        }
-    }
-  }
-
-  /// The weapons on round dark plates, as the game shows them; a random mark is the game's
-  /// question mark. Each image is labelled with the weapon's name.
-  private func weapons(_ weapons: [WeaponID], columns: Int) -> some View {
-    let grid: [GridItem] = .init(
-      repeating: GridItem(.flexible(), spacing: InkScreenMetrics.cardSpacing / 2),
-      count: max(columns, 1))
-
-    // Keyed by position: a Shift can list one weapon more than once (four golden marks).
-    return LazyVGrid(columns: grid, spacing: InkScreenMetrics.cardSpacing / 2) {
-      ForEach(Array(weapons.enumerated()), id: \.offset) { _, weapon in
-        Image(BundledImage.name(for: weapon, size: .medium), bundle: BundledImage.catalogBundle)
-          .resizable()
-          .scaledToFit()
-          .accessibilityLabel(Text(verbatim: terms.name(of: weapon)))
-          .padding(InkScreenMetrics.cardSpacing / 2)
-          .background(Color(InkPair.tagText.colors(in: colorScheme).background), in: .circle)
-      }
-    }
   }
 
   /// The King Salmonid that can appear at the end of the Shift.
@@ -107,6 +63,68 @@ struct InkShiftPanel: View {
         .inkFont(.caption)
         .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
         .scaledLimitedLine(for: metrics.arrangement)
+    }
+  }
+}
+
+// MARK: - InkStageAndWeapons
+
+/// A Shift's Stage card with the weapons two by two beside it, or under it as one row when
+/// stacked.
+struct InkStageAndWeapons: View {
+  let shift: Shift
+  let terms: GameTerms
+  let metrics: CellMetrics
+
+  var body: some View {
+    let stageCard: InkStageCard = .init(
+      stage: shift.stage,
+      name: Text(verbatim: terms.name(of: shift.stage)),
+      imageSize: .large)
+
+    switch metrics.arrangement {
+      case .sideBySide:
+        HStack(alignment: .top, spacing: InkScreenMetrics.cardSpacing) {
+          stageCard
+          InkWeapons(weapons: shift.weapons, terms: terms, columns: 2)
+            .frame(width: metrics.length(InkScreenMetrics.weaponsWidth))
+        }
+
+      case .stacked:
+        VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
+          stageCard
+          InkWeapons(weapons: shift.weapons, terms: terms, columns: shift.weapons.count)
+        }
+    }
+  }
+}
+
+// MARK: - InkWeapons
+
+/// A Shift's weapons on round dark plates, as the game shows them, in `columns` columns; a random
+/// mark is the game's question mark. Each image is labelled with the weapon's name.
+struct InkWeapons: View {
+  @Environment(\.colorScheme) private var colorScheme
+
+  let weapons: [WeaponID]
+  let terms: GameTerms
+  let columns: Int
+
+  var body: some View {
+    let grid: [GridItem] = .init(
+      repeating: GridItem(.flexible(), spacing: InkScreenMetrics.cardSpacing / 2),
+      count: max(columns, 1))
+
+    // Keyed by position: a Shift can list one weapon more than once (four golden marks).
+    LazyVGrid(columns: grid, spacing: InkScreenMetrics.cardSpacing / 2) {
+      ForEach(Array(weapons.enumerated()), id: \.offset) { _, weapon in
+        Image(BundledImage.name(for: weapon, size: .medium), bundle: BundledImage.catalogBundle)
+          .resizable()
+          .scaledToFit()
+          .accessibilityLabel(Text(verbatim: terms.name(of: weapon)))
+          .padding(InkScreenMetrics.cardSpacing / 2)
+          .background(Color(InkPair.tagText.colors(in: colorScheme).background), in: .circle)
+      }
     }
   }
 }

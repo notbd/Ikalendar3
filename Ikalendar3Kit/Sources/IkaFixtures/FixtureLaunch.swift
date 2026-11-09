@@ -19,7 +19,6 @@ import IkaCore
 /// --fixture-folder <Ikalendar3Kit/Fixtures>   where the payloads are read, so no product ships them
 /// --fixture-instant 2026-10-20T13:59:50Z      the instant the clock starts at
 /// --fixture-rebase                        optional: move the payloads to now instead
-/// --fixture-short-tracking salmonRun      optional (iOS): Track a Mode with two-minute items
 /// ```
 ///
 /// The schedules feed comes with the recorded `festivals.json` and every recorded locale file.
@@ -33,17 +32,13 @@ public struct FixtureLaunch: Hashable, Sendable {
   /// Whether the payloads move to now and land in the shared cache, so the Surfaces the system
   /// renders on its own clock (widgets, the Live Activity) show the fixture day too.
   public let isRebased: Bool
-  /// The Mode the app Tracks with the short-item fixture (`TrackingContent.withShortItems`) after
-  /// each activation run, or `nil` for none. Its name is the Mode parameter's raw value.
-  public let shortTracking: Mode?
 
   /// A fixture launch with the given parts.
-  public init(schedules: Fixture, folder: URL, instant: Date, isRebased: Bool, shortTracking: Mode? = nil) {
+  public init(schedules: Fixture, folder: URL, instant: Date, isRebased: Bool) {
     self.schedules = schedules
     self.folder = folder
     self.instant = instant
     self.isRebased = isRebased
-    self.shortTracking = shortTracking
   }
 
   /// The fixture launch a process's arguments ask for, or `nil` when they have no `--fixture`.
@@ -63,30 +58,12 @@ public struct FixtureLaunch: Hashable, Sendable {
     let instantText = try arguments.required(Option.instant)
     guard let instant = try? Date(instantText, strategy: .iso8601) else { throw .malformedInstant(instantText) }
 
-    var shortTracking: Mode?
-    if arguments.contains(Option.shortTracking) {
-      let name = try arguments.required(Option.shortTracking)
-      guard let mode = Self.modes[name] else { throw .unknownMode(name) }
-
-      shortTracking = mode
-    }
-
     self.init(
       schedules: schedules,
       folder: URL(filePath: folder, directoryHint: .isDirectory),
       instant: instant,
-      isRebased: arguments.contains(Option.rebase),
-      shortTracking: shortTracking)
+      isRebased: arguments.contains(Option.rebase))
   }
-
-  /// The Modes `--fixture-short-tracking` names, by the Mode parameter's raw values.
-  static private let modes: [String: Mode] = [
-    "regularBattle": .battle(.regular),
-    "anarchySeries": .battle(.anarchySeries),
-    "anarchyOpen": .battle(.anarchyOpen),
-    "xBattle": .battle(.x),
-    "salmonRun": .salmonRun,
-  ]
 
   /// The option names.
   private enum Option {
@@ -94,7 +71,6 @@ public struct FixtureLaunch: Hashable, Sendable {
     static let folder = "--fixture-folder"
     static let instant = "--fixture-instant"
     static let rebase = "--fixture-rebase"
-    static let shortTracking = "--fixture-short-tracking"
   }
 }
 
@@ -109,8 +85,6 @@ extension FixtureLaunch {
     case unknownFixture(String)
     /// `--fixture-instant` is not an ISO 8601 UTC instant.
     case malformedInstant(String)
-    /// `--fixture-short-tracking` names no Mode that Tracking follows.
-    case unknownMode(String)
   }
 }
 

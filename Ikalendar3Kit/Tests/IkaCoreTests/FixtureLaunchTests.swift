@@ -67,34 +67,6 @@ final class FixtureLaunchTests {
   }
 
   @Test(arguments: [
-    ("regularBattle", Mode.battle(.regular)),
-    ("anarchySeries", .battle(.anarchySeries)),
-    ("anarchyOpen", .battle(.anarchyOpen)),
-    ("xBattle", .battle(.x)),
-    ("salmonRun", .salmonRun),
-  ])
-  func `A fixture launch reads the Mode its short-item Tracking follows`(name: String, mode: Mode) throws {
-    let launch = try FixtureLaunch(arguments: [
-      "/app",
-      "--fixture", "normalDay",
-      "--fixture-folder", "/tmp/Fixtures",
-      "--fixture-instant", "2026-10-20T13:59:50Z",
-      "--fixture-short-tracking", name,
-    ])
-
-    #expect(launch?.shortTracking == mode)
-    #expect(try FixtureLaunch(arguments: [
-      "/app",
-      "--fixture",
-      "normalDay",
-      "--fixture-folder",
-      "/f",
-      "--fixture-instant",
-      "2026-10-20T12:00:00Z",
-    ])?.shortTracking == nil)
-  }
-
-  @Test(arguments: [
     (
       ["--fixture", "someDay", "--fixture-folder", "/f", "--fixture-instant", "2026-10-20T12:00:00Z"],
       FixtureLaunch.OptionError.unknownFixture("someDay")),
@@ -105,18 +77,6 @@ final class FixtureLaunchTests {
     (["--fixture", "normalDay", "--fixture-folder", "/f"], .missing("--fixture-instant")),
     (["--fixture", "normalDay", "--fixture-folder", "/f", "--fixture-instant", "noon"], .malformedInstant("noon")),
     (["--fixture"], .missing("--fixture")),
-    (
-      [
-        "--fixture",
-        "normalDay",
-        "--fixture-folder",
-        "/f",
-        "--fixture-instant",
-        "2026-10-20T12:00:00Z",
-        "--fixture-short-tracking",
-        "splatfestBattle",
-      ],
-      .unknownMode("splatfestBattle")),
   ])
   func `A fixture launch with a missing or malformed option is refused`(
     arguments: [String],

@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import IkaCore
 import IkaDesign
 import IkaResources
 import SwiftUI
@@ -25,6 +26,12 @@ struct Ikalendar3WatchWidgets: WidgetBundle {
   }
 }
 
+extension Ikalendar3WatchWidgets {
+  /// The app language, resolved for this extension's bundle. It declares the watch app's 14
+  /// localizations, so it resolves the watch app's.
+  static let language: GameLanguage = .init(resolvedFor: .main)
+}
+
 // MARK: - PlaceholderWidget
 
 /// Stands in until the extension's first real widget; an extension must declare at least one.
@@ -32,6 +39,7 @@ struct PlaceholderWidget: Widget {
   var body: some WidgetConfiguration {
     StaticConfiguration(kind: "placeholder", provider: PlaceholderProvider()) { entry in
       PlaceholderView(date: entry.date)
+        .environment(\.gameLanguage, Ikalendar3WatchWidgets.language)
     }
     .supportedFamilies([.accessoryRectangular])
   }

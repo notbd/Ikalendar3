@@ -18,14 +18,14 @@ struct InkStateTag: View {
   @Environment(\.colorScheme) private var colorScheme
 
   let place: InkPanelPlace
-  /// The colour of "Now!": the Mode's, or the Shift kind's.
-  let modeColor: ModeColor
+  /// The colour of "Now!": the Mode's, the Shift kind's, or a Splatfest's white.
+  let accent: InkAccent
 
   var body: some View {
     Group {
       switch place {
         case .now:
-          InkModeTag(Text(verbatim: InkText.now.text(in: language)), modeColor: modeColor)
+          InkModeTag(Text(verbatim: InkText.now.text(in: language)), accent: accent)
 
         case .next:
           InkTagLabel(
@@ -70,7 +70,7 @@ struct InkPanelHeader<Tags: View>: View {
 
 // MARK: - InkProgressBar
 
-/// The featured panel's progress: a skewed bar filling in the Mode's colour, and the countdown
+/// The featured panel's progress: a skewed bar filling in the accent, and the countdown
 /// beside it (under it from the first accessibility text size), ticking on whole seconds.
 /// VoiceOver reads the time left in the panel's sentence instead.
 struct InkProgressBar: View {
@@ -78,7 +78,7 @@ struct InkProgressBar: View {
 
   let progress: WindowProgress
   let countdown: String
-  let modeColor: ModeColor
+  let accent: InkAccent
   let arrangement: CellArrangement
 
   var body: some View {
@@ -109,7 +109,7 @@ struct InkProgressBar: View {
       .overlay(alignment: .leading) {
         GeometryReader { proxy in
           plate
-            .fill(Color(modeColor.base))
+            .fill(Color(accent.base))
             .frame(width: geometry.fillWidth(in: proxy.size.width))
         }
       }

@@ -46,6 +46,16 @@ enum InkPanelPlace: Hashable {
   /// After the next one, untagged.
   case later
 
+  /// The place of a Challenge window marked `mark`, or `nil` once it has ended.
+  init?(_ mark: ChallengeScreen.WindowMark) {
+    switch mark {
+      case .current(let progress): self = .now(progress)
+      case .next: self = .next
+      case .later: self = .later
+      case .over: return nil
+    }
+  }
+
   /// How far the item has run, on the featured panel only.
   var progress: WindowProgress? {
     if case .now(let progress) = self { progress } else { nil }

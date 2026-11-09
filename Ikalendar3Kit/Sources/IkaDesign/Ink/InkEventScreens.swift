@@ -11,11 +11,13 @@ import SwiftUI
 
 // MARK: - InkChallengeScreenView
 
-/// Ink's Challenge screen: each Challenge's texts and windows on Ink's panels and dotted
-/// background, a stand-in until ticket 30 draws the full layout. It receives `IkaCore` values
-/// only and reads no store.
+/// Ink's Challenge screen, in the look of its Battle Mode screens: the Challenges heading and
+/// stamp over the dotted background, then a panel per Challenge with its name, description,
+/// Rule, Stages and rules text, and a time tag per window, the current one tagged "Now!" with its
+/// progress and the next one "Next". The panel holding the current window is taped.
+///
+/// Like every Style's screen, it receives `IkaCore` values only and reads no store.
 public struct InkChallengeScreenView: View {
-  @Environment(\.timeZone) private var timeZone
   @TimeSettings private var time
 
   private let screen: ChallengeScreen
@@ -36,82 +38,41 @@ public struct InkChallengeScreenView: View {
   }
 
   public var body: some View {
-    ScrollView {
-      LazyVStack(spacing: 12) {
-        if screen.challenges.isEmpty {
-          Text(verbatim: ScreenText.nothingCurrent.text(in: terms.language))
-            .inkFont(.label)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .inkPanel(isTaped: true)
-        }
-        ForEach(screen.challenges, id: \.challenge.id) { listing in
-          panel(listing)
-        }
-        FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
+    InkScheduleList(
+      heading: .challenges,
+      icon: .challenge,
+      accent: InkAccent(.challenge),
+      title: ModeLabel.challenges.text(in: terms.language),
+      reflowValue: screen.challenges.map(\.challenge.id),
+      fetchTime: screen.fetchTime,
+      now: now,
+      isStale: isStale)
+    { metrics in
+      if screen.challenges.isEmpty {
+        InkNote(text: ScreenText.nothingCurrent.text(in: terms.language))
       }
-      .padding()
-    }
-    .background(InkBackground())
-  }
-
-  /// A Challenge's panel; it is taped while one of its windows is on.
-  private func panel(_ listing: ChallengeScreen.Listing) -> some View {
-    let challenge = listing.challenge
-    let texts = terms.challenge(challenge.id)
-    let ruleAndStages = [terms.name(of: challenge.rule)] + challenge.stages.map(terms.name(of:))
-    let isOn = listing.windows.contains { if case .current = $0.mark { true } else { false } }
-    return VStack(alignment: .leading, spacing: 4) {
-      Text(verbatim: texts.name)
-        .inkFont(.headline)
-      Text(verbatim: texts.displayDescription)
-        .inkFont(.body)
-      Text(verbatim: ruleAndStages.joined(separator: " · "))
-        .inkFont(.label)
-      Text(verbatim: texts.displayRulesText)
-        .inkFont(.caption)
-      ForEach(listing.windows, id: \.window) { window in
-        row(window)
-      }
-      .padding(.top, 4)
-    }
-    .frame(maxWidth: .infinity, alignment: .leading)
-    .inkPanel(isTaped: isOn)
-  }
-
-  private func row(_ window: ChallengeScreen.MarkedWindow) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
-      HStack {
-        Text(verbatim: format.timeRange(of: window.window, withWeekday: true))
-          .inkFont(.body)
-        Spacer()
-        if window.mark == .next {
-          Text(verbatim: ScreenText.next.text(in: terms.language))
-            .inkFont(.tag)
-        }
-      }
-      if case .current(let progress) = window.mark {
-        ProgressView(value: progress.sharePassed) {
-          Text(verbatim: writer.timeLeft(progress))
-            .inkFont(.caption)
-        }
+      ForEach(screen.challenges, id: \.challenge.id) { listing in
+        InkChallengePanel(listing: listing, terms: terms, now: now, writer: writer, metrics: metrics)
       }
     }
-    .opacity(window.mark == .over ? 0.5 : 1)
-    .accessibilityElement(children: .combine)
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkSplatfestScreenView
 
-/// Ink's Splatfest screen: the Splatfest card, the form's Rotations, Tricolor Turf War in the
-/// second half and Regular Battle's Rotations after the end, on Ink's panels and dotted
-/// background, a stand-in until ticket 30 draws the full layout. It receives `IkaCore` values
-/// only and reads no store.
+/// Ink's Splatfest screen, in the look of its Battle Mode screens: Splatfest Battle's heading
+/// with the form and its stamp, the Splatfest card, Tricolor Turf War in the second half, the
+/// form's Rotations with the current one featured and taped, then Regular Battle's Rotations after
+/// the end under its name. Splatfest Battle has no Mode colour, so the screen is marked in white;
+/// the teams' colours appear on the card beside their names.
+///
+/// Tricolor Turf War sits right under the card rather than after the form's Rotations, as in
+/// Classic: it runs through the whole second half, and up to twelve Rotations would bury it.
+///
+/// Like every Style's screen, it receives `IkaCore` values only and reads no store.
 public struct InkSplatfestScreenView: View {
-  @Environment(\.timeZone) private var timeZone
   @TimeSettings private var time
 
   private let screen: SplatfestScreen
@@ -132,79 +93,186 @@ public struct InkSplatfestScreenView: View {
   }
 
   public var body: some View {
-    ScrollView {
-      LazyVStack(spacing: 12) {
-        SplatfestCardView(splatfest: screen.splatfest, art: screen.art, terms: terms, style: .ink, now: now)
-          .inkPanel()
-        switch screen.current {
-          case .running(let running):
-            panel(running.item, progress: running.progress)
-          case .paused,
-               .nothingCurrent:
-            Text(verbatim: ScreenText.nothingCurrent.text(in: terms.language))
-              .inkFont(.label)
-              .frame(maxWidth: .infinity, alignment: .leading)
-              .inkPanel(isTaped: true)
-        }
-        ForEach([screen.next].compactMap(\.self) + screen.later, id: \.self) { rotation in
-          panel(rotation, progress: nil)
-        }
-        if let tricolor = screen.tricolorTurfWar {
-          VStack(alignment: .leading, spacing: 4) {
-            Text(verbatim: format.dateRange(of: tricolor.item))
-              .inkFont(.body)
-            Text(verbatim: ModeLabel.tricolor.text(in: terms.language))
-              .inkFont(.tag)
-            Text(verbatim: tricolor.item.stages.map(terms.name(of:)).joined(separator: " · "))
-              .inkFont(.headline)
-            ProgressView(value: tricolor.progress.sharePassed) {
-              Text(verbatim: writer.timeLeft(tricolor.progress))
-                .inkFont(.caption)
-            }
-          }
-          .frame(maxWidth: .infinity, alignment: .leading)
-          .inkPanel(isTaped: true)
-          .accessibilityElement(children: .combine)
-        }
-        if !screen.afterwards.isEmpty {
-          Text(verbatim: ModeLabel.regularBattle.text(in: terms.language))
-            .inkFont(.label)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .accessibilityAddTraits(.isHeader)
-          ForEach(screen.afterwards, id: \.self) { rotation in
-            panel(rotation, progress: nil)
-          }
-        }
-        FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
+    let mode: RotationMode = .splatfestBattle(screen.form)
+    let entries: [InkPanelEntry<Rotation>] = InkPanelEntry.entries(
+      current: screen.current,
+      next: screen.next,
+      later: screen.later)
+    let afterwards: [InkPanelEntry<Rotation>] = screen.afterwards.map { InkPanelEntry(item: $0, place: .later) }
+
+    InkScheduleList(
+      heading: InkModeHeading(splatfestBattle: screen.form),
+      icon: ModeIcon(mode),
+      accent: .splatfest,
+      title: mode.name(in: terms.language),
+      reflowValue: (entries + afterwards).map(\.id),
+      fetchTime: screen.fetchTime,
+      now: now,
+      isStale: isStale)
+    { metrics in
+      InkEventCard(item: .splatfest(screen.splatfest), art: screen.art, terms: terms, now: now)
+      if let tricolor = screen.tricolorTurfWar {
+        InkTricolorPanel(tricolor: tricolor, terms: terms, writer: writer, metrics: metrics)
+          .accessibilityElement(children: .ignore)
+          .accessibilityLabel(writer.sentence(for: tricolor.item, at: now))
       }
-      .padding()
+      switch screen.current {
+        case .running:
+          EmptyView()
+        case .paused,
+             .nothingCurrent:
+          InkNote(text: ScreenText.nothingCurrent.text(in: terms.language))
+      }
+      ForEach(entries) { panel($0, accent: .splatfest, metrics: metrics) }
+      if !afterwards.isEmpty {
+        InkModeTag(Text(verbatim: ModeLabel.regularBattle.text(in: terms.language)), modeColor: .regularBattle)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .padding(.top, InkScreenMetrics.panelRowSpacing)
+          .accessibilityAddTraits(.isHeader)
+        ForEach(afterwards) { panel($0, accent: InkAccent(.regularBattle), metrics: metrics) }
+      }
     }
-    .background(InkBackground())
   }
 
-  /// A Rotation's panel; the current one is taped and carries its progress.
-  private func panel(_ rotation: Rotation, progress: WindowProgress?) -> some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(verbatim: format.timeRange(of: rotation))
-        .inkFont(.body)
-      Text(verbatim: rotation.setting.map { terms.name(of: $0.rule) } ?? "")
-        .inkFont(progress == nil ? .label : .headline)
-      Text(verbatim: rotation.setting?.stages.map(terms.name(of:)).joined(separator: " · ") ?? "")
+  @ViewBuilder
+  private func panel(_ entry: InkPanelEntry<Rotation>, accent: InkAccent, metrics: CellMetrics) -> some View {
+    // A lineup's Rotations always play: a paused window is never an item.
+    if let setting = entry.item.setting {
+      InkBattlePanel(
+        entry: entry,
+        setting: setting,
+        terms: terms,
+        accent: accent,
+        timeRange: format.timeRange(of: entry.item),
+        writer: writer,
+        metrics: metrics)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(writer.sentence(for: entry.item, at: now))
+    }
+  }
+
+  private var format: ScheduleFormat { time.format(terms.language) }
+  private var writer: SentenceWriter { time.writer(terms) }
+}
+
+// MARK: - InkChallengePanel
+
+/// One Challenge's panel: its name, description, Rule over a dotted rule, Stages and rules text,
+/// then a row per window. Taped while one of its windows is on.
+private struct InkChallengePanel: View {
+  @Environment(\.colorScheme) private var colorScheme
+  @TimeSettings private var time
+
+  let listing: ChallengeScreen.Listing
+  let terms: GameTerms
+  let now: Date
+  let writer: SentenceWriter
+  let metrics: CellMetrics
+
+  var body: some View {
+    let challenge: Challenge = listing.challenge
+    let texts: ChallengeTerms = terms.challenge(challenge.id)
+    let accent: InkAccent = .init(.challenge)
+    let isOn: Bool = listing.windows.contains { $0.mark.isCurrent }
+
+    VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
+      VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing / 2) {
+        Text(verbatim: texts.name)
+          .inkFont(.headline)
+          .fixedSize(horizontal: false, vertical: true)
+        Text(verbatim: texts.displayDescription)
+          .inkFont(.body)
+          .fixedSize(horizontal: false, vertical: true)
+      }
+      .accessibilityElement(children: .combine)
+      .accessibilityAddTraits(.isHeader)
+      InkRuleLabel(rule: challenge.rule, terms: terms, accent: accent, arrangement: metrics.arrangement)
+      InkDottedRule()
+      InkStageRow(stages: challenge.stages, terms: terms, imageSize: .medium, arrangement: metrics.arrangement)
+      Text(verbatim: texts.displayRulesText)
         .inkFont(.caption)
-      if let progress {
-        ProgressView(value: progress.sharePassed) {
-          Text(verbatim: writer.timeLeft(progress))
-            .inkFont(.caption)
+        .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
+        .fixedSize(horizontal: false, vertical: true)
+      VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
+        ForEach(listing.windows, id: \.window) { window in
+          row(window, of: challenge, accent: accent)
         }
       }
+      .padding(.top, InkScreenMetrics.panelRowSpacing / 2)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
-    .inkPanel(isTaped: progress != nil)
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(writer.sentence(for: rotation, at: now))
+    .inkPanel(isTaped: isOn)
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { time.writer(terms) }
+  /// A window's time tag with its state tag, and its progress while it runs. An ended window
+  /// fades.
+  private func row(_ window: ChallengeScreen.MarkedWindow, of challenge: Challenge, accent: InkAccent) -> some View {
+    let place: InkPanelPlace? = .init(window.mark)
+
+    return VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing / 2) {
+      InkPanelHeader(
+        timeRange: format.timeRange(of: window.window, withWeekday: true),
+        arrangement: metrics.arrangement)
+      {
+        if let place {
+          InkStateTag(place: place, accent: accent)
+        }
+      }
+      if let progress = place?.progress {
+        InkProgressBar(
+          progress: progress,
+          countdown: writer.countdown(progress),
+          accent: accent,
+          arrangement: metrics.arrangement)
+      }
+    }
+    .opacity(place == nil ? InkScreenMetrics.endedWindowOpacity : 1)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(writer.sentence(for: ChallengeWindow(challenge: challenge, window: window.window), at: now))
+  }
+
+  private var format: ScheduleFormat { time.format(terms.language) }
+}
+
+// MARK: - InkTricolorPanel
+
+/// Tricolor Turf War's panel in the Splatfest's second half: its time tag with its tag and
+/// "Now!", its Stages and its progress. Not taped: the tape stays on the form's current Rotation.
+private struct InkTricolorPanel: View {
+  @TimeSettings private var time
+
+  let tricolor: Running<TricolorTurfWar>
+  let terms: GameTerms
+  let writer: SentenceWriter
+  let metrics: CellMetrics
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
+      InkPanelHeader(
+        timeRange: time.format(terms.language).timeRange(of: tricolor.item, withWeekday: true),
+        arrangement: metrics.arrangement)
+      {
+        InkModeTag(Text(verbatim: ModeLabel.tricolor.text(in: terms.language)), accent: .splatfest)
+        InkStateTag(place: .now(tricolor.progress), accent: .splatfest)
+      }
+      InkStageRow(stages: tricolor.item.stages, terms: terms, imageSize: .large, arrangement: metrics.arrangement)
+      InkProgressBar(
+        progress: tricolor.progress,
+        countdown: writer.countdown(tricolor.progress),
+        accent: .splatfest,
+        arrangement: metrics.arrangement)
+    }
+    .frame(maxWidth: .infinity, alignment: .leading)
+    .inkPanel()
+  }
+}
+
+// MARK: - WindowMark
+
+extension ChallengeScreen.WindowMark {
+  /// Whether the window is on now.
+  fileprivate var isCurrent: Bool {
+    if case .current = self { true } else { false }
+  }
 }
 #endif
