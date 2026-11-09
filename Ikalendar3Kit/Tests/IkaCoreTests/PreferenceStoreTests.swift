@@ -12,9 +12,17 @@ import Testing
 // MARK: - PreferenceStoreTests
 
 struct PreferenceStoreTests {
+  /// This test's own suite, deleted when the test ends.
+  private let testDefaults: TestDefaults
+  private var defaults: UserDefaults { testDefaults.defaults }
+
+  init() throws {
+    testDefaults = try TestDefaults()
+  }
+
   @Test
-  func `Fresh suite reads the documented defaults`() throws {
-    let store = try PreferenceStore(defaults: makeTestDefaults())
+  func `Fresh suite reads the documented defaults`() {
+    let store: PreferenceStore = .init(defaults: defaults)
 
     #expect(store.defaultMode == .regularBattle)
     #expect(store.colorScheme == .dark)
@@ -30,8 +38,7 @@ struct PreferenceStoreTests {
   }
 
   @Test
-  func `Stored values survive a new store on the same suite`() throws {
-    let defaults = try makeTestDefaults()
+  func `Stored values survive a new store on the same suite`() {
     let first: PreferenceStore = .init(defaults: defaults)
     first.setEveryValueAwayFromItsDefault()
 
@@ -53,8 +60,7 @@ struct PreferenceStoreTests {
   // MARK: - Resets
 
   @Test
-  func `Reset app states restores only the onboarding and discovery flags`() throws {
-    let defaults = try makeTestDefaults()
+  func `Reset app states restores only the onboarding and discovery flags`() {
     defaults.set("kept", forKey: "unrelated")
     let store: PreferenceStore = .init(defaults: defaults)
     store.setEveryValueAwayFromItsDefault()
@@ -79,8 +85,7 @@ struct PreferenceStoreTests {
   }
 
   @Test
-  func `Reset app preferences restores everything but the app states`() throws {
-    let defaults = try makeTestDefaults()
+  func `Reset app preferences restores everything but the app states`() {
     defaults.set("kept", forKey: "unrelated")
     let store: PreferenceStore = .init(defaults: defaults)
     store.setEveryValueAwayFromItsDefault()
@@ -111,9 +116,7 @@ struct PreferenceStoreTests {
   // these literals in terms of `PreferenceStore.Key` or `rawValue`.
 
   @Test
-  func `Writes land under the frozen keys as the frozen encodings`() throws {
-    let defaults = try makeTestDefaults()
-
+  func `Writes land under the frozen keys as the frozen encodings`() {
     PreferenceStore(defaults: defaults).setEveryValueAwayFromItsDefault()
 
     #expect(defaults.string(forKey: "pref.default_mode") == "salmon_run")
@@ -130,9 +133,8 @@ struct PreferenceStoreTests {
   }
 
   @Test
-  func `Values stored under the frozen keys load`() throws {
+  func `Values stored under the frozen keys load`() {
     // Every value differs from its default, so a renamed key cannot pass via the fallback.
-    let defaults = try makeTestDefaults()
     defaults.set("challenge", forKey: "pref.default_mode")
     defaults.set("follow_system", forKey: "pref.color_scheme")
     defaults.set("classic", forKey: "pref.style")
