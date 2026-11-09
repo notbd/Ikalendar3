@@ -9,8 +9,9 @@ import Foundation
 
 // MARK: - SentenceWriter
 
-/// Writes the one sentence a Rotation or a Shift reads as, in one of the 14 text sets. VoiceOver
-/// reads it on every Surface and Siri's answers are built from it, so every Surface reads alike.
+/// Writes the one sentence a Rotation, a Shift, a Challenge window or a Splatfest reads as, in one
+/// of the 14 text sets. VoiceOver reads it on every Surface and Siri's answers are built from it,
+/// so every Surface reads alike.
 ///
 /// Names come from the game's terms in their text set. Times are written in the time zone and
 /// the hour cycle passed in; Surfaces pass the device's own (`Locale.current.hourCycle`), so a
@@ -82,6 +83,20 @@ public struct SentenceWriter: Sendable {
   /// `sentence(for:at:)`.
   public func sentence(for item: TrackedShift, at instant: Date) -> String {
     sentence(of: item.isBigRun ? .bigRun : .salmonRun, on: item.stage, with: item.weapons, in: item, at: instant)
+  }
+
+  /// A Challenge window's sentence: a Rotation's, with the Challenge's name in the Battle Mode's
+  /// place, plus the time left while the window runs at `instant`.
+  ///
+  /// A Challenge is announced days ahead, so its times carry the weekday.
+  public func sentence(for window: ChallengeWindow, at instant: Date) -> String {
+    let challenge = window.challenge
+    return format(
+      "sentence.rotation",
+      terms.challenge(challenge.id).name,
+      terms.name(of: challenge.rule),
+      list(challenge.stages.map(terms.name(of:))),
+      when(window, at: instant, times: Self.weekdayAndTimeStyle))
   }
 
   /// A Splatfest's sentence: its title and time range, plus the time left while it runs at
