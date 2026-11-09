@@ -83,7 +83,7 @@ struct SplatfestScreenTests {
 
     let screen = try #require(snapshot.splatfestScreen(of: form, at: instant))
 
-    #expect(screen.splatfest == splatfest)
+    #expect(screen.card.splatfest == splatfest)
     #expect(screen.phase == phaseCase.phase)
     #expect(screen.form == form)
     if let expected = phaseCase.current {
@@ -117,9 +117,9 @@ struct SplatfestScreenTests {
 
     let stored = try #require(snapshot.splatfestScreen(of: .open, at: instant))
 
-    #expect(unstored.art == nil)
-    #expect(stored.art == snapshot.splatfestArt)
-    #expect(stored.splatfest.teamColors.count == 3)
+    #expect(unstored.card.art == nil)
+    #expect(stored.card.art == snapshot.splatfestArt)
+    #expect(stored.card.splatfest.teamColors.count == 3)
   }
 
   @Test
@@ -133,7 +133,7 @@ struct SplatfestScreenTests {
   }
 
   @Test(arguments: SplatfestBattleForm.allCases)
-  func `Each Splatfest Battle summary matches the current Rotation of that form's screen`(
+  func `Each Splatfest Battle form's summary matches the current Rotation of that form's screen`(
     _ form: SplatfestBattleForm)
     async throws
   {
@@ -141,12 +141,14 @@ struct SplatfestScreenTests {
     let instant = date("2026-11-01T05:23:00Z")
     let published = try #require(snapshot.schedules?.content.rotations(for: .splatfestBattle(form)).first)
 
-    let summary = try #require(snapshot.splatfestBattleSummary(of: form, at: instant))
+    let summary = try #require(snapshot.summary(of: form, at: instant))
 
     // 83 of the first Rotation's 120 minutes have passed.
-    #expect(summary == .init(form: form, current: .running(.init(
+    let current: OnNow<Rotation> = .running(.init(
       item: published,
-      progress: .init(timeLeft: .seconds(37 * 60), sharePassed: 83.0 / 120)))))
-    #expect(summary.current == snapshot.splatfestScreen(of: form, at: instant)?.current)
+      progress: .init(timeLeft: .seconds(37 * 60), sharePassed: 83.0 / 120)))
+    #expect(summary == .splatfestBattle(form, current))
+    #expect(current == snapshot.splatfestScreen(of: form, at: instant)?.current)
+    #expect(summary.mode == nil, "a form of Splatfest Battle is no Mode a widget or Siri chooses")
   }
 }

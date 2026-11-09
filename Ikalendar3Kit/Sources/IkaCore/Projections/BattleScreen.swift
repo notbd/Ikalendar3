@@ -43,19 +43,8 @@ extension Snapshot {
       next: lineup.next,
       later: lineup.later,
       announcedSplatfest: splatfest?.phase(at: instant) == .announced
-        ? splatfest.map { SplatfestCard(splatfest: $0, art: splatfestArt) }
+        ? splatfest.map(card(of:))
         : nil,
       fetchTime: schedules.fetchTime)
   }
-}
-
-// MARK: - SplatfestCard
-
-/// What a Splatfest's card shows outside the Splatfest screen: the Splatfest and its stored art.
-public struct SplatfestCard: Hashable, Sendable {
-  /// The Splatfest: its times, team colours and id, which keys its title and team names.
-  public let splatfest: Splatfest
-  /// Its art, a local image file the refresh engine stored, or `nil` while none is downloaded:
-  /// the card shows the team colours alone then.
-  public let art: URL?
 }

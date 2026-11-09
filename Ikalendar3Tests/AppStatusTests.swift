@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import Foundation
 import IkaCore
 import Testing
 @testable import Ikalendar3
@@ -57,20 +58,17 @@ struct AppStatusTests {
     #expect(status.selectedPlace == tab.place)
   }
 
-  @Test(arguments: [
-    RotationMode.battle(.anarchyOpen),
-    .battle(.anarchySeries),
-    .splatfestBattle(.pro),
-    .splatfestBattle(.open),
-  ])
-  func `Picking an option switches its tab to that Mode and closes the menu`(_ mode: RotationMode) {
-    let menu: TabMenu = if case .battle = mode { .anarchy } else { .splatfestBattle }
+  /// Each menu's options, the second one first so the pick moves away from the default.
+  @Test(arguments: [TabMenu.anarchy, .splatfestBattle])
+  func `Picking an option switches its tab to that Mode and closes the menu`(_ menu: TabMenu) {
     let status: AppStatus = .init(selectedPlace: .anarchy)
-    status.select(.mode(.anarchy))
 
-    status.choose(mode)
+    for option in Snapshot().options(of: menu, at: Date()).reversed() {
+      status.select(.mode(.anarchy))
+      status.choose(option)
 
-    #expect(status.mode(of: menu) == mode)
-    #expect(status.presentedMenu == nil)
+      #expect(status.mode(of: menu) == option.mode)
+      #expect(status.presentedMenu == nil)
+    }
   }
 }

@@ -9,7 +9,7 @@
 
 ## Verify
 
-`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, the string catalog check, package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, each checked for fixture files and for one resource framework per app, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
+`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, the wording check (`scripts/check-wording.sh`), the string catalog check, package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, each checked for fixture files and for one resource framework per app, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
 
 | Option | Environment variable | Default |
 |---|---|---|
@@ -139,7 +139,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 - Every key of every string catalog has a value in all 14, the source language included; `scripts/check-string-catalogs.sh` fails verify otherwise. Only keys marked Don't Translate are exempt. The same script fails when an App Shortcuts phrase, in its key or any language, lacks `${applicationName}`.
 - Game terms come from splatoon3.ink's locale files (shipped in `IkaCore`, looked up through `GameTerms`), Mode names and labels from its MIT-licensed site strings (`ModeLabel`). Strings written for this app use each language's in-game vocabulary; in es-ES, es-MX, fr-FR, fr-CA, de-DE, it-IT, nl-NL, ru-RU and ko-KR they carry the Needs Review state until a native speaker checks them.
 - Package modules look their strings up with `Bundle.module.localizedString(forKey:in:)` in the language the process passes in, never in the process locale.
-- Each Style and each feature area has its own string table, so parallel work never edits one catalog file: `Screens` (what every Style's screens share), `Classic`, `Ink`, `Timeline`, `Settings`, `About` (About, Credits and onboarding), `Reminders`, `Widgets`, `LiveActivity`, `Controls` and `Watch`; Siri's phrases are the app target's `AppShortcuts`, the name the system reads. A table is a `<Name>.xcstrings` in the module or target whose code shows its strings, added by the first change that needs it. `Localizable` stays `IkaCore`'s shared vocabulary (Mode names, labels and sentences) and `IkaIntents`' Siri strings.
+- Each Style and each feature area has its own string table, so parallel work never edits one catalog file: `Screens` (what every Style's screens share), `Classic`, `Ink`, `Timeline`, `Sidebar` (the iPad sidebar and its toolbar), `Settings`, `About` (About, Credits and onboarding), `Reminders`, `Widgets`, `LiveActivity`, `Controls` and `Watch`; Siri's phrases are the app target's `AppShortcuts`, the name the system reads. A table is a `<Name>.xcstrings` in the module or target whose code shows its strings, added by the first change that needs it. `Localizable` stays `IkaCore`'s shared vocabulary (Mode names, labels and sentences) and `IkaIntents`' Siri strings.
 
 ## Code and commits
 

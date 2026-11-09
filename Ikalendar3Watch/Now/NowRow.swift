@@ -80,15 +80,18 @@ struct NowRow: View {
   /// The current Rule or Shift Stage, when the Battle Mode returns, or that nothing is on.
   private var detail: String {
     switch summary {
-      case .battle(_, .running(let running)):
+      case .battle(_, .running(let running)),
+           .splatfestBattle(_, .running(let running)):
         // A summary's Rotation always plays: a paused window reads as the pause instead.
         running.item.setting.map { terms.name(of: $0.rule) } ?? ""
       case .salmonRun(.running(let running)):
         terms.name(of: running.item.stage)
       case .battle(_, .paused(let returnTime)),
+           .splatfestBattle(_, .paused(let returnTime)),
            .salmonRun(.paused(let returnTime)):
         ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now))
       case .battle(_, .nothingCurrent),
+           .splatfestBattle(_, .nothingCurrent),
            .salmonRun(.nothingCurrent):
         ScreenText.nothingCurrent.text(in: terms.language)
     }
@@ -113,9 +116,17 @@ extension NowRow {
     init(_ summary: ModeSummary) {
       switch summary {
         case .battle(let mode, let current):
-          icon = ModeIcon(summary.mode)
+          icon = ModeIcon(Mode.battle(mode))
           color = ModeColor(mode)
-          heading = InkModeHeading(summary.mode)
+          heading = InkModeHeading(.battle(mode))
+          progress = Self.progress(of: current)
+
+        case .splatfestBattle(let form, let current):
+          // The Now page lists Modes only and shows a Splatfest as its teams on top. Splatfest
+          // Battle has no colour of its own, so it takes Regular Battle's, whose place it takes.
+          icon = ModeIcon(RotationMode.splatfestBattle(form))
+          color = ModeColor.regularBattle
+          heading = InkModeHeading(splatfestBattle: form)
           progress = Self.progress(of: current)
 
         case .salmonRun(.running(let running)):
@@ -125,9 +136,9 @@ extension NowRow {
           progress = running.progress
 
         case .salmonRun(let current):
-          icon = ModeIcon(summary.mode)
-          color = ModeColor(summary.mode)
-          heading = InkModeHeading(summary.mode)
+          icon = ModeIcon(Mode.salmonRun)
+          color = ModeColor.salmonRun
+          heading = InkModeHeading(.salmonRun)
           progress = Self.progress(of: current)
       }
     }

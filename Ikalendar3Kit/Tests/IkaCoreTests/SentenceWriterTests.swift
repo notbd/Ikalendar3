@@ -50,7 +50,7 @@ struct SentenceWriterTests {
       "X Battle: Splat Zones on Scorch Gorge and Eeltail Alley, from 8:00\u{202F}AM to 10:00\u{202F}AM.")
   }
 
-  /// Council round 5, P1: only a Rotation not on now reads its start's weekday.
+  /// Only a Rotation not on now reads its start's weekday.
   @Test
   func `A Rotation on now reads no weekday, even one that started the day before`() throws {
     let denver = try #require(TimeZone(identifier: "America/Denver"))
@@ -128,7 +128,7 @@ struct SentenceWriterTests {
       timeZone: Self.losAngeles,
       hourCycle: .oneToTwelve)
 
-    // On now: no day. Asked Tuesday: the start's weekday only (council code round 5, M1).
+    // On now: no day. Asked Tuesday: the start's weekday only.
     #expect(writer.sentence(for: window, at: date("2026-10-23T02:30:00Z")) ==
       "Dualies at Ten Paces: Splat Zones on Um'ami Ruins and Sturgeon Shipyard, "
       + "from 7:00\u{202F}PM to 9:00\u{202F}PM, 1 hour 30 minutes left.")

@@ -12,7 +12,7 @@ import Testing
 @testable import IkaDesign
 
 struct ScheduleFormatTests {
-  /// Council round 5, M8: the hour cycle comes from the view's `TimeSettings`, which previews and
+  /// The hour cycle comes from the view's `TimeSettings`, which previews and
   /// tests can set, not from the process.
   @Test
   func `Times are written on the hour cycle passed in`() throws {

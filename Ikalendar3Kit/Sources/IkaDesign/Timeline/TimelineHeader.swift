@@ -86,8 +86,9 @@ struct TimelineModeBadge: View {
 // MARK: - TimelineFormStrip
 
 /// The strip of forms under the header, the form shown underlined in the Mode colour: Series and
-/// Open on Anarchy, Open and Pro on Splatfest Battle. It shows which form the screen holds; ticket
-/// 24's tab menu switches it.
+/// Open on Anarchy, Open and Pro on Splatfest Battle. It shows which form the screen holds and
+/// takes no tap: ticket 24's tab menu switches it. VoiceOver reads it as one text naming the shown
+/// form, not as a selector.
 struct TimelineFormStrip: View {
   /// Each form's label in the strip's order, and whether the screen shows it.
   let forms: [(label: ModeLabel, isShown: Bool)]
@@ -117,6 +118,8 @@ struct TimelineFormStrip: View {
     }
     .frame(maxWidth: .infinity, minHeight: TimelineMetrics.stripHeight)
     .background(TimelinePalette.strip)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(Text(verbatim: forms.first(where: \.isShown)?.label.text(in: language) ?? ""))
   }
 
   private func form(_ label: ModeLabel, isShown: Bool) -> some View {
@@ -131,7 +134,6 @@ struct TimelineFormStrip: View {
             .frame(height: TimelineMetrics.stripUnderline)
         }
       }
-      .accessibilityAddTraits(isShown ? .isSelected : [])
   }
 }
 #endif

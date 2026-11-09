@@ -109,7 +109,7 @@ struct SiriAnswersTests {
       + "from 5:00\u{202F}AM to 7:00\u{202F}AM, 1 hour left.")
   }
 
-  /// Council round 5, P1: a Rotation up to a day ahead reads its weekday, so 3:00 AM asked at
+  /// A Rotation up to a day ahead reads its weekday, so 3:00 AM asked at
   /// 5:30 AM is not taken for a time already past.
   @Test
   func `A Rule's Rotation on a later day reads its weekday`() throws {
@@ -158,7 +158,7 @@ struct SiriAnswersTests {
     #expect(firstHalf.next(Self.turfWar, in: .regular, at: date("2026-10-31T13:00:00Z")) == comesBack)
   }
 
-  /// Council round 5 (Sol): a Rule's Rotation that starts after midnight following the return
+  /// A Rule's Rotation that starts after midnight following the return
   /// reads its own weekday; the pause's weekday is the return's day, not the Rotation's.
   @Test
   func `A Rule's Rotation the day after the Splatfest's return reads its own weekday`() async throws {

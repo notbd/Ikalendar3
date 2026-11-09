@@ -63,7 +63,7 @@ struct ClassicTimeFormat {
     let endDay: Int = dayOffset(of: end, from: now)
     let startText: String = startDay == 0 ? time(start) : dayed(start, offset: startDay)
     let endText: String = endDay != startDay ? dayed(end, offset: endDay) : time(end)
-    return "\(startText) - \(endText)"
+    return ScreenText.timeRange.text(in: language, startText, endText)
   }
 
   /// One end of a Shift with its day: "Today 16:00" near now, "Thu, 10/22, 08:00" further away.
@@ -71,18 +71,17 @@ struct ClassicTimeFormat {
     dayed(instant, offset: dayOffset(of: instant, from: now))
   }
 
-  /// A countdown, "1d 12h 5m 9s": every unit from the largest one that is not empty, the empty
-  /// ones left out, and the seconds always.
+  /// A countdown, "1d 12h 5m 9s": the `Countdown` every Style shows, its hours split into days,
+  /// every unit that is not empty and the seconds always.
   func span(_ duration: Duration) -> String {
-    let seconds: Int = max(Int(duration.components.seconds), 0)
-    let (days, hours, minutes, secondsPastMinute) = (
-      seconds / 86400,
-      seconds / 3600 % 24,
-      seconds / 60 % 60,
-      seconds % 60)
-    let units: [(TimeUnit, Int)] = [(.days, days), (.hours, hours), (.minutes, minutes)]
+    let countdown: Countdown = .init(duration)
+    let units: [(TimeUnit, Int)] = [
+      (.days, countdown.hours / 24),
+      (.hours, countdown.hours % 24),
+      (.minutes, countdown.minutes),
+    ]
     let parts: [String] = units.filter { $0.1 > 0 }.map { $0.0.abbreviated($0.1, in: language) }
-      + [TimeUnit.seconds.abbreviated(secondsPastMinute, in: language)]
+      + [TimeUnit.seconds.abbreviated(countdown.seconds, in: language)]
     return parts.joined(separator: unitSeparator)
   }
 

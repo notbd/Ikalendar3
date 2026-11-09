@@ -56,7 +56,7 @@ public struct InkBattleScreenView: View {
       isStale: isStale)
     { metrics in
       if let card = screen.announcedSplatfest {
-        InkEventCard(item: .splatfest(card.splatfest), art: card.art, terms: terms, now: now)
+        InkEventCard(item: .splatfest(card), terms: terms, now: now)
       }
       switch screen.current {
         case .running:

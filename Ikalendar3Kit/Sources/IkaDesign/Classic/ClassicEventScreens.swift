@@ -90,7 +90,7 @@ public struct ClassicSplatfestScreenView: View {
       reflowValue: (rows + afterwards).map(\.id))
     { metrics in
       Section {
-        ClassicSplatfestCard(splatfest: screen.splatfest, art: screen.art, terms: terms, now: now, metrics: metrics)
+        ClassicSplatfestCard(card: screen.card, terms: terms, now: now, metrics: metrics)
       }
       if let tricolor = screen.tricolorTurfWar {
         ClassicTricolorSection(tricolor: tricolor, terms: terms, now: now, metrics: metrics)
