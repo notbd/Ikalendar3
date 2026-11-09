@@ -7,6 +7,7 @@
 
 import IkaCore
 import IkaDesign
+import IkaIntents
 import IkaResources
 import SwiftUI
 
@@ -18,6 +19,8 @@ import SwiftUI
 struct Ikalendar3App: App {
   /// The objects every screen reads, or `nil` when the App Group container is missing (logged).
   @State private var services: AppServices?
+
+  @Environment(\.scenePhase) private var scenePhase
 
   var body: some Scene {
     WindowGroup {
@@ -34,6 +37,7 @@ struct Ikalendar3App: App {
           .environment(\.gameLanguage, AppServices.language)
       }
     }
+    .refreshingInBackground(services?.effects, scenePhase: scenePhase)
 
     #if os(macOS)
     // The standard Settings window, which Command-comma opens.
@@ -62,5 +66,29 @@ private struct TestHostPlaceholder: View {
   var body: some View {
     Text(verbatim: "ikalendar3 unit test host")
       .foregroundStyle(.secondary)
+  }
+}
+
+// MARK: - Background refresh
+
+extension Scene {
+  /// On iOS, runs the effects shell from the background refresh task and asks for the next run
+  /// each time the app moves to the background. Without a shell, as when the App Group container
+  /// is missing, there is nothing to refresh. The Mac has no background refresh task.
+  fileprivate func refreshingInBackground(_ effects: EffectsShell?, scenePhase: ScenePhase) -> some Scene {
+    #if os(iOS)
+    onChange(of: scenePhase) { _, phase in
+      guard effects != nil, phase == .background else { return }
+
+      Task { await BackgroundRefresh.requestNextRun() }
+    }
+    .backgroundTask(.appRefresh(BackgroundRefresh.identifier)) {
+      guard let effects else { return }
+
+      await BackgroundRefresh.perform(with: effects)
+    }
+    #else
+    self
+    #endif
   }
 }

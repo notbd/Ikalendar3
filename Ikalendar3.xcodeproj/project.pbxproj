@@ -157,6 +157,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AC0000000000000000000001 /* Exceptions for "Ikalendar3" folder in "Ikalendar3" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Info-iOS.plist",
+			);
+			target = B10000000000000000000001 /* Ikalendar3 */;
+		};
 		AC0000000000000000000003 /* Exceptions for "Ikalendar3Widgets" folder in "Ikalendar3Widgets" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -174,7 +181,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		AB0000000000000000000001 /* Ikalendar3 */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Ikalendar3; sourceTree = "<group>"; };
+		AB0000000000000000000001 /* Ikalendar3 */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AC0000000000000000000001 /* Exceptions for "Ikalendar3" folder in "Ikalendar3" target */, ); path = Ikalendar3; sourceTree = "<group>"; };
 		AB0000000000000000000002 /* Ikalendar3Tests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Ikalendar3Tests; sourceTree = "<group>"; };
 		AB0000000000000000000003 /* Ikalendar3Widgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AC0000000000000000000003 /* Exceptions for "Ikalendar3Widgets" folder in "Ikalendar3Widgets" target */, ); path = Ikalendar3Widgets; sourceTree = "<group>"; };
 		AB0000000000000000000004 /* Ikalendar3Watch */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Ikalendar3Watch; sourceTree = "<group>"; };
@@ -700,6 +707,7 @@
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_FILE[sdk=iphone*]" = "Ikalendar3/Info-iOS.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphone*]" = YES;
@@ -730,6 +738,7 @@
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_FILE[sdk=iphone*]" = "Ikalendar3/Info-iOS.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphone*]" = YES;

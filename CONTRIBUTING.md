@@ -55,6 +55,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
     --predicate 'subsystem == "io.tianwei.ikalendar3" AND category == "network"'
   ```
 
+- The background refresh task (`BackgroundRefresh` in `IkaIntents`) never runs in the Simulator: the system refuses every request there, which the app logs in the `background` category each time it moves to the background. How often it runs is checked on a device.
 - Debug builds read these launch options; Release builds ignore them. Pass them after `xcrun simctl launch <UDID> io.tianwei.ikalendar3`, after `--args` of `open` on the Mac, or in the scheme's arguments. A launch with a missing or malformed option stops with its reason instead of falling back to the network.
 
   | Option | Effect |
@@ -79,7 +80,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 - `IkaFixtures`: the package's test support module, not a product module: the scripted transport, the settable clock and the `Fixture` loader for that folder. Package tests, Debug fixture launches and previews use it; Release code never calls it, and it holds no fixture file. A temporary directory per test stays a test helper (`makeTestDirectory()`).
 - Every target folder is a synchronized folder: a Swift file or subfolder added inside it is compiled with no project file change. A non-source file there becomes a resource of the target unless the project lists an exception, as it does for the widget extensions' `Info.plist`.
 - Code that more than one target needs goes into a package module, never into two target folders.
-- `IkaCore` imports no SwiftUI, UIKit, AppKit, WidgetKit, ActivityKit or App Intents; a SwiftLint rule fails the run if it does.
+- `IkaCore` imports no SwiftUI, UIKit, AppKit, WidgetKit, ActivityKit, App Intents, UserNotifications or BackgroundTasks; a SwiftLint rule fails the run if it does.
 - `Ikalendar3.xctestplan` must list the app's test target and every package test target, or `xcodebuild` never runs them; verify fails until it does.
 - A resource folder a package target declares must be committed, even if empty (a placeholder file keeps it). Font files are never committed, and no build step may need them.
 - The build copies a package module's resources into every product that links the module, so a package module holds only small resources, such as its string tables (read from its own `Bundle.module`). The fonts and the image catalog live in `IkaResources/`, a framework embedded once in the app and once in the watch app; each widget extension loads its host app's copy through its run path (`@executable_path/../../Frameworks`; on macOS four levels up) and carries none. The verify script fails on any other copy. Each of the four targets calls `BundledResources.load(from: IkaResources.bundle)` once at start: it registers the fonts, points `BundledImage.catalogBundle` at the catalog and logs both locations (OSLog categories `fonts` and `images`). Nothing else registers fonts.
