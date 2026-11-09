@@ -32,7 +32,9 @@ public struct SentenceWriter: Sendable {
   /// A Rotation's sentence: its Battle Mode, Rule, both Stages and time range, plus the time
   /// left while it runs at `instant`.
   ///
-  /// A Rotation lasts hours, so its times carry no day.
+  /// A Rotation lasts hours, so its times carry no day, except that a Rotation not on at
+  /// `instant` that starts on another day reads its start's weekday ("from Tuesday 3:00 AM to
+  /// 5:00 AM"): a spoken answer has no list around it to tell that 3:00 AM is tomorrow's.
   ///
   /// Only Rotations that play reach it: IkaCore builds every Rotation, hands out only those that
   /// play, and reads a pause with `sentence(forPauseOf:returningAt:)` and the Battle Mode's
@@ -42,9 +44,10 @@ public struct SentenceWriter: Sendable {
     sentence(of: rotation.mode.name(in: language), playing: rotation.setting, in: rotation, at: instant)
   }
 
-  /// A Rotation's sentence with no time left: its Battle Mode, Rule, both Stages and time range.
-  /// Widgets read it, because the system draws them ahead of the moment VoiceOver reads them, when
-  /// a time left would be wrong; their countdown is the system's timer text.
+  /// A Rotation's sentence with no time left and no day: its Battle Mode, Rule, both Stages and
+  /// time range. Widgets read it, because the system draws them ahead of the moment VoiceOver reads
+  /// them, when a time left would be wrong; their countdown is the system's timer text, and their
+  /// layout fixes the day.
   public func sentence(for rotation: Rotation) -> String {
     sentence(of: rotation.mode.name(in: language), playing: rotation.setting, in: rotation, at: nil)
   }
@@ -123,7 +126,7 @@ public struct SentenceWriter: Sendable {
   // MARK: Parts
 
   /// The sentence of a Rotation of Battle Mode `mode` over `window`, or of its pause until the
-  /// window ends when `setting` is `nil`. With no `instant`, it reads no time left.
+  /// window ends when `setting` is `nil`. With no `instant`, it reads no time left and no day.
   private func sentence(
     of mode: String,
     playing setting: Rotation.Setting?,
@@ -133,12 +136,14 @@ public struct SentenceWriter: Sendable {
   {
     guard let setting else { return pauseSentence(named: mode, returningAt: window.endTime) }
 
+    let time: Date.FormatStyle = .init().hour().minute()
+    let startsOnAnotherDay = instant.map { !window.isRunning(at: $0) && !isSameDay(window.startTime, $0) } ?? false
     return format(
       "sentence.rotation",
       mode,
       terms.name(of: setting.rule),
       list(setting.stages.map(terms.name(of:))),
-      when(window, at: instant, times: .init().hour().minute()))
+      when(window, at: instant, times: time, startTime: startsOnAnotherDay ? Self.weekdayAndTimeStyle : time))
   }
 
   /// The sentence of a Shift of `kind` over `window`.
@@ -161,11 +166,19 @@ public struct SentenceWriter: Sendable {
   /// A weekday and a time: "Thursday 8:00 AM".
   static private let weekdayAndTimeStyle: Date.FormatStyle = .init().weekday(.wide).hour().minute()
 
-  /// The time range of a window with its times in `style`, plus the time left while it runs at
-  /// `instant`, if one is given.
-  private func when(_ window: some TimeWindow, at instant: Date?, times style: Date.FormatStyle) -> String {
-    let style = localized(style)
-    let range = format("sentence.timeRange", window.startTime.formatted(style), window.endTime.formatted(style))
+  /// The time range of a window with its times in `style`, its start in `startStyle` if one is
+  /// given, plus the time left while it runs at `instant`, if one is given.
+  private func when(
+    _ window: some TimeWindow,
+    at instant: Date?,
+    times style: Date.FormatStyle,
+    startTime startStyle: Date.FormatStyle? = nil)
+    -> String
+  {
+    let range = format(
+      "sentence.timeRange",
+      window.startTime.formatted(localized(startStyle ?? style)),
+      window.endTime.formatted(localized(style)))
     guard let instant, window.isRunning(at: instant) else { return range }
 
     return format("sentence.timeRangeAndTimeLeft", range, timeLeft(window.progress(at: instant)))
@@ -180,6 +193,13 @@ public struct SentenceWriter: Sendable {
   /// Names joined as the text set lists them: "A and B", "A、B".
   private func list(_ names: [String]) -> String {
     names.formatted(.list(type: .and).locale(locale))
+  }
+
+  /// Whether two instants fall on one day in the time zone.
+  private func isSameDay(_ first: Date, _ second: Date) -> Bool {
+    var calendar: Calendar = .init(identifier: .gregorian)
+    calendar.timeZone = timeZone
+    return calendar.isDate(first, inSameDayAs: second)
   }
 
   /// A format style in the text set, time zone and hour cycle.

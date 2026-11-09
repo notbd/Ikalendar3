@@ -50,6 +50,22 @@ struct SentenceWriterTests {
       "X Battle: Splat Zones on Scorch Gorge and Eeltail Alley, from 8:00\u{202F}AM to 10:00\u{202F}AM.")
   }
 
+  /// Council round 5, P1: only a Rotation not on now reads its start's weekday.
+  @Test
+  func `A Rotation on now reads no weekday, even one that started the day before`() throws {
+    let denver = try #require(TimeZone(identifier: "America/Denver"))
+    let rotation: Rotation = .init(
+      mode: .battle(.x),
+      startTime: TestData.instant(hours: 6),
+      endTime: TestData.instant(hours: 8),
+      setting: Self.rotation.setting)
+
+    // 6:00 to 8:00 UTC is 11:00 PM to 1:00 AM in Denver; 7:30 UTC is 12:30 AM the next day.
+    #expect(Self.writer(timeZone: denver).sentence(for: rotation, at: TestData.instant(hours: 7.5)) ==
+      "X Battle: Splat Zones on Scorch Gorge and Eeltail Alley, "
+      + "from 11:00\u{202F}PM to 1:00\u{202F}AM, 30 minutes left.")
+  }
+
   /// Widgets are drawn ahead of the moment VoiceOver reads them, so their sentence carries no
   /// time left; the system's timer text counts down instead.
   @Test
@@ -269,7 +285,8 @@ struct SentenceWriterTests {
       timeZone: #require(TimeZone(identifier: range.timeZone)),
       hourCycle: range.hourCycle)
 
-    let sentence = writer.sentence(for: Self.rotation, at: TestData.instant(hours: 0))
+    // Half an hour before the Rotation, on its day in each time zone here, so no weekday.
+    let sentence = writer.sentence(for: Self.rotation, at: TestData.instant(hours: 15.5))
 
     #expect(sentence.contains(range.range), "\(sentence)")
   }
