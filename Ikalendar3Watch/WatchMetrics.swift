@@ -29,9 +29,6 @@ enum WatchMetrics {
   /// The time left, in the light face.
   static let countdownSize: CGFloat = 13
 
-  /// A Splatfest team's colour where the source lacks its name.
-  static let teamSwatchSize: CGSize = .init(width: 40, height: 12)
-
   /// The white ring around a Mode page's current Rule or Shift Stage.
   static let pageRingSize: CGFloat = 46
   /// A weapon of a Shift on a Mode page or the later list.

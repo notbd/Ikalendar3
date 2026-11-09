@@ -117,10 +117,7 @@ public struct SidebarRowContent: Equatable, Sendable {
         name = ModeLabel.tricolor.text(in: language)
         switch tricolorTurfWar {
           case .running(let running):
-            let stages = running.item.stages.map(terms.name(of:))
-            summary = line(
-              stages.formatted(.list(type: .and).locale(Locale(identifier: language.rawValue))),
-              running.progress)
+            summary = line(writer.list(running.item.stages.map(terms.name(of:))), running.progress)
             progress = running.progress
 
           case .next(let next):

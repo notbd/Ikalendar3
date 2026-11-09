@@ -153,6 +153,26 @@ struct SentenceWriterTests {
       + "from Saturday 5:00\u{202F}PM to Sunday 4:00\u{202F}PM, 18 hours left.")
   }
 
+  /// A Splatfest's sentence leaves the teams out; VoiceOver reads their names after it.
+  @Test(arguments: [
+    (GameLanguage.enUS, "Wizard, Knight, and Ninja"),
+    (.jaJP, "魔法使い、ナイト、忍者"),
+  ])
+  func `A Splatfest's team names read as one list in the text set`(language: GameLanguage, names: String) async throws {
+    let snapshot: Snapshot = try await .schedules(.splatfestSecondHalf)
+    let splatfest = try #require(snapshot.splatfest)
+    var refreshed: TermTable = .init()
+    refreshed.splatfests[splatfest.id] = SplatfestTerms(
+      title: "",
+      teamNames: language == .jaJP ? ["魔法使い", "ナイト", "忍者"] : ["Wizard", "Knight", "Ninja"])
+    let writer: SentenceWriter = .init(
+      terms: GameTerms(language: language, refreshed: refreshed, feed: TermTable()),
+      timeZone: Self.losAngeles,
+      hourCycle: .oneToTwelve)
+
+    #expect(writer.teamNames(of: splatfest) == names)
+  }
+
   /// An event card reads as the event it shows: a Big Run as its Shift.
   @Test
   func `An event reads as the Challenge window, Splatfest or Shift it shows`() async throws {

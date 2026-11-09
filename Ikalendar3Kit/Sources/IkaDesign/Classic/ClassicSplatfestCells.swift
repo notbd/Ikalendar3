@@ -59,9 +59,7 @@ struct ClassicSplatfestCard: View {
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding(.vertical, Scoped.cellPaddingV)
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(time.writer(terms).sentence(for: splatfest, at: now))
-    .accessibilityValue(ClassicTeamList.names(of: splatfest, terms: terms))
+    .splatfestAccessibility(splatfest, writer: time.writer(terms), at: now)
   }
 
   private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
@@ -106,9 +104,9 @@ struct ClassicSplatfestIcon: View {
 
 // MARK: - ClassicTeamList
 
-/// A Splatfest's three teams, each a swatch of its feed colour beside its name, which is drawn in
-/// that colour tinted at run time until it reads at 4.5:1 on Classic's panel. A team colour never
-/// shows without its name, unless the terms lack the names.
+/// A Splatfest's teams, each a swatch of its feed colour beside its name, which is drawn in that
+/// colour tinted at run time until it reads at 4.5:1 on Classic's panel. Only teams whose names
+/// the terms carry are listed (`GameTerms.teams(of:)`), so a team colour never shows alone.
 struct ClassicTeamList: View {
   typealias Scoped = ClassicMetrics.Splatfest
 
@@ -121,33 +119,22 @@ struct ClassicTeamList: View {
   let arrangement: CellArrangement
 
   var body: some View {
-    // The terms may lack the names, so each is looked up by position.
-    let names: [String] = terms.splatfest(splatfest.id).teamNames ?? []
-
     VStack(alignment: .leading, spacing: Scoped.teamSpacingV) {
-      ForEach(splatfest.teamColors.indices, id: \.self) { index in
-        let color: SRGBColor = .init(splatfest.teamColors[index])
+      ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
+        let color: SRGBColor = .init(team.color)
 
         HStack(spacing: ClassicMetrics.Header.tagPaddingH) {
           Circle()
             .fill(Color(color))
             .overlay(Circle().strokeBorder(.primary.opacity(0.25), lineWidth: 1))
             .frame(width: swatchSize, height: swatchSize)
-          if names.indices.contains(index) {
-            Text(verbatim: names[index])
-              .scaledLimitedLine(for: arrangement)
-              .foregroundStyle(Color(color.readableTint(on: Style.classic.panel(in: colorScheme), for: .text)))
-              .ikaFont(.heavy, size: Scoped.teamFontSize, relativeTo: .headline)
-          }
+          Text(verbatim: team.name)
+            .scaledLimitedLine(for: arrangement)
+            .foregroundStyle(Color(color.readableTint(on: Style.classic.panel(in: colorScheme), for: .text)))
+            .ikaFont(.heavy, size: Scoped.teamFontSize, relativeTo: .headline)
         }
       }
     }
-  }
-
-  /// The team names as the text set lists them, which a card's VoiceOver value reads.
-  static func names(of splatfest: Splatfest, terms: GameTerms) -> String {
-    (terms.splatfest(splatfest.id).teamNames ?? [])
-      .formatted(.list(type: .and).locale(Locale(identifier: terms.language.rawValue)))
   }
 }
 

@@ -131,6 +131,12 @@ public struct SentenceWriter: Sendable {
       when(splatfest, at: instant, times: .init().weekday(.wide).month(.wide).day().hour().minute()))
   }
 
+  /// A Splatfest's team names as the text set lists them, those with a name in its terms. A
+  /// Splatfest's sentence leaves them out: VoiceOver reads them after it, as its value.
+  public func teamNames(of splatfest: Splatfest) -> String {
+    list(terms.teams(of: splatfest).map(\.name))
+  }
+
   /// An event card's sentence: the sentence of the Challenge window, Splatfest or Shift it shows.
   public func sentence(for event: EventItem, at instant: Date) -> String {
     switch event {
@@ -266,7 +272,7 @@ public struct SentenceWriter: Sendable {
   }
 
   /// Names joined as the text set lists them: "A and B", "A、B".
-  private func list(_ names: [String]) -> String {
+  public func list(_ names: [String]) -> String {
     names.formatted(.list(type: .and).locale(locale))
   }
 

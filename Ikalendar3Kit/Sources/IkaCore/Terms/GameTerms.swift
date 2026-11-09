@@ -60,6 +60,12 @@ public struct GameTerms: Sendable {
     lookUp(id, in: \.splatfests) ?? SplatfestTerms(title: id.rawValue, teamNames: nil)
   }
 
+  /// A Splatfest's teams with their names, in the feed's order. A team whose name the terms lack
+  /// is left out, so a team's colour never shows without its name.
+  public func teams(of splatfest: Splatfest) -> [SplatfestTeam] {
+    zip(self.splatfest(splatfest.id).teamNames ?? [], splatfest.teamColors).map(SplatfestTeam.init)
+  }
+
   /// The term of the first table that has the id.
   private func lookUp<Kind, Term>(_ id: FeedID<Kind>, in table: KeyPath<TermTable, [FeedID<Kind>: Term]>) -> Term? {
     tables.lazy.compactMap { $0[keyPath: table][id] }.first
@@ -87,4 +93,15 @@ extension FeedCache {
     let refreshed = record(for: .locale(language)).flatMap { try? TermTable(localeFile: $0.body) }
     return GameTerms(language: language, refreshed: refreshed, feed: TermTable())
   }
+}
+
+// MARK: - SplatfestTeam
+
+/// A Splatfest team as every Surface shows it: its name in a text set, with its colour from the
+/// feed.
+public struct SplatfestTeam: Hashable, Sendable {
+  /// The name in the text set.
+  public let name: String
+  /// The colour from the feed.
+  public let color: RGBAColor
 }

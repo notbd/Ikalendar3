@@ -84,7 +84,7 @@ struct InkStageRow: View {
 
 /// A Splatfest's teams, one per line: a swatch of the team's colour from the feed, growing with
 /// the text size, then the team's name in that colour, tinted to read on Ink's panel. Only teams
-/// whose names the terms carry are listed, so a colour never stands alone.
+/// whose names the terms carry are listed (`GameTerms.teams(of:)`), so a colour never stands alone.
 struct InkTeamList: View {
   @Environment(\.colorScheme) private var colorScheme
 
@@ -97,33 +97,23 @@ struct InkTeamList: View {
     let panel: SRGBColor = Style.ink.panel(in: colorScheme)
 
     VStack(alignment: .leading, spacing: InkScreenMetrics.cardSpacing / 2) {
-      ForEach(Array(Self.teams(of: splatfest, terms: terms).enumerated()), id: \.offset) { _, team in
+      ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
+        let color: SRGBColor = .init(team.color)
+
         HStack(spacing: InkScreenMetrics.cardSpacing) {
           SkewedRectangle(slant: InkMetrics.tagSlant)
-            .fill(Color(team.color))
+            .fill(Color(color))
             .frame(
               width: swatchHeight * InkScreenMetrics.teamSwatchSize.width / InkScreenMetrics.teamSwatchSize.height,
               height: swatchHeight)
             .accessibilityHidden(true)
           Text(verbatim: team.name)
             .inkFont(.tag)
-            .foregroundStyle(Color(team.color.readableTint(on: panel, for: .text)))
+            .foregroundStyle(Color(color.readableTint(on: panel, for: .text)))
             .fixedSize(horizontal: false, vertical: true)
         }
       }
     }
-  }
-
-  /// The team names as one list in the terms' language, for VoiceOver.
-  static func names(of splatfest: Splatfest, terms: GameTerms) -> String {
-    teams(of: splatfest, terms: terms)
-      .map(\.name)
-      .formatted(.list(type: .and).locale(Locale(identifier: terms.language.rawValue)))
-  }
-
-  /// Each named team with its colour, in the feed's order.
-  static private func teams(of splatfest: Splatfest, terms: GameTerms) -> [(name: String, color: SRGBColor)] {
-    zip(terms.splatfest(splatfest.id).teamNames ?? [], splatfest.teamColors).map { (name: $0, color: SRGBColor($1)) }
   }
 }
 #endif
