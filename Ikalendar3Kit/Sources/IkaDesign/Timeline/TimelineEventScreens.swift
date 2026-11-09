@@ -18,7 +18,7 @@ import SwiftUI
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store.
 public struct TimelineChallengeScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: ChallengeScreen
   private let terms: GameTerms
@@ -38,8 +38,8 @@ public struct TimelineChallengeScreenView: View {
   }
 
   public var body: some View {
-    let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
-    let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+    let format: TimelineFormat = time.timelineFormat(terms.language)
+    let writer: SentenceWriter = time.writer(terms)
     let name: String = ModeLabel.challenges.text(in: terms.language)
 
     TimelineScheduleList(
@@ -98,7 +98,7 @@ public struct TimelineChallengeScreenView: View {
 /// teams' colours stay on the card beside their names. It receives `IkaCore` values only and
 /// reads no store.
 public struct TimelineSplatfestScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: SplatfestScreen
   private let terms: GameTerms
@@ -119,8 +119,8 @@ public struct TimelineSplatfestScreenView: View {
 
   public var body: some View {
     let entries: [TimelineEntry<TimelineSplatfestItem>] = TimelineEntry.entries(of: screen)
-    let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
-    let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+    let format: TimelineFormat = time.timelineFormat(terms.language)
+    let writer: SentenceWriter = time.writer(terms)
 
     TimelineScheduleList(
       icon: .splatfestBattle,

@@ -22,8 +22,10 @@ import Foundation
 /// While a Splatfest pauses a Battle Mode, the now answer says when the Battle Mode comes back,
 /// as the iPhone tabs do. The next and Rule answers do so from the last Rotation before the
 /// Splatfest on, since the feed publishes the paused windows: a Rotation after the Splatfest
-/// follows that pause sentence, whose weekday tells the Rotation's day; with none published yet,
-/// the pause sentence is the answer.
+/// follows that pause sentence; with none published yet, the pause sentence is the answer.
+///
+/// A Rotation that starts on another day than the question reads its start's weekday, as
+/// `SentenceWriter.sentence(for:at:)` writes it.
 public struct SiriAnswers: Sendable {
   private let snapshot: Snapshot
   private let writer: SentenceWriter
@@ -130,7 +132,7 @@ public struct SiriAnswers: Sendable {
   }
 
   /// The pause sentence, then the sentence of `rotation`, a Rotation after the pause, when there
-  /// is one: the pause's weekday tells the Rotation's day, which its own times leave out.
+  /// is one.
   private func sentence(
     forPauseOf battleMode: BattleMode,
     returningAt returnTime: Date,

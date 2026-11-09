@@ -140,9 +140,11 @@ struct TimelineHeadline<Leading: View, Trailing: View>: View {
 
 // MARK: - TimelineNowTag
 
-/// "Now" in the Mode colour, with the time left counting down on whole seconds.
+/// "Now" in the Mode colour, with the time left counting down on whole seconds beside it, or under
+/// it from the first accessibility text size so the line fits the slot.
 struct TimelineNowTag: View {
   @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   let timeLeft: Duration
   let color: TimelineTint
@@ -150,7 +152,13 @@ struct TimelineNowTag: View {
   let now: Date
 
   var body: some View {
-    HStack(alignment: .firstTextBaseline, spacing: 6) {
+    let layout: AnyLayout =
+      switch CellArrangement(dynamicTypeSize) {
+        case .sideBySide: .init(HStackLayout(alignment: .firstTextBaseline, spacing: 6))
+        case .stacked: .init(VStackLayout(alignment: .leading, spacing: 2))
+      }
+
+    layout {
       Text(verbatim: TimelineText.now.text(in: language))
         .ikaFont(.heavy, size: 13, relativeTo: .footnote)
         .foregroundStyle(Color(color.onPanel(in: colorScheme).foreground))
@@ -168,13 +176,17 @@ struct TimelineNowTag: View {
 // MARK: - TimelineModeTag
 
 /// The mark of a Mode, an event or a kind of Shift: its icon, if any, and its label on a tag in
-/// its colour.
+/// its colour. From the first accessibility text size, a label wider than the slot wraps.
 struct TimelineModeTag: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
   let icon: ModeIcon?
   let label: String
   let colors: ColorPair
 
   var body: some View {
+    let arrangement: CellArrangement = .init(dynamicTypeSize)
+
     HStack(spacing: 4) {
       if let icon {
         // In the tag's text colour: the icon's own colour is the tag's.
@@ -186,13 +198,13 @@ struct TimelineModeTag: View {
       }
       Text(verbatim: label)
         .ikaFont(.heavy, size: 13, relativeTo: .footnote)
-        .lineLimit(1)
+        .lineLimit(arrangement.lineLimit)
     }
     .foregroundStyle(Color(colors.foreground))
     .padding(.horizontal, 7)
     .padding(.vertical, 2)
     .background(Color(colors.background), in: .rect(cornerRadius: TimelineMetrics.pinCornerRadius))
-    .fixedSize()
+    .fixedSize(horizontal: arrangement == .sideBySide, vertical: true)
   }
 }
 

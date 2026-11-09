@@ -12,7 +12,7 @@ import SwiftUI
 
 /// Every text colour Ink's base components draw, with the surface it sits on. Components take
 /// both colours from here, so the pairs the contrast tests check are the pairs on screen. The
-/// Mode-colour tags (Series, Open, "Now!") draw `ModeColor.asFill` instead.
+/// accent tags (Series, Open, "Now!") draw `InkAccent.fill` instead.
 ///
 /// Ink draws on the game's dark materials in light appearance too, until ticket 56 designs its
 /// light look; the appearance is a parameter so that look changes only this type.

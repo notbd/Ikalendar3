@@ -63,6 +63,7 @@ struct SalmonRunTimelineProvider: TimelineProvider {
 
 // MARK: - Previews
 
+#if DEBUG
 #Preview("Small", as: .systemSmall) {
   SalmonRunWidget()
 } timelineProvider: {
@@ -92,3 +93,4 @@ struct SalmonRunTimelineProvider: TimelineProvider {
 } timelineProvider: {
   SalmonRunTimelineProvider { Snapshot() }
 }
+#endif

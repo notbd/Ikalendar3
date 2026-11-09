@@ -20,7 +20,7 @@ import SwiftUI
 /// refresh reaches its list through the `refreshable` action the shared screen sets. A finished
 /// Rotation leaves the axis as the app clock passes its end, and the next one becomes current.
 public struct TimelineBattleScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: BattleScreen
   private let terms: GameTerms
@@ -42,7 +42,7 @@ public struct TimelineBattleScreenView: View {
   public var body: some View {
     let entries: [TimelineEntry<Rotation>] = TimelineEntry.entries(of: screen)
     let color: TimelineTint = .init(ModeColor(screen.mode))
-    let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+    let writer: SentenceWriter = time.writer(terms)
 
     TimelineScheduleList(
       icon: ModeIcon(Mode.battle(screen.mode)),
@@ -61,7 +61,7 @@ public struct TimelineBattleScreenView: View {
     } axis: { arrangement in
       TimelineAxis(
         entries: entries,
-        format: TimelineFormat(language: terms.language, timeZone: timeZone),
+        format: time.timelineFormat(terms.language),
         arrangement: arrangement)
       { entry in
         switch entry {
@@ -113,7 +113,7 @@ public struct TimelineBattleScreenView: View {
     }
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
+  private var format: ScheduleFormat { time.format(terms.language) }
 }
 
 // MARK: - TimelineSalmonRunScreenView
@@ -124,7 +124,7 @@ public struct TimelineBattleScreenView: View {
 /// inline where it falls and marked in its colour. It receives `IkaCore` values only and reads no
 /// store.
 public struct TimelineSalmonRunScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: SalmonRunScreen
   private let terms: GameTerms
@@ -145,8 +145,8 @@ public struct TimelineSalmonRunScreenView: View {
 
   public var body: some View {
     let entries: [TimelineEntry<Shift>] = TimelineEntry.entries(of: screen)
-    let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
-    let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+    let format: TimelineFormat = time.timelineFormat(terms.language)
+    let writer: SentenceWriter = time.writer(terms)
     let name: String = Mode.salmonRun.name(in: terms.language)
 
     TimelineScheduleList(
@@ -183,6 +183,17 @@ public struct TimelineSalmonRunScreenView: View {
     } footer: {
       FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
     }
+  }
+}
+
+// MARK: - TimelineBackground
+
+/// SplatNet 3's dark page, behind every Timeline screen and the Debug event card gallery.
+public struct TimelineBackground: View {
+  public init() { }
+
+  public var body: some View {
+    TimelinePalette.page
   }
 }
 
@@ -228,7 +239,7 @@ struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowVal
         }
         .listReflow(value: reflowValue)
       }
-      .background(TimelinePalette.page)
+      .background(TimelineBackground())
       .environment(\.colorScheme, .dark)
       #if os(iOS)
       .modeStampDock(icon: icon, title: title, dockProgress: $dockProgress)

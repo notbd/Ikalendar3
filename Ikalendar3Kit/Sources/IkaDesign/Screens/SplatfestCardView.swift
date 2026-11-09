@@ -11,12 +11,12 @@ import SwiftUI
 
 // MARK: - SplatfestCardView
 
-/// The plain Splatfest card Ink's and Timeline's stand-in screens share until tickets 30 and 31
-/// draw their own: the art once downloaded, the title, the three teams in their colours with
-/// their names, and the times. It receives `IkaCore` values only and reads no store.
+/// The plain Splatfest card Timeline's stand-in screens show until ticket 31 draws its own: the
+/// art once downloaded, the title, the three teams in their colours with their names, and the
+/// times. It receives `IkaCore` values only and reads no store.
 public struct SplatfestCardView: View {
   @Environment(\.colorScheme) private var colorScheme
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let splatfest: Splatfest
   private let art: URL?
@@ -69,7 +69,7 @@ public struct SplatfestCardView: View {
         }
         .font(.subheadline.weight(.semibold))
       }
-      Text(verbatim: ScheduleFormat(language: terms.language, timeZone: timeZone).dateRange(of: splatfest))
+      Text(verbatim: time.format(terms.language).dateRange(of: splatfest))
         .font(.caption)
         .foregroundStyle(.secondary)
     }
@@ -78,8 +78,7 @@ public struct SplatfestCardView: View {
       artImage = art.flatMap(Image.init(contentsOf:))
     }
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel(SentenceWriter(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-      .sentence(for: splatfest, at: now))
+    .accessibilityLabel(time.writer(terms).sentence(for: splatfest, at: now))
     .accessibilityValue(teamNames.formatted(.list(type: .and).locale(Locale(identifier: terms.language.rawValue))))
   }
 }

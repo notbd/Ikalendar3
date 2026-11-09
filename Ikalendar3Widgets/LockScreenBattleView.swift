@@ -52,7 +52,7 @@ struct LockScreenBattleView: View {
 /// the return time of a pause. VoiceOver reads it as one element: the Rotation's sentence and its
 /// time left, or the pause sentence.
 private struct CircularBattleView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let entry: WidgetEntry<BattleWidgetContent>
   let terms: GameTerms
@@ -71,9 +71,7 @@ private struct CircularBattleView: View {
           Text(timerInterval: rotation.startTime ... rotation.endTime)
 
         case .paused(let returnTime):
-          Text(verbatim: ScheduleFormat(language: terms.language, timeZone: timeZone).time(
-            returnTime,
-            relativeTo: entry.date))
+          Text(verbatim: time.format(terms.language).time(returnTime, relativeTo: entry.date))
 
         case .nothingCurrent:
           EmptyView()
@@ -138,7 +136,7 @@ private struct RectangularBattleView: View {
 /// to its end, or the pause with its return time, after a warning sign while the data is stale.
 /// The system sets the font and draws only the first text and image.
 private struct InlineBattleView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let entry: WidgetEntry<BattleWidgetContent>
   let terms: GameTerms
@@ -169,7 +167,7 @@ private struct InlineBattleView: View {
         return Text("\(rule) \(Text(timerInterval: rotation.startTime ... rotation.endTime))")
 
       case .paused(let returnTime):
-        let format: ScheduleFormat = .init(language: terms.language, timeZone: timeZone)
+        let format = time.format(terms.language)
         return Text(verbatim: ScreenText.paused.text(
           in: terms.language,
           format.time(returnTime, relativeTo: entry.date)))
@@ -185,8 +183,8 @@ private struct InlineBattleView: View {
 extension View {
   /// Makes the view one VoiceOver element for what a Battle Mode has on: the Rotation's sentence
   /// with the system's countdown to its end as the value, so VoiceOver hears the time left when
-  /// it reads, or the pause sentence, or "Nothing on right now". Where `isStale`, the stale mark's
-  /// words follow, for families whose mark sits inside the element.
+  /// it reads, or the pause sentence, or "Nothing on right now" (`WidgetAccessibility`). Where
+  /// `isStale`, the stale mark's words follow, for families whose mark sits inside the element.
   fileprivate func currentAccessibility(
     _ current: WidgetCurrent<Rotation>,
     of mode: BattleMode,
@@ -201,7 +199,7 @@ extension View {
 // MARK: - CurrentAccessibility
 
 private struct CurrentAccessibility: ViewModifier {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let current: WidgetCurrent<Rotation>
   let mode: BattleMode
@@ -209,26 +207,11 @@ private struct CurrentAccessibility: ViewModifier {
   let isStale: Bool
 
   func body(content: Content) -> some View {
-    let element = content
-      .accessibilityElement(children: .ignore)
-      .accessibilityLabel(label)
-    if let rotation = current.item {
-      element.accessibilityValue(Text(timerInterval: rotation.startTime ... rotation.endTime))
-    }
-    else {
-      element
-    }
-  }
-
-  private var label: String {
-    let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-    let sentence =
-      switch current {
-        case .item(let rotation): writer.sentence(for: rotation)
-        case .paused(let returnTime): writer.sentence(forPauseOf: mode, returningAt: returnTime)
-        case .nothingCurrent: ScreenText.nothingCurrent.text(in: terms.language)
-      }
-    return isStale ? "\(sentence) \(WidgetText.stale.text(in: terms.language))" : sentence
+    content.widgetAccessibility(WidgetAccessibility(
+      current,
+      of: mode,
+      writer: time.writer(terms),
+      note: isStale ? WidgetText.stale.text(in: terms.language) : nil))
   }
 }
 #endif

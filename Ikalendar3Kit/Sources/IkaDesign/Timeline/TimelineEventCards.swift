@@ -17,7 +17,7 @@ import SwiftUI
 /// values only and reads no store; the caller sets its width.
 public struct TimelineEventCard: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let item: EventItem
   private let art: URL?
@@ -39,7 +39,7 @@ public struct TimelineEventCard: View {
 
   public var body: some View {
     let arrangement: CellArrangement = .init(dynamicTypeSize)
-    let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
+    let format: TimelineFormat = time.timelineFormat(terms.language)
     let progress: WindowProgress? = item.isRunning(at: now) ? item.progress(at: now) : nil
 
     switch item {
@@ -91,7 +91,7 @@ public struct TimelineEventCard: View {
     }
   }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - TimelineSplatfestCard
@@ -104,7 +104,7 @@ public struct TimelineEventCard: View {
 struct TimelineSplatfestCard: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let splatfest: Splatfest
   /// The stored art file, or `nil` while none is downloaded.
@@ -119,7 +119,7 @@ struct TimelineSplatfestCard: View {
     let texts = terms.splatfest(splatfest.id)
     // Looked up one by one: the source may lack them.
     let teamNames: [String] = texts.teamNames ?? []
-    let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
+    let format: TimelineFormat = time.timelineFormat(terms.language)
 
     TimelineCardPanel(inset: false) {
       VStack(alignment: .leading, spacing: 0) {
@@ -160,7 +160,7 @@ struct TimelineSplatfestCard: View {
       artImage = art.flatMap(Image.init(contentsOf:))
     }
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel(SentenceWriter(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+    .accessibilityLabel(time.writer(terms)
       .sentence(for: splatfest, at: now))
     .accessibilityValue(teamNames.formatted(.list(type: .and).locale(Locale(identifier: terms.language.rawValue))))
   }

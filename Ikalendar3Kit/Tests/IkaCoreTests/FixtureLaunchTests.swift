@@ -7,14 +7,15 @@
 
 import Foundation
 import IkaCore
-import IkaFixtures
 import Testing
+@testable import IkaFixtures
 
 // MARK: - FixtureLaunchTests
 
 /// The Debug fixture launch: which recorded payloads a process runs on, from which instant, and
-/// where they land.
+/// where they land. Serialized: unrebased launches share one temporary folder.
 @MainActor
+@Suite(.serialized)
 final class FixtureLaunchTests {
   /// Stands in for the App Group container's feed folder.
   private let sharedDirectory: URL
@@ -103,6 +104,21 @@ final class FixtureLaunchTests {
     #expect(
       try FileManager.default.contentsOfDirectory(atPath: sharedDirectory.path()).isEmpty,
       "the shared cache is untouched")
+  }
+
+  /// Council round 5, M10: launches leave no folder behind.
+  @Test
+  func `An unrebased fixture launch keeps its cache in one temporary folder, wiped at start`() async throws {
+    let folder: URL = FixtureLaunch.unrebasedCacheDirectory
+    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+    let leftover = folder.appending(path: "leftover")
+    try Data().write(to: leftover)
+
+    let run = try launch(isRebased: false).prepare(sharedCache: FeedCache(directory: sharedDirectory), now: Date())
+    await RefreshEngine(client: run.client, language: .enUS).refresh()
+
+    #expect(!FileManager.default.fileExists(atPath: leftover.path()))
+    #expect(await FeedCache(directory: folder).snapshot().schedules != nil)
   }
 
   @Test

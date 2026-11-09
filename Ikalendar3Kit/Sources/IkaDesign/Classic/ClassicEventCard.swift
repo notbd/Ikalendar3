@@ -23,7 +23,7 @@ public struct ClassicEventCard: View {
 
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   @ScaledMetric(relativeTo: .title3) private var iconSize: CGFloat = Scoped.iconSize
   @ScaledMetric(relativeTo: .body) private var ruleIconSize: CGFloat = Scoped.ruleIconSize
@@ -199,11 +199,9 @@ public struct ClassicEventCard: View {
 
   private var arrangement: CellArrangement { CellArrangement(dynamicTypeSize) }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 
   /// A Classic list cell's colour, so a card reads as one of its cells.
   static private var background: Color {

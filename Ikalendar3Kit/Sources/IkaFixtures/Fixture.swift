@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if DEBUG
 import Foundation
 
 // MARK: - Fixture
@@ -52,3 +53,4 @@ public enum Fixture: String, CaseIterable, Sendable {
     try Data(contentsOf: folder.appending(path: rawValue))
   }
 }
+#endif

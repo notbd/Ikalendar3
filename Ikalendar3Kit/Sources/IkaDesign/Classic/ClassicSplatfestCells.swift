@@ -17,7 +17,7 @@ import SwiftUI
 struct ClassicSplatfestCard: View {
   typealias Scoped = ClassicMetrics.Splatfest
 
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   @ScaledMetric(relativeTo: .title2) private var iconSize: CGFloat = Scoped.iconSize
 
@@ -59,14 +59,11 @@ struct ClassicSplatfestCard: View {
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding(.vertical, Scoped.cellPaddingV)
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel(SentenceWriter(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-      .sentence(for: splatfest, at: now))
+    .accessibilityLabel(time.writer(terms).sentence(for: splatfest, at: now))
     .accessibilityValue(ClassicTeamList.names(of: splatfest, terms: terms))
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 }
 
 // MARK: - ClassicSplatfestArt
@@ -160,7 +157,7 @@ struct ClassicTeamList: View {
 struct ClassicTricolorSection: View {
   typealias Scoped = ClassicMetrics.BattlePrimary
 
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let tricolor: Running<TricolorTurfWar>
   let terms: GameTerms
@@ -207,9 +204,7 @@ struct ClassicTricolorSection: View {
     }
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 }
 
 // MARK: - ClassicProgressBar
@@ -224,7 +219,7 @@ struct ClassicProgressBar: View {
   let now: Date
   let arrangement: CellArrangement
 
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   var body: some View {
     VStack(alignment: .trailing, spacing: ClassicMetrics.Header.progressSpacing) {
@@ -241,9 +236,7 @@ struct ClassicProgressBar: View {
     .frame(maxWidth: .infinity, alignment: .trailing)
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 }
 
 // MARK: - ClassicTimeFormat

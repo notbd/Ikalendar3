@@ -10,7 +10,8 @@ import IkaCore
 // MARK: - InkModeHeading
 
 /// How Ink names a Mode over its list: the Mode's name in the heavy face and, for Anarchy
-/// Battle, its form (Series or Open) on a Mode-colour tag under it, as the game's menu does.
+/// Battle and Splatfest Battle, its form (Series or Open, Open or Pro) on a tag under it, as the
+/// game's menu does. The Challenge and Splatfest screens are headed this way too.
 struct InkModeHeading: Equatable {
   /// The Mode's name.
   let name: ModeLabel
@@ -28,8 +29,21 @@ struct InkModeHeading: Equatable {
     }
   }
 
+  /// The heading of Splatfest Battle in `form`, over the Splatfest screen.
+  init(splatfestBattle form: SplatfestBattleForm) {
+    switch form {
+      case .open: self.init(name: .splatfestBattle, form: .open)
+      case .pro: self.init(name: .splatfestBattle, form: .pro)
+    }
+  }
+
   init(name: ModeLabel, form: ModeLabel?) {
     self.name = name
     self.form = form
   }
+}
+
+extension InkModeHeading {
+  /// The heading over the Challenge screen.
+  static let challenges: Self = .init(name: .challenges, form: nil)
 }
