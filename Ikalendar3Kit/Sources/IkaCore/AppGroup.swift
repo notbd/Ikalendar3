@@ -7,9 +7,9 @@
 
 // MARK: - AppGroup
 
-/// The App Group the app and its widget extension share on iPhone, iPad and Mac. Its container
-/// holds the feed cache and the preferences that every process on the device reads. The watch
-/// has no App Group: it keeps its own container.
+/// The App Group the app and its widget extension share on iPhone, iPad and Mac, and the watch
+/// app and its widget extension share on the watch: one container per device. It holds the feed
+/// cache and the preferences that every process on that device reads.
 public enum AppGroup {
   /// The group's identifier, derived from the bundle identifier `io.tianwei.ikalendar3`. Every
   /// target's entitlements list the same value.

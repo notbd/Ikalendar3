@@ -679,6 +679,7 @@
 		B40000000000000000000004 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Ikalendar3Watch/Ikalendar3Watch.entitlements;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
@@ -698,6 +699,7 @@
 		B50000000000000000000004 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Ikalendar3Watch/Ikalendar3Watch.entitlements;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
@@ -717,6 +719,7 @@
 		B40000000000000000000005 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Ikalendar3WatchWidgets/Ikalendar3WatchWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Ikalendar3WatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
@@ -732,6 +735,7 @@
 		B50000000000000000000005 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Ikalendar3WatchWidgets/Ikalendar3WatchWidgets.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Ikalendar3WatchWidgets/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
