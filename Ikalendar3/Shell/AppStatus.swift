@@ -1,0 +1,24 @@
+//
+//  AppStatus.swift
+//  Ikalendar3
+//
+//  Copyright (c) TIANWEI ZHANG. All rights reserved.
+//
+
+import IkaCore
+import Observation
+
+// MARK: - AppStatus
+
+/// The app's in-session state, which no preference keeps.
+@Observable
+final class AppStatus {
+  /// The place of the selected tab. A place, not a tab, so the selection holds while the
+  /// Splatfest tab takes Regular Battle's place and when it gives it back.
+  var selectedPlace: ModeTab
+
+  /// A status that opens on `selectedPlace`: the default Mode.
+  init(selectedPlace: ModeTab) {
+    self.selectedPlace = selectedPlace
+  }
+}
