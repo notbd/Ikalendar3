@@ -99,7 +99,8 @@ struct TrackingCountdown: View {
 
 /// The item shown as on: a Rotation's Rule and Stages, a pause with when the Battle Mode returns,
 /// or a Shift's Stage and weapons; or that nothing is on. VoiceOver reads it as one element, the
-/// item's sentence.
+/// item's sentence, with the countdown it holds as its value, which the system keeps current as
+/// widgets do; where the countdown sits beside it, VoiceOver reads the countdown on its own.
 struct TrackingCurrentView: View {
   /// How much of the item shows.
   enum Detail {
@@ -144,6 +145,12 @@ struct TrackingCurrentView: View {
     }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(sentence)
+    .accessibilityValue(heldCountdown.map { Text(timerInterval: $0) } ?? Text(verbatim: ""))
+  }
+
+  /// The window of the countdown the view holds: the cards' countdown, while an item is on.
+  private var heldCountdown: ClosedRange<Date>? {
+    detail == .cards ? render.currentWindow : nil
   }
 
   /// The Rule, the pause's return or a Shift's Stage, which a card names instead; a Big Run's
