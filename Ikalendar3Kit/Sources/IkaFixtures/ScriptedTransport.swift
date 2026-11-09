@@ -18,6 +18,8 @@ final public class ScriptedTransport: HTTPTransport {
   private struct State {
     var replies: [URL: Reply] = [:]
     var requests: [URLRequest] = []
+    var isHolding = false
+    var held: [CheckedContinuation<Void, Never>] = []
   }
 
   private let state: Mutex<State> = .init(.init())
@@ -35,11 +37,36 @@ final public class ScriptedTransport: HTTPTransport {
     state.withLock { $0.replies[url] = reply }
   }
 
+  /// Keeps every later request in flight until `release()`: recorded, but not answered, so a
+  /// test can act while it is outstanding. A held request ignores cancellation until released.
+  public func hold() {
+    state.withLock { $0.isHolding = true }
+  }
+
+  /// Answers every held request and stops holding.
+  public func release() {
+    let held = state.withLock { state in
+      state.isHolding = false
+      defer { state.held = [] }
+      return state.held
+    }
+    for request in held {
+      request.resume()
+    }
+  }
+
   @concurrent
   public func send(_ request: URLRequest) async throws -> HTTPResponse {
     let reply = state.withLock { state in
       state.requests.append(request)
       return request.url.flatMap { state.replies[$0] }
+    }
+    await withCheckedContinuation { continuation in
+      let isHeld = state.withLock { state in
+        if state.isHolding { state.held.append(continuation) }
+        return state.isHolding
+      }
+      if !isHeld { continuation.resume() }
     }
 
     switch reply ?? .failure(URLError(.notConnectedToInternet)) {

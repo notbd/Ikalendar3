@@ -31,7 +31,7 @@ public struct Rotation: Hashable, Sendable {
 
 extension Rotation {
   /// What a Rotation plays.
-  public struct Setting: Hashable, Sendable {
+  public struct Setting: Codable, Hashable, Sendable {
     /// The Rule.
     public let rule: RuleID
     /// The two Stages, in the feed's order.
