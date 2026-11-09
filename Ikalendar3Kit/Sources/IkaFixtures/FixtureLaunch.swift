@@ -144,10 +144,16 @@ public struct FixtureRun: Sendable {
 }
 
 extension FixtureLaunch {
+  /// The cache folder of an unrebased launch: one fixed folder in the temporary directory, wiped
+  /// at each launch, so launches leave no folder behind.
+  static let unrebasedCacheDirectory: URL = FileManager.default.temporaryDirectory.appending(
+    path: "ikalendar3-fixture",
+    directoryHint: .isDirectory)
+
   /// Reads the payloads and builds the run.
   ///
-  /// - An unrebased launch keeps the payloads as recorded, in a new temporary folder of its own,
-  ///   and starts its clock at the instant: the shared cache stays untouched.
+  /// - An unrebased launch keeps the payloads as recorded in `unrebasedCacheDirectory`, which it
+  ///   wipes first, and starts its clock at the instant: the shared cache stays untouched.
   /// - A rebased launch moves the payloads by `now` minus the instant and commits them to
   ///   `sharedCache` before anything reads it, then runs on the system's clock.
   ///
@@ -178,7 +184,8 @@ extension FixtureLaunch {
 
     guard isRebased else {
       let clock: RunningClock = .init(startingAt: instant)
-      let directory = FileManager.default.temporaryDirectory.appending(path: "ikalendar3-fixture-\(UUID().uuidString)")
+      let directory: URL = Self.unrebasedCacheDirectory
+      try? FileManager.default.removeItem(at: directory)
       let client: FeedClient = .init(transport: transport, cache: FeedCache(directory: directory), now: { clock.now })
       return FixtureRun(client: client, timeSource: clock)
     }

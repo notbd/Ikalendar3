@@ -42,6 +42,8 @@ struct ClassicBattleSection: View {
   @ViewBuilder private var cell: some View {
     switch row {
       case .current(let running):
+        // Never `nil`: IkaCore hands out only Rotations that play and reads a pause as
+        // `.paused`, so these unwraps only satisfy `Rotation`'s optional `setting`.
         if let setting = running.item.setting {
           ClassicBattlePrimaryCell(
             setting: setting,
