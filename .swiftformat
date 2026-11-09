@@ -1,0 +1,275 @@
+###
+### SwiftFormat Config File for Ikalendar3
+###
+### Following _Airbnb Swift Style Guide_ [https://github.com/airbnb/swift]
+### with some minor personal adjustments.
+###
+### Copyright (c) TIANWEI ZHANG
+###
+
+### Supported SwiftFormat version as of last update: 0.64.5
+
+### FILE OPTIONS
+
+--exclude     \
+  build,      \
+  **/.build,  \
+  .scratch,   \
+  docs,
+
+
+### FORMAT OPTIONS
+
+## swiftVersion
+--swiftversion 6.2
+
+## fileHeader
+--header "\n {file}\n Ikalendar3\n\n Copyright (c) TIANWEI ZHANG. All rights reserved.\n"
+
+# acronyms
+--acronymvisibility public
+
+# blankLinesAtEndOfScope,
+# blankLinesAtStartOfScope
+--typeblanklines remove
+
+# braces
+--allman true # however I turn off rule `braces` most of the time
+
+# contentBuilder
+--contentbuilder implicit
+
+# elseOnSameLine
+--elseposition same-line
+--guardelse next-line
+
+# emptyBraces
+--emptybraces spaced
+
+# extensionAccessControl
+--extensionacl on-declarations
+
+# forWhere
+--forwhere always
+
+# hoistPatternLet
+--patternlet inline
+
+# indent
+--ifdef no-indent
+--indent 2
+--indentcase true
+--indentstrings true
+--tabwidth 2
+--xcodeindentation disabled
+
+# modifierOrder
+--modifierorder nonisolated,static,public,private
+
+# # organizeDeclarations
+# --beforemarks enum,typealias,let,var
+# --enumthreshold 20
+# --organizetypes class,struct,enum,extension,actor
+# --structthreshold 20
+# --organizationmode type
+
+# redundantExtensionACL
+--extensionacl on-declarations
+
+# redundantType
+--propertytypes explicit
+
+# sortImports
+--importgrouping testable-last
+
+# trailingSpace
+--trimwhitespace always
+
+# wrap
+--maxwidth 120
+--wrapternary before-operators
+
+# wrapArguments
+--closingparen same-line
+--wraparguments before-first
+--wrapcollections before-first
+--wrapconditions before-first
+--wrapparameters before-first
+--wrapreturntype if-multiline
+--wraptypealiases before-first
+
+# wrapAttributes
+--funcattributes prev-line
+--typeattributes prev-line
+--varattributes preserve
+
+
+### RULE SWITCHES
+
+## Default Rules (enabled by default)
+
+--rules                                             \
+    andOperator,                                    \
+    anyObjectProtocol,                              \
+    applicationMain,                                \
+#    assertionFailures,                              \
+    blankLineAfterImports,                          \
+    blankLinesAroundMark,                           \
+    blankLinesAtEndOfScope,                         \
+    blankLinesAtStartOfScope,                       \
+    blankLinesBetweenChainedFunctions,              \
+    blankLinesBetweenImports,                       \
+    blankLinesBetweenScopes,                        \
+#    braces,                                         \ # sometimes prefer Allman over K&R
+    conditionalAssignment,                          \
+    consecutiveBlankLines,                          \
+    consecutiveSpaces,                              \
+    consistentSwitchCaseSpacing,                    \
+    contentBuilder,                                 \ # successor of redundantViewBuilder
+    docComments,                                    \
+    docCommentsBeforeModifiers,                     \
+    duplicateImports,                               \
+    elseOnSameLine,                                 \
+    emptyBraces,                                    \
+    enumNamespaces,                                 \
+#    environmentEntry,                               \
+    extensionAccessControl,                         \
+#    extensionAttributes,                            \ # keep attributes on the members they apply to
+    fileHeader,                                     \
+    fileMacro,                                      \
+    genericExtensions,                              \
+    headerFileName,                                 \
+    hoistAwait,                                     \
+    hoistPatternLet,                                \
+    hoistTry,                                       \
+    indent,                                         \
+#    initCoderUnavailable,                           \
+    leadingDelimiters,                              \
+    linebreakAtEndOfFile,                           \
+    linebreaks,                                     \
+    modifierOrder,                                  \
+    modifiersOnSameLine,                            \
+    nestedIf,                                       \
+    noForceTryInTests,                              \
+    noForceUnwrapInTests,                           \
+    numberFormatting,                               \
+    opaqueGenericParameters,                        \
+#    preferForLoop,                                  \
+#    preferKeyPath,                                  \
+    redundantAsync,                                 \
+    redundantBackticks,                             \
+    redundantBreak,                                 \
+    redundantClosure,                               \
+    redundantEmptyView,                             \
+    redundantEnumerated,                            \
+#    redundantEquatable,                             \
+    redundantExtensionACL,                          \
+    redundantFileprivate,                           \
+    redundantGet,                                   \
+    redundantInit,                                  \
+    redundantInternal,                              \
+    redundantLet,                                   \
+    redundantLetError,                              \
+    redundantMemberwiseInit,                        \
+    redundantNilInit,                               \
+    redundantObjc,                                  \
+    redundantOptionalBinding,                       \
+    redundantParens,                                \
+    redundantPattern,                               \
+    redundantPublic,                                \
+    redundantRawValues,                             \
+    redundantReturn,                                \
+    redundantSelf,                                  \
+    redundantStaticSelf,                            \
+    redundantSwiftTestingSuite,                     \
+    redundantSwiftUIGroup,                          \
+    redundantThrows,                                \
+    redundantType,                                  \
+    redundantTypedThrows,                           \
+    redundantVariable,                              \
+    redundantVoidReturnType,                        \
+#    repeatedGuard,                                  \ # keep one guard per precondition
+    semicolons,                                     \
+    simplifyGenericConstraints,                     \
+    sortDeclarations,                               \
+    sortImports,                                    \
+    sortTypealiases,                                \
+    spaceAroundBraces,                              \
+    spaceAroundBrackets,                            \
+    spaceAroundComments,                            \
+    spaceAroundGenerics,                            \
+    spaceAroundOperators,                           \
+    spaceAroundParens,                              \
+    spaceInsideBraces,                              \
+    spaceInsideBrackets,                            \
+    spaceInsideComments,                            \
+    spaceInsideGenerics,                            \
+    spaceInsideParens,                              \
+    strongOutlets,                                  \
+    strongifiedSelf,                                \
+    swiftTestingTestCaseNames,                      \
+    todos,                                          \
+    trailingClosures,                               \
+    trailingCommas,                                 \
+    trailingSpace,                                  \
+    typeSugar,                                      \
+    unusedArguments,                                \
+    void,                                           \
+    wrap,                                           \
+    wrapArguments,                                  \
+    wrapAttributes,                                 \
+#    wrapFunctionBodies,                             \ # prefer keeping trivial one-line bodies inline
+#    wrapIfExpressionBodies,                         \
+#    wrapIfStatementBodies,                          \
+#    wrapLoopBodies,                                 \
+    wrapMultilineStatementBraces,                   \
+#    wrapPropertyBodies,                             \ # prefer keeping trivial one-line bodies inline
+    wrapSingleLineComments,                         \
+    yodaConditions,
+
+## Opt-in Rules (disabled by default)
+--rules                                             \
+    acronyms,                                       \
+    blankLineAfterSwitchCase,                       \
+    blankLinesAfterGuardStatements,                 \
+    blockComments,                                  \
+    commonTypos,                                    \
+    emptyExtensions,                                \
+    forWhere,                                       \
+#    ifExpressions,                                  \ # prefer ternaries, wrapped with --wrapternary
+    isEmpty,                                        \
+    markTypes,                                      \
+#    noExplicitOwnership,                            \
+    noGuardInTests,                                 \
+#    organizeDeclarations,                           \
+    preferContains,                                 \
+    preferCountWhere,                               \
+#    preferExplicitFalse,                            \ # prefer `!` prefix negation
+    preferFinalClasses,                             \
+    preferFirstWhere,                               \
+    preferFlatMap,                                  \
+    preferLazyMap,                                  \
+    preferMinOverSorted,                            \
+    preferStructSwiftTestingSuites,                 \
+    preferSwiftStringAPI,                           \
+#    preferSwiftTesting,                             \
+    privateSwiftUIDynamicProperties,                \ # successor of privateStateVariables
+    propertyTypes,                                  \
+#    redundantExtendedLifetime,                      \ # withExtendedLifetime in tests can be deliberate
+#    redundantOverload,                              \ # changes API shape (overloads -> default arguments)
+    redundantSendable,                              \
+#    singlePropertyPerLine,                          \
+#    sortSwitchCases,                                \
+    testSuiteAccessControl,                         \
+#    unusedPrivateDeclarations,                      \
+#    urlMacro,                                       \
+    validateTestCases,                              \
+#    wrapCaseBodies,                                 \ # successor of wrapConditionalBodies (kept off)
+#    wrapClosureBodies,                              \ # prefer keeping trivial one-line bodies inline
+#    wrapDoBodies,                                   \ # prefer keeping trivial one-line bodies inline
+    wrapEnumCases,                                  \
+#    wrapGuardStatementBodies,                       \ # successor of wrapConditionalBodies (kept off)
+    wrapMultilineConditionalAssignment,             \
+    wrapMultilineFunctionChains,                    \
+#    wrapSingleLineStrings,                          \ # keep long string literals on one line
+    wrapSwitchCases,
