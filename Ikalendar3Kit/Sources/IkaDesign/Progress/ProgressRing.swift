@@ -9,28 +9,23 @@ import SwiftUI
 
 // MARK: - ProgressRing
 
-/// A progress ring drawn like the Apple Watch activity rings, from `ProgressRingGeometry`: a dim
-/// full track, then an arc with round caps from twelve o'clock clockwise, deepening into `color`
-/// along the arc, and a head cap with a soft shadow at its end. It fills the square it is offered.
+/// A progress ring drawn like the Apple Watch activity rings (`ProgressRingGeometry`), in one
+/// colour, inside the frame it is offered. The watch's Now rows draw it around the Mode icon; the
+/// wide detail's current row draws it beside the time left.
 ///
-/// VoiceOver reads it as the time left, never as a percentage.
+/// VoiceOver reads it as the time left, never as a percentage. A row that is one VoiceOver
+/// element reads its own sentence instead.
 public struct ProgressRing: View {
-  /// How dim the track is.
-  static private let trackOpacity: Double = 0.25
-  /// How much black the arc's tail mixes in, so the arc deepens towards its head.
-  static private let tailDarkening: Double = 0.3
-
   private let geometry: ProgressRingGeometry
   private let color: Color
   private let lineWidth: CGFloat
-  private let timeLeft: String
+  private let timeLeft: String?
 
-  /// - Parameters:
-  ///   - share: The share of the window passed.
-  ///   - color: The ring's colour, usually the Mode's.
-  ///   - lineWidth: The stroke's width.
-  ///   - timeLeft: What VoiceOver reads, as `SentenceWriter.timeLeft(_:)` writes it.
-  public init(share: Double, color: Color, lineWidth: CGFloat, timeLeft: String) {
+  /// A ring with `share` of it drawn in `color`, its stroke `lineWidth` wide.
+  ///
+  /// - Parameter timeLeft: What VoiceOver reads, as `SentenceWriter.timeLeft(_:)` writes it, or
+  ///   `nil` while nothing runs, which hides the ring from VoiceOver.
+  public init(share: Double, color: Color, lineWidth: CGFloat, timeLeft: String?) {
     geometry = ProgressRingGeometry(share: share)
     self.color = color
     self.lineWidth = lineWidth
@@ -38,49 +33,47 @@ public struct ProgressRing: View {
   }
 
   public var body: some View {
-    GeometryReader { proxy in
-      let rect: CGRect = .init(origin: .zero, size: proxy.size)
-      let inset: CGFloat = lineWidth / 2
+    let circle = Circle().inset(by: lineWidth / 2)
 
-      ZStack {
-        Circle()
-          .inset(by: inset)
-          .stroke(color.opacity(Self.trackOpacity), lineWidth: lineWidth)
-        Circle()
-          .inset(by: inset)
-          .trim(from: 0, to: geometry.trimEnd)
-          .rotation(ProgressRingGeometry.startAngle)
-          .stroke(
-            AngularGradient(
-              colors: [color.mix(with: .black, by: Self.tailDarkening), color],
-              center: .center,
-              startAngle: ProgressRingGeometry.startAngle,
-              endAngle: geometry.endAngle),
-            style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-        if geometry.showsHead {
-          // Over the gradient's seam at twelve o'clock, as the activity rings draw their head.
+    ZStack {
+      circle
+        .stroke(color.opacity(0.25), lineWidth: lineWidth)
+      circle
+        .trim(from: 0, to: geometry.trimEnd)
+        .rotation(ProgressRingGeometry.startAngle)
+        .stroke(
+          AngularGradient(
+            colors: [color.opacity(0.75), color],
+            center: .center,
+            startAngle: ProgressRingGeometry.startAngle,
+            endAngle: geometry.endAngle),
+          style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+      if geometry.showsHead {
+        // The arc's round end cap would take the gradient's start colour where it wraps around;
+        // the head covers it in the end colour.
+        GeometryReader { proxy in
           Circle()
             .fill(color)
             .frame(width: lineWidth, height: lineWidth)
-            .shadow(color: .black.opacity(0.35), radius: lineWidth / 4)
-            .position(geometry.headCenter(in: rect, lineWidth: lineWidth))
+            .position(geometry.headCenter(in: CGRect(origin: .zero, size: proxy.size), lineWidth: lineWidth))
         }
       }
     }
-    .aspectRatio(1, contentMode: .fit)
     .accessibilityElement()
-    .accessibilityLabel(Text(verbatim: timeLeft))
+    .accessibilityLabel(Text(verbatim: timeLeft ?? ""))
+    .accessibilityHidden(timeLeft == nil)
   }
 }
 
 // MARK: - Previews
 
 #Preview("Progress rings") {
-  HStack {
-    ForEach([0, 0.25, 0.7, 1] as [Double], id: \.self) { share in
-      ProgressRing(share: share, color: .orange, lineWidth: 10, timeLeft: "")
-        .frame(width: 64)
+  HStack(spacing: 12) {
+    ForEach([0, 0.05, 0.4, 0.75, 1], id: \.self) { share in
+      ProgressRing(share: share, color: Color(ModeColor.xBattle.base), lineWidth: 5, timeLeft: nil)
+        .frame(width: 40, height: 40)
     }
   }
   .padding()
+  .background(.black)
 }

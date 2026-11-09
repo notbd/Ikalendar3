@@ -10,26 +10,26 @@ import IkaCore
 import SwiftUI
 
 extension View {
-  /// Hangs the Mode stamp at the top-trailing corner of this scroll view and docks it into a
+  /// Hangs the Mode stamp, on a splat in `accent`, at the top-trailing corner of this scroll view and docks it into a
   /// glass badge in the navigation bar as the list scrolls, with ticket 12's stamp math: the
   /// stamp shrinks toward its corner and fades while the badge fades in, or only cross-fades under
   /// Reduce Motion. The bar's title, `title` in Ink's heavy face, fades in with the badge, since
   /// the heading in the list names the Mode at rest.
-  func inkModeStamp(icon: ModeIcon, modeColor: ModeColor, title: String) -> some View {
-    modifier(InkModeStampDock(icon: icon, modeColor: modeColor, title: title))
+  func inkModeStamp(icon: ModeIcon, accent: InkAccent, title: String) -> some View {
+    modifier(InkModeStampDock(icon: icon, accent: accent, title: title))
   }
 }
 
 // MARK: - InkModeStampDock
 
-/// The scroll tracking behind `inkModeStamp(icon:modeColor:title:)`, as ikalendar 2's tab view
+/// The scroll tracking behind `inkModeStamp(icon:accent:title:)`, as ikalendar 2's tab view
 /// tracks it.
 private struct InkModeStampDock: ViewModifier {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.colorScheme) private var colorScheme
 
   let icon: ModeIcon
-  let modeColor: ModeColor
+  let accent: InkAccent
   let title: String
 
   /// The share of the dock travel scrolled. The dock follows the finger with no easing, as the
@@ -61,7 +61,7 @@ private struct InkModeStampDock: ViewModifier {
       .overlay(alignment: .topTrailing) {
         InkModeStamp(
           icon: icon,
-          modeColor: modeColor,
+          accent: accent,
           style: ModeStampMath.dockStyle(progress: dockProgress, reduceMotion: reduceMotion))
           // While a refresh runs, the spinner's height is added to the safe area this overlay
           // hangs from, so the stamp is lifted by it to stay put.
@@ -92,11 +92,11 @@ private struct InkModeStampDock: ViewModifier {
 
 // MARK: - InkModeStamp
 
-/// The Mode's icon, turned, on a splat of the Mode's colour: decoration, since the heading names
+/// The Mode's icon, turned, on a splat in the screen's accent: decoration, since the heading names
 /// the Mode. The splat is a placeholder until ticket 51 draws the artwork.
 private struct InkModeStamp: View {
   let icon: ModeIcon
-  let modeColor: ModeColor
+  let accent: InkAccent
   let style: ModeStampMath.DockStyle
 
   var body: some View {
@@ -105,7 +105,7 @@ private struct InkModeStamp: View {
         .fill(InkDecoration.splatShadow)
         .offset(x: 4, y: 6)
       InkSplatPlaceholder()
-        .fill(Color(modeColor.base))
+        .fill(Color(accent.base))
       ZStack {
         // A black outline, so an icon in the splat's own colour (Salmon Run's) still stands out.
         ForEach(Self.outlineOffsets, id: \.self) { offset in

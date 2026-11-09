@@ -25,7 +25,8 @@ struct InkBattlePanel: View {
   /// The Rotation's Rule and Stages; a lineup's Rotations always play.
   let setting: Rotation.Setting
   let terms: GameTerms
-  let modeColor: ModeColor
+  /// The Battle Mode's colour, or white for Splatfest Battle.
+  let accent: InkAccent
   let timeRange: String
   /// Writes the featured panel's countdown.
   let writer: SentenceWriter
@@ -39,7 +40,7 @@ struct InkBattlePanel: View {
   var body: some View {
     VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
       InkPanelHeader(timeRange: timeRange, arrangement: metrics.arrangement) {
-        InkStateTag(place: entry.place, modeColor: modeColor)
+        InkStateTag(place: entry.place, accent: accent)
       }
       if let progress = entry.place.progress {
         primary(progress: progress)
@@ -68,7 +69,7 @@ struct InkBattlePanel: View {
       InkProgressBar(
         progress: progress,
         countdown: writer.countdown(progress),
-        modeColor: modeColor,
+        accent: accent,
         arrangement: metrics.arrangement)
     }
   }
@@ -119,11 +120,11 @@ struct InkBattlePanel: View {
       .scaledToFit()
   }
 
-  /// The Rule's name in the Mode's colour, tinted to stay readable on the panel.
+  /// The Rule's name in the accent, tinted to stay readable on the panel.
   private func ruleText(style: InkTextStyle) -> some View {
     Text(verbatim: terms.name(of: setting.rule))
       .inkFont(style)
-      .foregroundStyle(Color(modeColor.onPanel(of: .ink, in: colorScheme, for: .text).foreground))
+      .foregroundStyle(Color(accent.onPanel(in: colorScheme).foreground))
       .scaledLimitedLine(for: metrics.arrangement)
   }
 

@@ -10,6 +10,9 @@ import IkaCore
 import IkaDesign
 import IkaIntents
 import SwiftUI
+#if DEBUG
+import IkaFixtures
+#endif
 
 // MARK: - AppServices
 
@@ -69,7 +72,7 @@ extension AppServices {
     guard let storage else { return nil }
 
     #if DEBUG
-    if let run = DebugLaunch.fixtureRun(sharedCache: FeedCache(directory: storage.feedDirectory)) {
+    if let run = FixtureLaunch.run(sharedCache: FeedCache(directory: storage.feedDirectory)) {
       return AppServices(client: run.client, timeSource: run.timeSource, defaults: storage.defaults)
     }
     #endif

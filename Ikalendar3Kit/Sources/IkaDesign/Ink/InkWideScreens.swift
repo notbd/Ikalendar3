@@ -45,19 +45,21 @@ public struct InkWideBattleScreenView: View {
       current: screen.current,
       next: screen.next,
       later: screen.later)
-    let modeColor: ModeColor = .init(screen.mode)
+    let mode: Mode = .battle(screen.mode)
+    let accent: InkAccent = .init(ModeColor(mode))
 
     InkScheduleList(
-      mode: .battle(screen.mode),
+      heading: InkModeHeading(mode),
+      icon: ModeIcon(mode),
+      accent: accent,
       title: screen.mode.name(in: terms.language),
-      entryIDs: entries.map(\.id),
+      reflowValue: entries.map(\.id),
       fetchTime: screen.fetchTime,
       now: now,
       isStale: isStale)
     { _ in
       if let card = screen.announcedSplatfest {
-        SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .ink, now: now)
-          .inkPanel()
+        InkEventCard(item: .splatfest(card.splatfest), art: card.art, terms: terms, now: now)
       }
       switch screen.current {
         case .running:
@@ -72,11 +74,11 @@ public struct InkWideBattleScreenView: View {
         if let setting = entry.item.setting, let progress = entry.place.progress {
           InkWideRow {
             InkWideTags(timeRange: format.timeRange(of: entry.item)) {
-              InkStateTag(place: entry.place, modeColor: modeColor)
+              InkStateTag(place: entry.place, accent: accent)
             }
-            InkWideRule(rule: setting.rule, modeColor: modeColor, style: .headline, terms: terms)
+            InkWideRule(rule: setting.rule, accent: accent, style: .headline, terms: terms)
               .frame(height: wide.half.length(InkScreenMetrics.ruleIconHeight))
-            InkWideProgress(progress: progress, modeColor: modeColor, writer: writer, wide: wide)
+            InkWideProgress(progress: progress, accent: accent, writer: writer, wide: wide)
           } trailing: {
             HStack(alignment: .top, spacing: InkScreenMetrics.cardSpacing) {
               ForEach(Array(setting.stages.enumerated()), id: \.offset) { _, stage in
@@ -93,10 +95,10 @@ public struct InkWideBattleScreenView: View {
         if let setting = entry.item.setting {
           WideTableColumns(wide: wide, spacing: InkScreenMetrics.cardSpacing) {
             InkWideTags(timeRange: format.timeRange(of: entry.item)) {
-              InkStateTag(place: entry.place, modeColor: modeColor)
+              InkStateTag(place: entry.place, accent: accent)
             }
           } middle: {
-            InkWideRule(rule: setting.rule, modeColor: modeColor, style: .label, terms: terms)
+            InkWideRule(rule: setting.rule, accent: accent, style: .label, terms: terms)
               .frame(height: wide.half.length(.tableRuleIconHeight))
           } trailing: {
             ForEach(Array(setting.stages.enumerated()), id: \.offset) { _, stage in
@@ -159,9 +161,11 @@ public struct InkWideSalmonRunScreenView: View {
       later: screen.later)
 
     InkScheduleList(
-      mode: .salmonRun,
+      heading: InkModeHeading(.salmonRun),
+      icon: .salmonRun,
+      accent: InkAccent(.salmonRun),
       title: Mode.salmonRun.name(in: terms.language),
-      entryIDs: entries.map(\.id),
+      reflowValue: entries.map(\.id),
       fetchTime: screen.fetchTime,
       now: now,
       isStale: isStale)
@@ -187,7 +191,7 @@ public struct InkWideSalmonRunScreenView: View {
           InkStageCard(stage: shift.stage, name: Text(verbatim: terms.name(of: shift.stage)), imageSize: .medium)
             .frame(width: wide.half.length(.tableThumbnailWidth))
         } trailing: {
-          InkWeaponPlates(weapons: shift.weapons, terms: terms, columns: shift.weapons.count)
+          InkWeapons(weapons: shift.weapons, terms: terms, columns: shift.weapons.count)
             .frame(width: wide.half.length(.tableWeaponSize) * CGFloat(shift.weapons.count))
         }
         .accessibilityElement(children: .ignore)
@@ -203,11 +207,11 @@ public struct InkWideSalmonRunScreenView: View {
       if let kingSalmonid = shift.kingSalmonid {
         InkKingSalmonidRow(kingSalmonid: kingSalmonid, terms: terms, arrangement: .sideBySide)
       }
-      InkWideProgress(progress: progress, modeColor: ModeColor(shift.kind), writer: writer, wide: wide)
+      InkWideProgress(progress: progress, accent: InkAccent(ModeColor(shift.kind)), writer: writer, wide: wide)
     } trailing: {
       HStack(alignment: .top, spacing: InkScreenMetrics.cardSpacing) {
         InkStageCard(stage: shift.stage, name: Text(verbatim: terms.name(of: shift.stage)), imageSize: .large)
-        InkWeaponPlates(weapons: shift.weapons, terms: terms, columns: 2)
+        InkWeapons(weapons: shift.weapons, terms: terms, columns: 2)
           .frame(width: wide.half.length(InkScreenMetrics.weaponsWidth))
       }
     }
@@ -218,13 +222,13 @@ public struct InkWideSalmonRunScreenView: View {
 
   /// A Shift's kind and state tags, and its time range with the weekday.
   private func tags(of entry: InkPanelEntry<Shift>) -> some View {
-    let modeColor: ModeColor = .init(entry.item.kind)
+    let accent: InkAccent = .init(ModeColor(entry.item.kind))
 
     return InkWideTags(timeRange: format.timeRange(of: entry.item, withWeekday: true)) {
       if let label = entry.item.kind.label {
-        InkModeTag(Text(verbatim: label.text(in: language)), modeColor: modeColor)
+        InkModeTag(Text(verbatim: label.text(in: language)), accent: accent)
       }
-      InkStateTag(place: entry.place, modeColor: modeColor)
+      InkStateTag(place: entry.place, accent: accent)
     }
   }
 
@@ -293,13 +297,13 @@ private struct InkWideTags<Tags: View>: View {
 
 // MARK: - InkWideRule
 
-/// A Rule's icon and name in the Mode's colour, tinted to stay readable on the panel; the icon
+/// A Rule's icon and name in the accent, tinted to stay readable on the panel; the icon
 /// takes the row's height.
 private struct InkWideRule: View {
   @Environment(\.colorScheme) private var colorScheme
 
   let rule: RuleID
-  let modeColor: ModeColor
+  let accent: InkAccent
   let style: InkTextStyle
   let terms: GameTerms
 
@@ -310,7 +314,7 @@ private struct InkWideRule: View {
         .scaledToFit()
       Text(verbatim: terms.name(of: rule))
         .inkFont(style)
-        .foregroundStyle(Color(modeColor.onPanel(of: .ink, in: colorScheme, for: .text).foreground))
+        .foregroundStyle(Color(accent.onPanel(in: colorScheme).foreground))
         .scaledLimitedLine(for: .sideBySide)
     }
   }
@@ -318,7 +322,7 @@ private struct InkWideRule: View {
 
 // MARK: - InkWideProgress
 
-/// The wide current row's progress ring in the Mode's colour, with the countdown beside it,
+/// The wide current row's progress ring in the accent, with the countdown beside it,
 /// ticking on whole seconds.
 private struct InkWideProgress: View {
   @Environment(\.colorScheme) private var colorScheme
@@ -327,7 +331,7 @@ private struct InkWideProgress: View {
   static private let lineWidthShare: CGFloat = 0.2
 
   let progress: WindowProgress
-  let modeColor: ModeColor
+  let accent: InkAccent
   let writer: SentenceWriter
   let wide: WideDetailMetrics
 
@@ -338,7 +342,7 @@ private struct InkWideProgress: View {
     HStack(spacing: InkScreenMetrics.panelRowSpacing) {
       ProgressRing(
         share: progress.sharePassed,
-        color: Color(modeColor.base),
+        color: Color(accent.base),
         lineWidth: side * Self.lineWidthShare,
         timeLeft: writer.timeLeft(progress))
         .frame(width: side, height: side)
