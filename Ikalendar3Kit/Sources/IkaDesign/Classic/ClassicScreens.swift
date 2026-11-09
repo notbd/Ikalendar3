@@ -41,7 +41,7 @@ public struct ClassicBattleScreenView: View {
     let rows: [ClassicBattleRow] = ClassicBattleRow.rows(of: screen)
 
     ClassicScheduleList(
-      icon: ModeIcon(.battle(screen.mode)),
+      icon: ModeIcon(Mode.battle(screen.mode)),
       reflowValue: rows.map(\.id))
     { metrics in
       ForEach(rows) { row in
