@@ -33,7 +33,7 @@ extension ScheduleFeed {
   }
 
   /// The Splatfest running at `instant`, if any.
-  private func runningSplatfest(at instant: Date) -> Splatfest? {
+  func runningSplatfest(at instant: Date) -> Splatfest? {
     guard let splatfest = currentSplatfest?.splatfest, splatfest.isRunning(at: instant) else { return nil }
 
     return splatfest
