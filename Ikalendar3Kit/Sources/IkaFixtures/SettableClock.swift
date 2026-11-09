@@ -15,17 +15,25 @@ import Synchronization
 /// Debug fixture launch. Hand it to `AppClock` as its time source, or `{ clock.now }` to whatever
 /// reads only the current instant, then move it by setting `now`.
 ///
-/// Setting `now` also ends the pending sleep, early or late as the setter chooses, the way a
-/// system timer can.
+/// Setting `now` ends every pending sleep, early or late as the setter chooses, the way a system
+/// timer can. Any number of sleepers may wait on one clock, as two `AppClock`s on one fake do.
 final public class SettableClock: TimeSource {
   private let state: Mutex<State>
 
   private struct State {
     var now: Date
-    /// The pending sleep and its deadline.
-    var sleep: (deadline: Date, continuation: CheckedContinuation<Void, any Error>)?
-    /// A caller waiting in `pendingSleep()`.
-    var waiter: Waiter?
+    /// The pending sleeps, in the order they began.
+    var sleeps: [Sleep] = []
+    /// Callers waiting in `pendingSleep()`, in the order they began.
+    var waiters: [Waiter] = []
+  }
+
+  private struct Sleep {
+    let id: UUID
+    let deadline: Date
+    let continuation: CheckedContinuation<Void, any Error>
+    /// Whether `pendingSleep()` has returned this sleep.
+    var isReported = false
   }
 
   /// A caller of `pendingSleep()`, waiting for a sleep's deadline.
@@ -36,25 +44,30 @@ final public class SettableClock: TimeSource {
     state = .init(State(now: now))
   }
 
-  /// The instant the clock shows. Setting it ends the pending sleep.
+  /// The instant the clock shows. Setting it ends every pending sleep.
   public var now: Date {
     get { state.withLock { $0.now } }
     set {
-      let sleep = state.withLock { state in
+      let sleeps = state.withLock { state in
         state.now = newValue
-        return state.sleep.take()
+        let sleeps = state.sleeps
+        state.sleeps.removeAll()
+        return sleeps
       }
-      sleep?.continuation.resume()
+      for sleep in sleeps {
+        sleep.continuation.resume()
+      }
     }
   }
 
   /// Whether a sleep is pending.
-  public var isSleeping: Bool { state.withLock { $0.sleep != nil } }
+  public var isSleeping: Bool { state.withLock { !$0.sleeps.isEmpty } }
 
   /// Returns at once when the clock already shows `deadline` or later; otherwise waits until
   /// `now` is next set, whatever it is set to, or throws `CancellationError` once the calling
   /// task is cancelled.
   public func sleep(until deadline: Date) async throws {
+    let id: UUID = .init()
     try await withTaskCancellationHandler {
       try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
         let outcome = state.withLock { state -> (result: Result<Void, any Error>?, waiter: Waiter?) in
@@ -63,8 +76,9 @@ final public class SettableClock: TimeSource {
           guard !Task.isCancelled else { return (.failure(CancellationError()), nil) }
           guard state.now < deadline else { return (.success(()), nil) }
 
-          state.sleep = (deadline, continuation)
-          return (nil, state.waiter.take())
+          let waiter = state.waiters.isEmpty ? nil : state.waiters.removeFirst()
+          state.sleeps.append(Sleep(id: id, deadline: deadline, continuation: continuation, isReported: waiter != nil))
+          return (nil, waiter)
         }
         if let result = outcome.result {
           continuation.resume(with: result)
@@ -72,19 +86,25 @@ final public class SettableClock: TimeSource {
         outcome.waiter?.resume(returning: deadline)
       }
     } onCancel: {
-      let sleep = state.withLock { $0.sleep.take() }
+      let sleep = state.withLock { state in
+        state.sleeps.firstIndex { $0.id == id }.map { state.sleeps.remove(at: $0) }
+      }
       sleep?.continuation.resume(throwing: CancellationError())
     }
   }
 
-  /// Waits until a sleep is pending and returns its deadline. A sleep that setting `now` ended is
-  /// never returned again.
+  /// Waits until a sleep is pending that this method has not returned yet, and returns its
+  /// deadline. Each sleep is returned once, in the order the sleeps began; one that setting `now`
+  /// ended is never returned.
   public func pendingSleep() async -> Date {
     await withCheckedContinuation { (waiter: Waiter) in
       let deadline = state.withLock { state -> Date? in
-        if let sleep = state.sleep { return sleep.deadline }
+        if let index = state.sleeps.firstIndex(where: { !$0.isReported }) {
+          state.sleeps[index].isReported = true
+          return state.sleeps[index].deadline
+        }
 
-        state.waiter = waiter
+        state.waiters.append(waiter)
         return nil
       }
       if let deadline {
