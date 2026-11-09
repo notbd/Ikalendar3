@@ -224,7 +224,7 @@ final class RefreshGateTests {
       lease: FeedClient.resourceTimeout,
       now: { [clock] in clock.now })
     for feed in [Feed.schedules, .festivals, .locale(.enUS)] {
-      _ = stopped.claim(feed)
+      _ = stopped.claim(.feed(feed))
     }
     clock.now = date("2026-10-20T12:05:29Z")
     let engine = makeEngine()

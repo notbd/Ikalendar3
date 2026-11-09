@@ -158,7 +158,7 @@ final class FeedClientTests {
     let splatfest = try #require(snapshot.splatfest)
     try transport.reply(to: #require(splatfest.artURL), with: .ok(Data([0x89]), etag: nil))
     clock.now = date("2026-11-01T05:23:00Z")
-    await client.updateSplatfestArt(for: splatfest)
+    _ = await client.updateSplatfestArt(in: snapshot)
 
     let hosts = transport.requests.map { $0.url?.host() }
     #expect(hosts.count == feeds.count + 1)

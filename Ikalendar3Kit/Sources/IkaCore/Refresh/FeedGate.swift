@@ -11,7 +11,8 @@ import OSLog
 // MARK: - FeedGate
 
 /// The one network gate every engine on a directory shares, so the source sees at most one
-/// answered request per feed an hour, as splatoon3.ink asks.
+/// answered request per feed an hour, as splatoon3.ink asks. The Splatfest art's download passes
+/// it under a key of its own, so a failing download backs off like a feed.
 ///
 /// - A feed is requested only once its last answered request is an hour old. Any HTTP status
 ///   is an answer, an undecodable 200 included.
@@ -38,9 +39,9 @@ struct FeedGate {
   /// closed; if the lease passes with no outcome, claims the attempt itself. Runs off the main
   /// actor.
   @concurrent
-  func pass(_ feed: Feed, send: @Sendable () async -> FetchOutcome) async -> RefreshOutcome {
+  func pass(_ key: Key, send: @Sendable () async -> FetchOutcome) async -> RefreshOutcome {
     while true {
-      switch claim(feed) {
+      switch claim(key) {
         case .claimed(let claim):
           let outcome = await send()
           settle(claim, isAnswered: outcome != .failed(.noAnswer))
@@ -67,23 +68,23 @@ struct FeedGate {
 
   /// Claims the next attempt at a feed if its gate is open. A gate whose records cannot be read
   /// and written stays closed, so no request goes out unrecorded.
-  func claim(_ feed: Feed) -> Claim {
+  func claim(_ key: Key) -> Claim {
     let now = now()
-    let key = feed.recordName
+    let name = key.recordName
     return withRecords { records in
       // An attempt after `now` means the clock was set back: its wait no longer measures time.
-      if let record = records[key], now < record.nextEligibleTime, record.attemptTime <= now {
+      if let record = records[name], now < record.nextEligibleTime, record.attemptTime <= now {
         guard record.lease == nil else { return .leased }
 
-        Logger.network.debug("\(feed.url, privacy: .public): gate closed until \(record.nextEligibleTime)")
+        Logger.network.debug("\(name, privacy: .public): gate closed until \(record.nextEligibleTime)")
         return .closed
       }
 
-      let claim: Claim.Granted = .init(key: key)
-      records[key] = AttemptRecord(
+      let claim: Claim.Granted = .init(key: name)
+      records[name] = AttemptRecord(
         attemptTime: now,
         nextEligibleTime: now.addingTimeInterval(lease / .seconds(1)),
-        backOff: records[key]?.backOff,
+        backOff: records[name]?.backOff,
         lease: claim.id)
       return .claimed(claim)
     } ?? .closed
@@ -144,6 +145,26 @@ struct FeedGate {
     catch {
       Logger.store.error("attempt records: \(error, privacy: .public)")
       return nil
+    }
+  }
+}
+
+// MARK: FeedGate.Key
+
+extension FeedGate {
+  /// What one attempt record gates.
+  enum Key: Hashable, Sendable {
+    /// A feed's requests.
+    case feed(Feed)
+    /// The current Splatfest art's download.
+    case splatfestArt
+
+    /// The name the attempt record goes by.
+    var recordName: String {
+      switch self {
+        case .feed(let feed): feed.recordName
+        case .splatfestArt: "splatfest-art"
+      }
     }
   }
 }

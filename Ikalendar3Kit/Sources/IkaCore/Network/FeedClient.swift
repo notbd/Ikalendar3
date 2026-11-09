@@ -19,7 +19,7 @@ public struct FeedClient: Sendable {
   /// Where good answers go.
   public let cache: FeedCache
 
-  /// How long a request may take before it counts as unanswered; the refresh engine's lease.
+  /// How long a request may take before it counts as unanswered.
   let timeout: Duration
   /// The wall clock, which the refresh engine's gate shares.
   let now: @Sendable () -> Date
@@ -49,10 +49,15 @@ public struct FeedClient: Sendable {
     self.now = now
   }
 
+  /// The gate every request of this client's cache directory passes. Its lease is the timeout.
+  var gate: FeedGate {
+    FeedGate(directory: cache.directory, lease: timeout, now: now)
+  }
+
   /// Requests a feed and commits a good answer to the cache. Runs off the main actor.
   ///
-  /// Callers send one request per feed at a time across processes (the refresh engine's attempt
-  /// lock sees to it), so the record a 304 confirms is still the one stored.
+  /// Callers send one request per feed at a time across processes (`gate` sees to it), so the
+  /// record a 304 confirms is still the one stored.
   @concurrent
   func fetch(_ feed: Feed) async -> FetchOutcome {
     let stored = await validRecord(for: feed)
@@ -91,29 +96,55 @@ public struct FeedClient: Sendable {
     }
   }
 
-  /// Keeps the cache's Splatfest art in step with the current Splatfest. The art of a Splatfest
-  /// that is not over yet is downloaded once, when none is stored; the art of every other
-  /// Splatfest, and of one that is over, is removed. A failed download leaves no art, so views
-  /// fall back to the team colours, and the next call tries again. Runs off the main actor.
+  /// Keeps the cache's Splatfest art in step with a snapshot's Splatfest and returns the stored
+  /// art of the current one. The art of a Splatfest that is not over yet is downloaded through
+  /// `gate` when none is stored; the art of every other Splatfest, and of one that is over, is
+  /// removed. A failed download leaves no art, so views fall back to the team colours, and the
+  /// gate's wait comes before the next try. Runs off the main actor.
   ///
-  /// - Parameter splatfest: The Splatfest the feed names, or `nil` when it names none.
+  /// A snapshot whose schedules feed, or its Splatfest Section, did not decode cannot say which
+  /// Splatfest is on, so it leaves the stored art alone.
   @concurrent
-  func updateSplatfestArt(for splatfest: Splatfest?) async {
-    let current = splatfest.flatMap { now() < $0.endTime ? $0 : nil }
+  func updateSplatfestArt(in snapshot: Snapshot) async -> URL? {
+    guard let schedules = snapshot.schedules, !schedules.content.failedSections.contains(.splatfest) else {
+      return nil
+    }
+
+    let current = snapshot.splatfest.flatMap { now() < $0.endTime ? $0 : nil }
     cache.removeSplatfestArt(keeping: current?.id)
-    guard let current, let url = current.artURL, cache.splatfestArt(for: current.id) == nil else { return }
+    guard let current else { return nil }
 
+    if let stored = cache.splatfestArt(for: current.id) { return stored }
+    guard let url = current.artURL else { return nil }
+
+    _ = await gate.pass(.splatfestArt) { await downloadArt(from: url, for: current.id) }
+    return cache.splatfestArt(for: current.id)
+  }
+
+  /// Downloads a Splatfest's art into the cache, reporting the outcome as a feed request's.
+  private func downloadArt(from url: URL, for id: SplatfestID) async -> FetchOutcome {
+    let response: HTTPResponse
     do {
-      let response = try await send(to: url)
-      guard response.status == 200, !response.body.isEmpty else {
-        Logger.network.error("\(url, privacy: .public): status \(response.status), \(response.body.count) bytes")
-        return
-      }
-
-      try cache.commitSplatfestArt(response.body, for: current.id)
+      response = try await send(to: url)
     }
     catch {
       Logger.network.error("\(url, privacy: .public): no art: \(error, privacy: .public)")
+      return .failed(.noAnswer)
+    }
+
+    guard response.status == 200, !response.body.isEmpty else {
+      Logger.network.error("\(url, privacy: .public): status \(response.status), \(response.body.count) bytes")
+      // An empty 200 is no image.
+      return .failed(response.status == 200 ? .undecodable : .status(response.status))
+    }
+
+    do {
+      try cache.commitSplatfestArt(response.body, for: id)
+      return .updated
+    }
+    catch {
+      Logger.store.error("\(url, privacy: .public): art not stored: \(error, privacy: .public)")
+      return .failed(.notStored)
     }
   }
 
