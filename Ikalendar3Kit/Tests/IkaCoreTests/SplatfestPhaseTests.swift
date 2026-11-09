@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import IkaFixtures
 import Testing
 @testable import IkaCore
 
