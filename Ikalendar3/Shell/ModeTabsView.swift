@@ -71,7 +71,12 @@ struct ModeTabsView: View {
       withAnimation { failureToast = nil }
     }
     .task(id: scenePhase) {
-      if scenePhase == .active { await effects?.run() }
+      guard scenePhase == .active, let effects else { return }
+
+      let result = await effects.run()
+      #if DEBUG && os(iOS)
+      await DebugLaunch.restartShortTracking(after: result, with: effects, at: clock.now)
+      #endif
     }
   }
 

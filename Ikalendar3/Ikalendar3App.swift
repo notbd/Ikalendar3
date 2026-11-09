@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import AppIntents
 import IkaCore
 import IkaDesign
 import IkaIntents
@@ -56,6 +57,14 @@ struct Ikalendar3App: App {
     BundledResources.load(from: IkaResources.bundle)
     _services = State(initialValue: AppServices.forThisLaunch())
   }
+}
+
+// MARK: - AppIntentsPackageList
+
+/// Adds `IkaIntents`' types to the app's App Intents metadata, so the system finds the intents the
+/// app's process runs, such as the start-Tracking and Refresh Live Activity intents.
+struct AppIntentsPackageList: AppIntentsPackage {
+  static var includedPackages: [any AppIntentsPackage.Type] { [IkaIntentsPackage.self] }
 }
 
 // MARK: - TestHostPlaceholder

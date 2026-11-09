@@ -9,13 +9,15 @@
 import Foundation
 import IkaCore
 import IkaFixtures
+import IkaIntents
 
 // MARK: - DebugLaunch
 
 /// The launch options only Debug builds read. CONTRIBUTING.md shows how to pass them.
 ///
 /// - The fixture launch (`FixtureLaunch`, in the fixture support module the watch app shares):
-///   `--fixture <name> --fixture-folder <path> --fixture-instant <ISO 8601> [--fixture-rebase]`.
+///   `--fixture <name> --fixture-folder <path> --fixture-instant <ISO 8601> [--fixture-rebase]
+///   [--fixture-short-tracking <Mode>]`.
 /// - The worktree data option: `--data-folder <path> --defaults-suite <name>`. An unsigned Mac
 ///   run gets the App Group folder every worktree on the machine shares, so each Mac run from a
 ///   worktree passes a folder inside it and a suite named after it. It is an explicit option,
@@ -54,5 +56,36 @@ enum DebugLaunch {
       fatalError("Fixture launch: \(error)")
     }
   }
+
+  #if os(iOS)
+  /// Restarts the short-item Tracking the fixture launch asks for (`--fixture-short-tracking`),
+  /// right after an activation run, which re-armed every activity from the cache: the content of
+  /// the Mode at the app clock's `instant`, its items two minutes long from now on the wall clock
+  /// the system renders by. So a recording that starts after the app opens crosses two
+  /// boundaries in four minutes; opening the app again starts it over.
+  static func restartShortTracking(
+    after result: RefreshResult,
+    with effects: EffectsShell,
+    at instant: Date,
+    _ arguments: [String] = ProcessInfo.processInfo.arguments)
+    async
+  {
+    guard
+      let mode = (try? FixtureLaunch(arguments: arguments))?.shortTracking,
+      let state = result.snapshot.trackingState(of: mode, at: instant)
+    else { return }
+
+    let now: Date = .init()
+    do {
+      let short: TrackingState = .init(
+        content: state.content.withShortItems(startingAt: now),
+        fetchTime: state.fetchTime)
+      try await effects.startTracking(short, at: now)
+    }
+    catch {
+      fatalError("Short-item Tracking: \(error)")
+    }
+  }
+  #endif
 }
 #endif
