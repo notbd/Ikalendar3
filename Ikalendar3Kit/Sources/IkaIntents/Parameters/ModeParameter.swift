@@ -17,7 +17,8 @@ import IkaCore
 /// string catalog, because App Intents read them at build time; `ParameterNameTests` keeps them
 /// equal to `Mode.name(in:)` in all 14 languages. The parameter types' keys are their English
 /// names: the build's App Intents metadata records a key but not its bundle, so a lookup that
-/// misses this module's catalog still shows a name, never a key.
+/// misses this module's catalog still shows a name, never a key. The app bundles this module's
+/// catalog as its own `Localizable` table, where Siri and Shortcuts look the keys up.
 public enum ModeParameter: String, AppEnum {
   case regularBattle
   case anarchySeries

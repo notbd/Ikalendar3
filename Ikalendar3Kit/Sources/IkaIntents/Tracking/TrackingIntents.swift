@@ -9,6 +9,7 @@
 import AppIntents
 import Foundation
 import IkaCore
+import OSLog
 
 // MARK: - StartTrackingIntent
 
@@ -29,6 +30,7 @@ public struct StartTrackingIntent: LiveActivityIntent {
 
   @MainActor
   public func perform() async throws -> some IntentResult {
+    Logger.logRun(of: Self.self)
     try await EffectsShell.forIntents().startTracking(mode.mode)
     return .result()
   }
@@ -49,25 +51,6 @@ public struct RefreshTrackingIntent: LiveActivityIntent {
   public func perform() async throws -> some IntentResult {
     try await EffectsShell.forIntents().run()
     return .result()
-  }
-}
-
-// MARK: - EffectsShell
-
-extension EffectsShell {
-  /// The shell an intent runs: an engine of its own on the App Group cache, which it shares with
-  /// the app and every other engine through the gate's attempt records, in the app language. No
-  /// runtime registration: an intent builds it each time it runs.
-  ///
-  /// - Throws: `TrackingError.noSchedule` with no App Group container (logged by `AppGroup`),
-  ///   where no cache can hold a schedule.
-  static func forIntents() throws -> EffectsShell {
-    guard let container = AppGroup.container() else { throw TrackingError.noSchedule }
-
-    let client: FeedClient = .init(
-      transport: URLSessionTransport(),
-      cache: FeedCache(directory: AppGroup.feedDirectory(in: container)))
-    return EffectsShell(engine: RefreshEngine(client: client, language: GameLanguage(resolvedFor: .main)))
   }
 }
 
