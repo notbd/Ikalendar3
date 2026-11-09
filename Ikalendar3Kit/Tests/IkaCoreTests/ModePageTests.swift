@@ -18,11 +18,13 @@ struct ModePageTests {
 
     let page = try #require(snapshot.modePage(of: mode, at: instant))
 
+    let screen: ModePage? =
+      switch mode {
+        case .battle(let battleMode): snapshot.battleScreen(of: battleMode, at: instant).map(ModePage.battle)
+        case .salmonRun: snapshot.salmonRunScreen(at: instant).map(ModePage.salmonRun)
+      }
     #expect(page.mode == mode)
-    switch mode {
-      case .battle(let battleMode): #expect(page == snapshot.battleScreen(of: battleMode, at: instant).map(ModePage.battle))
-      case .salmonRun: #expect(page == snapshot.salmonRunScreen(at: instant).map(ModePage.salmonRun))
-    }
+    #expect(page == screen)
   }
 
   @Test
