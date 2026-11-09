@@ -4034,7 +4034,7 @@
       }
     },
     "weapon.rareRandom" : {
-      "comment" : "The golden question mark: a random weapon that can be a rare Grizzco weapon. %@: the game's name for a random weapon.",
+      "comment" : "The golden question mark: a random weapon that can be a rare Grizzco weapon. %@: the game's name for a random weapon. The game shows the mark with no name, so every language's wording is the app's own; ja borrows the game's name for Grizzco weapons (クマサン印) and stays under review until a native speaker confirms it.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {

@@ -10,8 +10,9 @@ import SwiftUI
 // MARK: - InkTextStyle
 
 /// Ink's text styles: SplatNet 3's heavy face for names and tags, its light face for times and
-/// Stage names, at the round 3 mock's sizes. Each scales with Dynamic Type relative to a system
-/// text style. Ticket 56 judges the faces and sizes with the real fonts.
+/// Stage names, at the sizes of the navigation prototype's round 3 mock (`InkMetrics` says where
+/// it lives). Each scales with Dynamic Type relative to a system text style. Ticket 56 judges the
+/// faces and sizes with the real fonts.
 public enum InkTextStyle: CaseIterable, Sendable {
   /// The Mode name over the list.
   case title
