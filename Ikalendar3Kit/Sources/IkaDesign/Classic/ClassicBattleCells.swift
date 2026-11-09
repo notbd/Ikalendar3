@@ -1,0 +1,394 @@
+//
+//  ClassicBattleCells.swift
+//  Ikalendar3
+//
+//  Copyright (c) TIANWEI ZHANG. All rights reserved.
+//
+
+#if os(iOS) || os(macOS)
+import IkaCore
+import SwiftUI
+
+// MARK: - ClassicBattleSection
+
+/// One row of Classic's Battle Mode list: its header (tag and time range) over the featured
+/// primary cell or a secondary cell, as ikalendar 2's `BattleRotationRow` draws it.
+///
+/// The section owns the namespace its Rotation's Rule and Stages glide in, and keeps its identity
+/// while the Rotation moves from a secondary cell to the primary one, so the Rotation glides into
+/// the featured place when it becomes current.
+struct ClassicBattleSection: View {
+  @Environment(\.timeZone) private var timeZone
+  @Environment(\.colorScheme) private var colorScheme
+
+  @Namespace private var glide
+
+  let row: ClassicBattleRow
+  let mode: BattleMode
+  let terms: GameTerms
+  let now: Date
+  let metrics: CellMetrics
+
+  var body: some View {
+    Section {
+      cell
+    } header: {
+      header
+        // The cell's sentence reads the time range.
+        .accessibilityHidden(true)
+    }
+  }
+
+  @ViewBuilder private var cell: some View {
+    switch row {
+      case .current(let running):
+        if let setting = running.item.setting {
+          ClassicBattlePrimaryCell(
+            setting: setting,
+            progress: running.progress,
+            tint: ModeColor(mode).classicTint(in: colorScheme),
+            terms: terms,
+            now: now,
+            metrics: metrics,
+            glide: glide)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(writer.sentence(for: running.item, at: now))
+        }
+
+      case .upcoming(let rotation, _):
+        if let setting = rotation.setting {
+          ClassicBattleSecondaryCell(setting: setting, terms: terms, metrics: metrics, glide: glide)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(writer.sentence(for: rotation, at: now))
+        }
+
+      case .paused(let returnTime):
+        let format: ScheduleFormat = .init(language: terms.language, timeZone: timeZone)
+        ClassicStatusCell(
+          text: ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now)),
+          arrangement: metrics.arrangement)
+          .accessibilityLabel(writer.sentence(forPauseOf: mode, returningAt: returnTime))
+
+      case .nothingCurrent:
+        ClassicStatusCell(text: ScreenText.nothingCurrent.text(in: terms.language), arrangement: metrics.arrangement)
+    }
+  }
+
+  @ViewBuilder private var header: some View {
+    let layout: AnyLayout = metrics.arrangement == .stacked
+      ? AnyLayout(VStackLayout(alignment: .leading))
+      : AnyLayout(HStackLayout(spacing: ClassicMetrics.Header.spacing))
+
+    layout {
+      if let tag = row.tag {
+        ClassicTag(text: tag)
+      }
+      if let window = row.window {
+        Text(verbatim: timeFormat.battleRange(from: window.startTime, to: window.endTime, now: now))
+          .scaledLimitedLine(for: metrics.arrangement)
+          .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
+      }
+    }
+  }
+
+  private var timeFormat: ClassicTimeFormat {
+    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+  }
+
+  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+}
+
+// MARK: - ClassicBattlePrimaryCell
+
+/// The current Rotation's featured cell: the Rule's icon and name with the time left, the
+/// progress bar, then both Stages with their names on glass labels.
+///
+/// Matched-geometry rule, as in ikalendar 2: this primary cell is the geometry source and the
+/// secondary cell only matches it. The two coexist during the glide, where two sources would be
+/// undefined, and the source must be the cell that stays: a non-source keeps the last frame of a
+/// removed source, which would leave the new featured cell's Rule and Stages off the cell.
+struct ClassicBattlePrimaryCell: View {
+  typealias Scoped = ClassicMetrics.BattlePrimary
+
+  @Environment(\.timeZone) private var timeZone
+
+  let setting: Rotation.Setting
+  let progress: WindowProgress
+  let tint: Color
+  let terms: GameTerms
+  let now: Date
+  let metrics: CellMetrics
+  let glide: Namespace.ID
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: Scoped.cellSpacingV) {
+      switch metrics.arrangement {
+        case .sideBySide:
+          HStack(alignment: .center) {
+            ruleSection
+            Spacer()
+            remainingTime
+              .frame(width: metrics.length(.battleRemainingTimeWidth), alignment: .trailing)
+          }
+
+        case .stacked:
+          ruleSection
+          remainingTime
+      }
+
+      ProgressView(value: progress.sharePassed)
+        .tint(tint)
+        .padding(.bottom, Scoped.progressBarPaddingBottom)
+
+      let stages: AnyLayout = metrics.arrangement == .stacked
+        ? AnyLayout(VStackLayout(spacing: Scoped.stagesSpacingH))
+        : AnyLayout(HStackLayout(spacing: Scoped.stagesSpacingH))
+      stages {
+        ForEach(Array(setting.stages.enumerated()), id: \.offset) { index, stage in
+          ClassicBattleStageCard(
+            stage: stage,
+            name: terms.name(of: stage),
+            role: .primary,
+            arrangement: metrics.arrangement)
+            .matchedGeometryEffect(id: GlidePart.stage(index), in: glide)
+        }
+      }
+    }
+    .padding(.bottom, Scoped.cellPaddingBottom)
+  }
+
+  private var ruleSection: some View {
+    HStack(alignment: .center, spacing: Scoped.ruleSectionSpacing) {
+      ClassicPicture(name: BundledImage.name(for: setting.rule, size: .large))
+        .shadow(radius: ClassicMetrics.shadowRadius)
+        .frame(height: metrics.arrangement == .stacked ? metrics.length(.battleRuleSectionHeight) : nil)
+        .layoutPriority(1)
+        .matchedGeometryEffect(id: GlidePart.ruleIcon, in: glide)
+
+      ruleTitle
+        .padding(.vertical, Scoped.ruleTitlePaddingV)
+        .matchedGeometryEffect(id: GlidePart.ruleTitle, in: glide)
+    }
+    .frame(
+      width: metrics.arrangement == .sideBySide ? metrics.length(.battleRuleSectionWidth) : nil,
+      height: metrics.arrangement == .sideBySide ? metrics.length(.battleRuleSectionHeight) : nil,
+      alignment: .leading)
+    .frame(maxWidth: .infinity, alignment: .leading)
+  }
+
+  /// The Rule's name at the size that also fits every other Rule's, so the title keeps one size
+  /// from Rotation to Rotation; wrapped at full size when stacked.
+  @ViewBuilder private var ruleTitle: some View {
+    switch metrics.arrangement {
+      case .sideBySide:
+        IdealFontLayout(anchor: .leading) {
+          title(terms.name(of: setting.rule))
+          ForEach(RuleID.bundled, id: \.self) { rule in
+            title(terms.name(of: rule))
+          }
+        }
+
+      case .stacked:
+        title(terms.name(of: setting.rule))
+    }
+  }
+
+  private func title(_ name: String) -> some View {
+    Text(verbatim: name)
+      .scaledLimitedLine(for: metrics.arrangement)
+      .ikaFont(.heavy, size: Scoped.ruleTitleFontSize, relativeTo: .title)
+  }
+
+  private var remainingTime: some View {
+    Text(verbatim: ClassicText.timeLeft.text(in: terms.language, timeFormat.span(progress.timeLeft)))
+      .countdownRoll(value: now)
+      .scaledLimitedLine(for: metrics.arrangement)
+      .foregroundStyle(.secondary)
+      .ikaFont(.light, size: Scoped.remainingTimeFontSize, relativeTo: .headline)
+  }
+
+  private var timeFormat: ClassicTimeFormat {
+    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+  }
+}
+
+// MARK: - ClassicBattleSecondaryCell
+
+/// A later Rotation's cell: the Rule's icon on glass over its name, beside both Stages with their
+/// names under their pictures. It matches the primary cell's geometry, never sources it.
+struct ClassicBattleSecondaryCell: View {
+  typealias Scoped = ClassicMetrics.BattleSecondary
+
+  @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+
+  let setting: Rotation.Setting
+  let terms: GameTerms
+  let metrics: CellMetrics
+  let glide: Namespace.ID
+
+  var body: some View {
+    switch metrics.arrangement {
+      case .sideBySide:
+        HStack {
+          VStack(spacing: Scoped.ruleSectionSpacing) {
+            ruleIcon
+            ruleTitle
+              .frame(height: Scoped.ruleTitleHeight)
+          }
+          .frame(width: metrics.length(.battleSecondaryRuleSectionWidth))
+          .padding(.trailing, Scoped.ruleSectionPaddingTrailing)
+
+          BattleSecondaryStagesLayout {
+            stageCards
+          }
+        }
+
+      case .stacked:
+        VStack(alignment: .leading) {
+          HStack {
+            ruleIcon
+            ruleTitle
+          }
+          stageCards
+        }
+    }
+  }
+
+  private var ruleIcon: some View {
+    ClassicPicture(name: BundledImage.name(for: setting.rule, size: .medium))
+      .shadow(radius: ClassicMetrics.shadowRadius)
+      .frame(height: metrics.length(.battleSecondaryRuleImageHeight))
+      .padding(Scoped.ruleImagePadding)
+      .adaptiveGlassEffect(in: .rect(cornerRadius: Scoped.ruleImageCornerRadius))
+      .matchedGeometryEffect(id: GlidePart.ruleIcon, in: glide, isSource: false)
+  }
+
+  /// The Rule's name; on a regular width at the size that fits every Rule's name, as ikalendar 2.
+  @ViewBuilder private var ruleTitle: some View {
+    if horizontalSizeClass != .compact, metrics.arrangement == .sideBySide {
+      IdealFontLayout(anchor: .center) {
+        title(terms.name(of: setting.rule))
+        ForEach(RuleID.bundled, id: \.self) { rule in
+          title(terms.name(of: rule))
+        }
+      }
+      .matchedGeometryEffect(id: GlidePart.ruleTitle, in: glide, isSource: false)
+    }
+    else {
+      title(terms.name(of: setting.rule))
+        .matchedGeometryEffect(id: GlidePart.ruleTitle, in: glide, isSource: false)
+    }
+  }
+
+  private func title(_ name: String) -> some View {
+    Text(verbatim: name)
+      .scaledLimitedLine(for: metrics.arrangement)
+      .ikaFont(.light, size: Scoped.ruleFontSize, relativeTo: .body)
+  }
+
+  private var stageCards: some View {
+    ForEach(Array(setting.stages.enumerated()), id: \.offset) { index, stage in
+      ClassicBattleStageCard(
+        stage: stage,
+        name: terms.name(of: stage),
+        role: .secondary,
+        arrangement: metrics.arrangement)
+        .matchedGeometryEffect(id: GlidePart.stage(index), in: glide, isSource: false)
+    }
+  }
+}
+
+// MARK: - ClassicBattleStageCard
+
+/// A battle Stage's picture with its name: on a glass label over the picture in the featured
+/// cell, under the picture in a later one and whenever the cell stacks, where a wrapped name
+/// would cover the picture.
+struct ClassicBattleStageCard: View {
+  /// Which cell the card sits in.
+  enum Role {
+    case primary
+    case secondary
+  }
+
+  let stage: StageID
+  let name: String
+  let role: Role
+  let arrangement: CellArrangement
+
+  var body: some View {
+    switch (role, arrangement) {
+      case (.primary, .sideBySide):
+        picture
+          .overlay(alignment: .bottomTrailing) {
+            ClassicStageLabel(
+              name: name,
+              fontSize: ClassicMetrics.BattlePrimary.stageLabelFontSize,
+              arrangement: arrangement)
+              .padding(.leading, ClassicMetrics.BattlePrimary.stageLabelPaddingLeading)
+              .padding([.bottom, .trailing], ClassicMetrics.BattlePrimary.stageLabelPaddingBottomTrailing)
+          }
+
+      case (.primary, .stacked),
+           (.secondary, _):
+        VStack(alignment: .trailing, spacing: ClassicMetrics.BattleSecondary.stageSpacingV) {
+          picture
+            .layoutPriority(1)
+          Text(verbatim: name)
+            .scaledLimitedLine(for: arrangement)
+            .multilineTextAlignment(.trailing)
+            .ikaFont(.light, size: ClassicMetrics.BattleSecondary.stageFontSize, relativeTo: .body)
+        }
+    }
+  }
+
+  @ViewBuilder private var picture: some View {
+    let cornerRadius: CGFloat = role == .primary
+      ? ClassicMetrics.BattlePrimary.stageCornerRadius
+      : ClassicMetrics.BattleSecondary.stageCornerRadius
+    let image = ClassicPicture(name: BundledImage.name(for: stage, size: role == .primary ? .large : .medium))
+      .clipShape(.rect(cornerRadius: cornerRadius))
+
+    switch role {
+      case .primary:
+        image
+          .adaptiveGlassEffect(in: .rect(cornerRadius: cornerRadius))
+          .shadow(radius: ClassicMetrics.shadowRadius)
+
+      case .secondary:
+        image
+          .glassEffect(.clear.interactive(), in: .rect(cornerRadius: cornerRadius))
+          .shadow(radius: ClassicMetrics.shadowRadius)
+    }
+  }
+}
+
+// MARK: - GlidePart
+
+/// The parts of a Rotation that glide from a secondary cell into the featured one.
+private enum GlidePart: Hashable {
+  case ruleIcon
+  case ruleTitle
+  case stage(Int)
+}
+
+// MARK: - ClassicBattleRow
+
+extension ClassicBattleRow {
+  /// The Rotation's window, or `nil` for a status row.
+  fileprivate var window: Rotation? {
+    switch self {
+      case .current(let running): running.item
+      case .upcoming(let rotation, _): rotation
+      case .paused,
+           .nothingCurrent: nil
+    }
+  }
+}
+
+// MARK: - RuleID
+
+extension RuleID {
+  /// Every Rule the build bundles an icon for, which a Rule title sizes itself against.
+  static let bundled: [RuleID] = (BundledImage.baseNames[.rule] ?? [:]).keys.sorted().map { RuleID($0) }
+}
+#endif

@@ -41,6 +41,9 @@ let package = Package(
     // and it holds no fixture file.
     .target(name: "IkaFixtures", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
     .testTarget(name: "IkaCoreTests", dependencies: ["IkaCore", "IkaFixtures"], swiftSettings: swiftSettings),
-    .testTarget(name: "IkaDesignTests", dependencies: ["IkaDesign", "IkaCore"], swiftSettings: swiftSettings),
+    .testTarget(
+      name: "IkaDesignTests",
+      dependencies: ["IkaDesign", "IkaCore", "IkaFixtures"],
+      swiftSettings: swiftSettings),
     .testTarget(name: "IkaIntentsTests", dependencies: ["IkaIntents"], swiftSettings: swiftSettings),
   ])
