@@ -24,9 +24,9 @@ enum Haptic {
 
   /// The haptic of a refresh run that ended with `outcomes`, on ikalendar 2's events: the error
   /// pattern when a feed failed, else a medium impact for a refresh the player asked for (pull to
-  /// refresh) or one that sent a request. An activation run the gate kept entirely from the
-  /// network loaded nothing, so it plays none. A refresh that starts plays none either, because
-  /// pull to refresh plays its own.
+  /// refresh or the iPad refresh button) or one that sent a request. An activation run the gate
+  /// kept entirely from the network loaded nothing, so it plays none. A refresh that starts plays
+  /// none either, because pull to refresh plays its own and ikalendar 2's refresh button none.
   static func refreshEnded(with outcomes: some Collection<RefreshOutcome>, isRequested: Bool) -> SensoryFeedback? {
     if outcomes.contains(where: \.hasFailed) { return .error }
     guard isRequested || outcomes.contains(where: { $0 != .gateClosed }) else { return nil }
@@ -47,8 +47,9 @@ struct RefreshHaptic: Equatable {
 // MARK: - EffectsShell
 
 extension EffectsShell {
-  /// Runs the shell, then hands how the run ended to `status`, whose refresh haptic the tabs
-  /// play: `isRequested` for a refresh the player asked for, such as pull to refresh.
+  /// Runs the shell, then hands how the run ended to `status`, whose refresh haptic every layout
+  /// plays: `isRequested` for a refresh the player asked for, with pull to refresh or the iPad
+  /// toolbar's refresh button.
   func run(isRequested: Bool, reportingTo status: AppStatus) async {
     let result = await run()
     status.refreshHaptic = RefreshHaptic(feedback: Haptic.refreshEnded(

@@ -14,12 +14,12 @@ import SwiftUI
 
 /// The iPhone tabs in the native Liquid Glass tab bar: Regular Battle, Anarchy, X Battle,
 /// Challenge and Salmon Run, with the Splatfest tab in Regular Battle's place while a Splatfest
-/// runs. iPad and Mac show them too until their own navigation lands.
+/// runs. An iPad window wide enough for columns and the Mac show them too until their own
+/// navigation lands.
 ///
-/// It plays the haptics of ikalendar 2's table, the refresh haptic as each run hands it to the
-/// status, reports a failed refresh in a toast while the screens keep their data, and shows
-/// Settings from each tab's toolbar. A second tap on the selected Anarchy or Splatfest tab shows
-/// the Series and Open (or Open and Pro) menu above it.
+/// It plays ikalendar 2's Mode switch haptic, shows the failed-refresh toast above the tab bar
+/// (`AppRootView` keeps it), and shows Settings from each tab's toolbar. A second tap on the
+/// selected Anarchy or Splatfest tab shows the Series and Open (or Open and Pro) menu above it.
 struct ModeTabsView: View {
   @Environment(RefreshEngine.self) private var engine
   @Environment(AppClock.self) private var clock
@@ -27,9 +27,6 @@ struct ModeTabsView: View {
   @Environment(PreferenceStore.self) private var preferences
   @Environment(\.gameLanguage) private var language
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-  /// A new value for each failed refresh; the toast shows while it is set.
-  @State private var failureToast: UUID?
 
   var body: some View {
     @Bindable var status = status
@@ -53,13 +50,7 @@ struct ModeTabsView: View {
             tabMenu(for: tab)
               .animation(menuAnimation, value: status.presentedMenu)
           }
-          .overlay(alignment: .bottom) {
-            if failureToast != nil {
-              RefreshFailureToast()
-                .padding(.bottom, 12)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-          }
+          .refreshFailureToast()
         } label: {
           Label(tab.title(in: language), systemImage: tab.systemImage)
         }
@@ -69,24 +60,9 @@ struct ModeTabsView: View {
       status.select(selectedTab)
     }
     .minimizingTabBar(preferences.shouldMinimizeTabBar)
-    .settingsPresentation(isPresented: $status.isSettingsPresented)
-    .appColorScheme(preferences.colorScheme)
     .sensoryFeedback(Haptic.modeSwitch, trigger: status.selectedPlace)
     .sensoryFeedback(Haptic.modeSwitch, trigger: status.mode(of: .anarchy))
     .sensoryFeedback(Haptic.modeSwitch, trigger: status.mode(of: .splatfestBattle))
-    .sensoryFeedback(trigger: status.refreshHaptic) { _, new in
-      new?.feedback
-    }
-    .onChange(of: engine.status) { old, new in
-      if old == .loading, new == .failed {
-        withAnimation { failureToast = UUID() }
-      }
-    }
-    .task(id: failureToast) {
-      guard failureToast != nil, await (try? Task.sleep(for: .seconds(3))) != nil else { return }
-
-      withAnimation { failureToast = nil }
-    }
   }
 
   /// `tab`'s screen. A Mode picked from the menu opens at the top, on its current Rotation.
