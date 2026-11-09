@@ -74,4 +74,35 @@ struct WidgetAccessibilityTests {
     #expect(paused.label == "X Battle: paused during the Splatfest until Monday 00:00.")
     #expect(paused.countdown == nil)
   }
+
+  @Test
+  func `A complication reads its Mode's current item with the countdown, or that nothing is on, then a note`() throws {
+    let writer: SentenceWriter = try Self.writer()
+    let shift: Shift = .init(
+      kind: .regular,
+      startTime: date("2026-10-20T16:00:00Z"),
+      endTime: date("2026-10-22T08:00:00Z"),
+      stage: StageID("Q29vcFN0YWdlLTE="),
+      weapons: [.random, .random, .random, .random],
+      kingSalmonid: nil)
+
+    let battle: WidgetAccessibility = .init(
+      WatchWidgetContent.battle(BattleWidgetContent(mode: .x, current: .item(Self.rotation), upcoming: [])),
+      writer: writer)
+    let salmonRun: WidgetAccessibility = .init(
+      WatchWidgetContent.salmonRun(SalmonRunWidgetContent(current: .item(shift), upcoming: [])),
+      writer: writer,
+      note: "Stale.")
+    let nothing: WidgetAccessibility = .init(
+      WatchWidgetContent.salmonRun(SalmonRunWidgetContent(current: .nothingCurrent, upcoming: [])),
+      writer: writer)
+
+    #expect(battle.label == Self.sentence)
+    #expect(battle.countdown == Self.rotation.startTime ... Self.rotation.endTime)
+    #expect(salmonRun.label == "Salmon Run: Spawning Grounds with Random, Random, Random, and Random, "
+      + "from Tuesday 16:00 to Thursday 08:00. Stale.")
+    #expect(salmonRun.countdown == shift.startTime ... shift.endTime)
+    #expect(nothing.label == "Nothing on right now")
+    #expect(nothing.countdown == nil)
+  }
 }

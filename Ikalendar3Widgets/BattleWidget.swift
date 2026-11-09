@@ -11,6 +11,9 @@ import IkaDesign
 import IkaIntents
 import SwiftUI
 import WidgetKit
+#if DEBUG
+import IkaFixtures
+#endif
 
 // MARK: - BattleWidget
 
@@ -73,7 +76,7 @@ struct BattleWidgetIntent: WidgetConfigurationIntent {
 struct BattleTimelineProvider: AppIntentTimelineProvider {
   typealias Entry = ScheduleWidgetEntry<BattleWidgetContent>
 
-  var load: @Sendable () async -> Snapshot = WidgetData.cachedSnapshot
+  var load: @Sendable () async -> Snapshot = AppGroup.cachedSnapshot
 
   func placeholder(in _: Context) -> Entry {
     .empty(at: .now)
@@ -118,25 +121,25 @@ extension BattleWidgetFamily {
 #Preview("Small", as: .systemSmall, using: BattleWidgetIntent(battleMode: .anarchySeries)) {
   BattleWidget()
 } timelineProvider: {
-  BattleTimelineProvider(load: WidgetData.fixture(.normalDay))
+  BattleTimelineProvider(load: Snapshot.preview(.normalDay))
 }
 
 #Preview("Medium", as: .systemMedium, using: BattleWidgetIntent(battleMode: .xBattle)) {
   BattleWidget()
 } timelineProvider: {
-  BattleTimelineProvider(load: WidgetData.fixture(.normalDay))
+  BattleTimelineProvider(load: Snapshot.preview(.normalDay))
 }
 
 #Preview("Large", as: .systemLarge, using: BattleWidgetIntent(battleMode: .regularBattle)) {
   BattleWidget()
 } timelineProvider: {
-  BattleTimelineProvider(load: WidgetData.fixture(.normalDay))
+  BattleTimelineProvider(load: Snapshot.preview(.normalDay))
 }
 
 #Preview("Large, Splatfest", as: .systemLarge, using: BattleWidgetIntent(battleMode: .anarchySeries)) {
   BattleWidget()
 } timelineProvider: {
-  BattleTimelineProvider(load: WidgetData.fixture(.splatfestSecondHalf))
+  BattleTimelineProvider(load: Snapshot.preview(.splatfestSecondHalf))
 }
 
 #Preview("Small, empty", as: .systemSmall, using: BattleWidgetIntent()) {
@@ -149,25 +152,25 @@ extension BattleWidgetFamily {
 #Preview("Lock Screen, circular", as: .accessoryCircular, using: BattleWidgetIntent(battleMode: .xBattle)) {
   BattleWidget()
 } timelineProvider: {
-  BattleTimelineProvider(load: WidgetData.fixture(.normalDay))
+  BattleTimelineProvider(load: Snapshot.preview(.normalDay))
 }
 
 #Preview("Lock Screen, rectangular", as: .accessoryRectangular, using: BattleWidgetIntent(battleMode: .anarchySeries)) {
   BattleWidget()
 } timelineProvider: {
-  BattleTimelineProvider(load: WidgetData.fixture(.normalDay))
+  BattleTimelineProvider(load: Snapshot.preview(.normalDay))
 }
 
 #Preview("Lock Screen, inline", as: .accessoryInline, using: BattleWidgetIntent(battleMode: .regularBattle)) {
   BattleWidget()
 } timelineProvider: {
-  BattleTimelineProvider(load: WidgetData.fixture(.normalDay))
+  BattleTimelineProvider(load: Snapshot.preview(.normalDay))
 }
 
 #Preview("Lock Screen, rectangular, Splatfest", as: .accessoryRectangular, using: BattleWidgetIntent()) {
   BattleWidget()
 } timelineProvider: {
-  BattleTimelineProvider(load: WidgetData.fixture(.splatfestSecondHalf))
+  BattleTimelineProvider(load: Snapshot.preview(.splatfestSecondHalf))
 }
 #endif
 #endif

@@ -31,7 +31,8 @@ let package = Package(
       dependencies: ["IkaCore"],
       resources: [.process("Resources")],
       swiftSettings: swiftSettings),
-    // Siri, App Shortcuts and the effects shell. iOS and macOS; Live Activity parts behind `#if os(iOS)`.
+    // Siri, App Shortcuts and the effects shell on iOS and macOS, Live Activity parts behind
+    // `#if os(iOS)`. On watchOS only the parameter types, for the complications' Mode.
     .target(
       name: "IkaIntents",
       dependencies: ["IkaCore"],
