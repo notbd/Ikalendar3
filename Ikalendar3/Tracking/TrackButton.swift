@@ -18,7 +18,7 @@ extension View {
     toolbar {
       ToolbarItem(placement: .topBarTrailing) {
         Button(intent: StartTrackingIntent(mode: ModeParameter(mode))) {
-          Label(TrackingText.startTracking.text(in: language), systemImage: "dot.radiowaves.left.and.right")
+          Label(TrackingText.startTracking.text(in: language), systemImage: TrackingText.startTracking.systemImage)
         }
       }
     }
