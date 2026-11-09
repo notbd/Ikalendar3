@@ -40,8 +40,32 @@ public struct WidgetAccessibility: Equatable, Sendable {
       switch current {
         case .item(let rotation): .init(rotation, writer: writer, isCurrent: true)
         case .paused(let returnTime): .init(label: writer.sentence(forPauseOf: mode, returningAt: returnTime))
-        case .nothingCurrent: .init(label: ScreenText.nothingCurrent.text(in: writer.terms.language))
+        case .nothingCurrent: .nothingCurrent(in: writer)
       }
+    self.init(item, note: note)
+  }
+
+  /// How what a complication's Mode has on reads: a Battle Mode's as above, or Salmon Run's
+  /// current Shift, or that nothing is on. `note` follows the label.
+  public init(_ content: WatchWidgetContent, writer: SentenceWriter, note: String? = nil) {
+    switch content {
+      case .battle(let battle):
+        self.init(battle.current, of: battle.mode, writer: writer, note: note)
+
+      case .salmonRun(let salmonRun):
+        let item: Self =
+          switch salmonRun.current {
+            case .item(let shift): .init(shift, writer: writer, isCurrent: true)
+            // A Shift is never paused.
+            case .paused,
+                 .nothingCurrent: .nothingCurrent(in: writer)
+          }
+        self.init(item, note: note)
+    }
+  }
+
+  /// `item` with `note` after its label.
+  private init(_ item: Self, note: String?) {
     label = [item.label, note].compactMap(\.self).joined(separator: " ")
     countdown = item.countdown
   }
@@ -49,6 +73,11 @@ public struct WidgetAccessibility: Equatable, Sendable {
   private init(label: String) {
     self.label = label
     countdown = nil
+  }
+
+  /// "Nothing on right now", in `writer`'s text set.
+  static private func nothingCurrent(in writer: SentenceWriter) -> Self {
+    .init(label: ScreenText.nothingCurrent.text(in: writer.terms.language))
   }
 }
 

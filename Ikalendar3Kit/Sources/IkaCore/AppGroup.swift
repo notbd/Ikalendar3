@@ -35,4 +35,13 @@ public enum AppGroup {
   static public func feedDirectory(in container: URL) -> URL {
     container.appending(path: "Library/Application Support/Feeds", directoryHint: .isDirectory)
   }
+
+  /// The group's feed cache as the processes that fetch last wrote it, read afresh for each call:
+  /// what a widget extension shows, which never fetches. Empty with no container (logged).
+  @concurrent
+  static public func cachedSnapshot() async -> Snapshot {
+    guard let container = container() else { return Snapshot() }
+
+    return await FeedCache(directory: feedDirectory(in: container)).snapshot()
+  }
 }
