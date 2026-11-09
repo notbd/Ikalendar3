@@ -41,6 +41,13 @@ public struct SentenceWriter: Sendable {
     sentence(of: rotation.mode.name(in: language), playing: rotation.setting, in: rotation, at: instant)
   }
 
+  /// A Rotation's sentence with no time left: its Battle Mode, Rule, both Stages and time range.
+  /// Widgets read it, because the system draws them ahead of the moment VoiceOver reads them, when
+  /// a time left would be wrong; their countdown is the system's timer text.
+  public func sentence(for rotation: Rotation) -> String {
+    sentence(of: rotation.mode.name(in: language), playing: rotation.setting, in: rotation, at: nil)
+  }
+
   /// A Tracking item's sentence: a Rotation of `mode` reads as `sentence(for:at:)`, a pause as
   /// `sentence(forPauseOf:returningAt:)` with the item's end, when the Battle Mode returns.
   public func sentence(for item: TrackedRotation, of mode: BattleMode, at instant: Date) -> String {
@@ -115,12 +122,12 @@ public struct SentenceWriter: Sendable {
   // MARK: Parts
 
   /// The sentence of a Rotation of Battle Mode `mode` over `window`, or of its pause until the
-  /// window ends when `setting` is `nil`.
+  /// window ends when `setting` is `nil`. With no `instant`, it reads no time left.
   private func sentence(
     of mode: String,
     playing setting: Rotation.Setting?,
     in window: some TimeWindow,
-    at instant: Date)
+    at instant: Date?)
     -> String
   {
     guard let setting else { return pauseSentence(named: mode, returningAt: window.endTime) }
@@ -154,11 +161,11 @@ public struct SentenceWriter: Sendable {
   static private let weekdayAndTimeStyle: Date.FormatStyle = .init().weekday(.wide).hour().minute()
 
   /// The time range of a window with its times in `style`, plus the time left while it runs at
-  /// `instant`.
-  private func when(_ window: some TimeWindow, at instant: Date, times style: Date.FormatStyle) -> String {
+  /// `instant`, if one is given.
+  private func when(_ window: some TimeWindow, at instant: Date?, times style: Date.FormatStyle) -> String {
     let style = localized(style)
     let range = format("sentence.timeRange", window.startTime.formatted(style), window.endTime.formatted(style))
-    guard window.isRunning(at: instant) else { return range }
+    guard let instant, window.isRunning(at: instant) else { return range }
 
     return format("sentence.timeRangeAndTimeLeft", range, timeLeft(window.progress(at: instant)))
   }
