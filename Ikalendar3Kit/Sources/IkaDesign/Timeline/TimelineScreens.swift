@@ -21,6 +21,7 @@ import SwiftUI
 /// Rotation leaves the axis as the app clock passes its end, and the next one becomes current.
 public struct TimelineBattleScreenView: View {
   @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: BattleScreen
   private let terms: GameTerms
@@ -42,7 +43,7 @@ public struct TimelineBattleScreenView: View {
   public var body: some View {
     let entries: [TimelineEntry<Rotation>] = TimelineEntry.entries(of: screen)
     let color: ModeColor = .init(screen.mode)
-    let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+    let writer: SentenceWriter = time.writer(terms)
 
     TimelineScheduleList(
       icon: ModeIcon(Mode.battle(screen.mode)),
@@ -134,6 +135,7 @@ extension TimelineEntry<Rotation> {
 /// store.
 public struct TimelineSalmonRunScreenView: View {
   @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: SalmonRunScreen
   private let terms: GameTerms
@@ -155,7 +157,7 @@ public struct TimelineSalmonRunScreenView: View {
   public var body: some View {
     let entries: [TimelineEntry<Shift>] = TimelineEntry.entries(of: screen)
     let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
-    let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+    let writer: SentenceWriter = time.writer(terms)
     let name: String = Mode.salmonRun.name(in: terms.language)
 
     TimelineScheduleList(

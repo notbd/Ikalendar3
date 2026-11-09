@@ -7,7 +7,7 @@
 #   4    package tests on macOS
 #   5-7  unsigned Debug builds: iOS Simulator, macOS, watchOS Simulator
 #   8-9  unsigned Release builds: iOS device (with the watch app), macOS, with no fixture file
-#        and the resource framework once per app, no font file outside it
+#        or fixture code and the resource framework once per app, no font file outside it
 #   10   the iOS Simulator test run
 #
 # Any compiler or build warning fails the step that shows it. Step 10 also fails when a test
@@ -267,11 +267,24 @@ expect_resource_copies() {
 }
 
 # Fails when a built product holds a file named like a recorded payload in the package's
-# Fixtures folder: Debug launches read them by path, and no product may ship one.
+# Fixtures folder (Debug launches read them by path), or a binary whose symbols or strings name
+# the fixture support module, a payload or a fixture launch option: `IkaFixtures` compiles to
+# nothing outside Debug, so one of its symbols, type names or source paths means Release code
+# links it. `nm` and `strings` leave out the debug map, which lists every compiled file and which
+# an archive strips.
 expect_no_fixtures() {
-  local shipped
-  shipped=$(comm -12 <(find "$1" -type f | sed 's|.*/||' | sort -u) <(find "$PACKAGE/Fixtures" -type f | sed 's|.*/||' | sort))
+  local payloads shipped binary holders=""
+  payloads=$(find "$PACKAGE/Fixtures" -type f | sed 's|.*/||' | sort)
+  shipped=$(comm -12 <(find "$1" -type f | sed 's|.*/||' | sort -u) <(printf '%s\n' "$payloads"))
   [[ -z $shipped ]] || fail "Fixture files in $1:"$'\n'"$shipped"
+  # `grep -q` would stop reading early, and the writer's broken pipe would fail the pipeline.
+  while IFS= read -r binary; do
+    if { nm "$binary" 2>/dev/null || true; strings "$binary"; } \
+      | grep -F -f <(printf '%s\n' IkaFixtures --fixture "$payloads") >/dev/null; then
+      holders+=$'\n'"$binary"
+    fi
+  done < <(find "$1" -type f -perm -u+x)
+  [[ -z $holders ]] || fail "Fixture code or names in:$holders"
 }
 
 # MARK: - Run
@@ -343,7 +356,7 @@ expect_paths "$ios_app/PlugIns/Ikalendar3Widgets.appex" "$ios_app/Watch/Ikalenda
   "$ios_app/Frameworks/IkaResources.framework" "$ios_app/Watch/Ikalendar3Watch.app/Frameworks/IkaResources.framework"
 expect_resource_copies "$ios_app" 2
 expect_no_fixtures "$ios_app"
-step_done "widget extension and watch app embedded, one resource framework per app, no fixture"
+step_done "widget extension and watch app embedded, one resource framework per app, no fixture file or code"
 
 step "Build, macOS, Release"
 xcodebuild_step build-macos-release build -scheme Ikalendar3 -configuration Release \
@@ -353,7 +366,7 @@ expect_paths "$mac_app/Contents/PlugIns/Ikalendar3Widgets.appex" "$mac_app/Conte
 expect_resource_copies "$mac_app" 1
 [[ -z $(find "$mac_app" -name 'Ikalendar3Watch*') ]] || fail "The macOS app embeds the watch app: $mac_app"
 expect_no_fixtures "$mac_app"
-step_done "widget extension and resource framework embedded, no watch app, no fixture"
+step_done "widget extension and resource framework embedded, no watch app, no fixture file or code"
 
 step "Test, iOS Simulator"
 wait "$boot_pid" || fail "The iOS simulator did not boot." "$VERIFY_DIR/boot-ios-simulator.log"

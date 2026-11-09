@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import IkaFixtures
 @testable import IkaCore
 
 // MARK: - TestData

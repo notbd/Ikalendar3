@@ -7,8 +7,10 @@
 
 import Foundation
 import IkaCore
-import IkaFixtures
 import WidgetKit
+#if DEBUG
+import IkaFixtures
+#endif
 
 // MARK: - ScheduleWidgetEntry
 
@@ -49,9 +51,9 @@ extension Timeline {
 
 /// Where the widgets' data and language come from.
 enum WidgetData {
-  /// The app language: the text set of the localization the system resolved for this
-  /// extension's bundle. The extension declares the app's 14, so it resolves the app's.
-  static let language: GameLanguage = .init(localization: Bundle.main.preferredLocalizations.first ?? "en")
+  /// The app language, resolved for this extension's bundle. The extension declares the app's 14
+  /// localizations, so it resolves the app's.
+  static let language: GameLanguage = .init(resolvedFor: .main)
 
   /// The App Group cache as the app and the intents last wrote it, read afresh for every timeline.
   /// The extension never fetches. With no App Group container (an unsigned build; logged), the
@@ -64,9 +66,11 @@ enum WidgetData {
   }
 }
 
+#if DEBUG
 extension WidgetData {
   /// Previews: a loader of a recorded day, moved so that a moment of it is now: the normal day
-  /// mid-Rotation, the Splatfest in its second half, or the Big Run with its random weapons.
+  /// mid-Rotation, the Splatfest in its second half, or the Big Run with its random weapons. Debug
+  /// only, as `IkaFixtures` is.
   static func fixture(_ schedules: Fixture) -> @Sendable () async -> Snapshot {
     let recordedAt =
       switch schedules {
@@ -81,3 +85,4 @@ extension WidgetData {
     }
   }
 }
+#endif

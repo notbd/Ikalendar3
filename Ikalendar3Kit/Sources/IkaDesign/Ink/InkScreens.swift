@@ -20,6 +20,7 @@ import SwiftUI
 /// refresh reaches its scroll view through the `refreshable` action the shared screen sets.
 public struct InkBattleScreenView: View {
   @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: BattleScreen
   private let terms: GameTerms
@@ -84,7 +85,7 @@ public struct InkBattleScreenView: View {
   }
 
   private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkSalmonRunScreenView
@@ -95,6 +96,7 @@ public struct InkBattleScreenView: View {
 /// store.
 public struct InkSalmonRunScreenView: View {
   @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: SalmonRunScreen
   private let terms: GameTerms
@@ -155,7 +157,7 @@ public struct InkSalmonRunScreenView: View {
   }
 
   private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkScheduleList

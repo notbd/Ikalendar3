@@ -18,7 +18,7 @@ struct ClassicChallengeSection: View {
   typealias Scoped = ClassicMetrics.Challenge
 
   @Environment(\.colorScheme) private var colorScheme
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   /// The secondary cell's matched geometry needs a namespace; nothing glides here.
   @Namespace private var glide
@@ -106,10 +106,8 @@ struct ClassicChallengeSection: View {
       at: now))
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 #endif

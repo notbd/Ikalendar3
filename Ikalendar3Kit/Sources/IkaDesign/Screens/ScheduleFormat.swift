@@ -11,16 +11,20 @@ import IkaCore
 // MARK: - ScheduleFormat
 
 /// How the screens and widgets write times: in the app language's locale on the device's hour
-/// cycle, as `SentenceWriter` reads them aloud, and in the device's time zone.
+/// cycle, as `SentenceWriter` reads them aloud, and in the device's time zone. Views take it from
+/// `TimeSettings`.
 public struct ScheduleFormat: Sendable {
   /// The app language.
   public let language: GameLanguage
   /// The time zone times are written in.
   public let timeZone: TimeZone
+  /// Whether times read on a 12- or a 24-hour clock.
+  public let hourCycle: Locale.HourCycle
 
-  public init(language: GameLanguage, timeZone: TimeZone) {
+  public init(language: GameLanguage, timeZone: TimeZone, hourCycle: Locale.HourCycle = .device) {
     self.language = language
     self.timeZone = timeZone
+    self.hourCycle = hourCycle
   }
 
   /// A window's start and end, with the weekday for a Shift, which spans days.
@@ -50,10 +54,10 @@ public struct ScheduleFormat: Sendable {
     return (window.startTime ..< window.endTime).formatted(style)
   }
 
-  /// The language's locale on the device's hour cycle.
+  /// The language's locale on the hour cycle.
   private var locale: Locale {
     var components: Locale.Components = .init(identifier: language.rawValue)
-    components.hourCycle = Locale.current.hourCycle
+    components.hourCycle = hourCycle
     return Locale(components: components)
   }
 }

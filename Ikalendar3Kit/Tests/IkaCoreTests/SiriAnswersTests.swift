@@ -11,20 +11,32 @@ import Testing
 @testable import IkaCore
 
 struct SiriAnswersTests {
-  /// The answers over a fixture's schedules feed in en-US, Los Angeles time and the 12-hour
-  /// cycle.
-  static func answers(_ fixture: Fixture, language: GameLanguage = .enUS) async throws -> SiriAnswers {
+  /// The answers over a fixture's schedules feed in en-US, Los Angeles time unless another is
+  /// given, and the 12-hour cycle.
+  static func answers(
+    _ fixture: Fixture,
+    language: GameLanguage = .enUS,
+    timeZone: TimeZone = losAngeles)
+    async throws -> SiriAnswers
+  {
     let feed = try await ScheduleFeed.decode(from: fixture.data())
-    return answers(feed, language: language)
+    return answers(feed, language: language, timeZone: timeZone)
   }
 
-  static func answers(_ feed: ScheduleFeed?, language: GameLanguage = .enUS) -> SiriAnswers {
+  static func answers(
+    _ feed: ScheduleFeed?,
+    language: GameLanguage = .enUS,
+    timeZone: TimeZone = losAngeles)
+    -> SiriAnswers
+  {
     SiriAnswers(
       snapshot: Snapshot(schedules: feed.map { Fetched(content: $0, fetchTime: .distantPast) }),
       language: language,
-      timeZone: TimeZone(identifier: "America/Los_Angeles")!,
+      timeZone: timeZone,
       hourCycle: .oneToTwelve)
   }
+
+  static let losAngeles: TimeZone = .init(identifier: "America/Los_Angeles")!
 
   // MARK: Now
 
@@ -97,6 +109,26 @@ struct SiriAnswersTests {
       + "from 5:00\u{202F}AM to 7:00\u{202F}AM, 1 hour left.")
   }
 
+  /// Council round 5, P1: a Rotation up to a day ahead reads its weekday, so 3:00 AM asked at
+  /// 5:30 AM is not taken for a time already past.
+  @Test
+  func `A Rule's Rotation on a later day reads its weekday`() throws {
+    let splatZones: RuleID = .init("VnNSdWxlLTE=")
+    let rotations = stride(from: 12, to: 36, by: 2).map { hour in
+      Rotation(
+        mode: .battle(.regular),
+        startTime: TestData.instant(hours: Double(hour)),
+        endTime: TestData.instant(hours: Double(hour + 2)),
+        setting: .init(rule: hour == 34 ? splatZones : Self.turfWar, stages: [StageID("VnNTdGFnZS0x")]))
+    }
+    let denver = try #require(TimeZone(identifier: "America/Denver"))
+    let answers: SiriAnswers = Self.answers(TestData.feed(regularBattle: rotations), timeZone: denver)
+
+    // 12:30 UTC on Thursday is 5:30 AM in Denver; Friday's 10:00 UTC is 3:00 AM.
+    #expect(answers.next(splatZones, in: .regular, at: TestData.instant(hours: 12.5)) ==
+      "Regular Battle: Splat Zones on Scorch Gorge, from Friday 3:00\u{202F}AM to 5:00\u{202F}AM.")
+  }
+
   @Test
   func `A Rule absent from the remaining Rotations is not in the published Schedule`() async throws {
     let answers = try await Self.answers(.normalDay)
@@ -108,8 +140,8 @@ struct SiriAnswersTests {
   // MARK: Splatfest pause
 
   /// The recorded decision: a Battle Mode a Splatfest pauses says when it comes back. Next and
-  /// a Rule read the first Rotation after the Splatfest once it is published, after the pause,
-  /// whose weekday tells the Rotation's day: asked Saturday night, its 4:00 PM is Sunday's.
+  /// a Rule read the first Rotation after the Splatfest once it is published, after the pause;
+  /// asked Saturday night, the Rotation reads its start's weekday, Sunday.
   @Test
   func `A paused Battle Mode says when it comes back`() async throws {
     let secondHalf = try await Self.answers(.splatfestSecondHalf)
@@ -117,13 +149,25 @@ struct SiriAnswersTests {
     let comesBack = "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM."
     let firstAfter = comesBack
       + " Regular Battle: Turf War on Mincemeat Metalworks and Inkblot Art Academy,"
-      + " from 4:00\u{202F}PM to 6:00\u{202F}PM."
+      + " from Sunday 4:00\u{202F}PM to 6:00\u{202F}PM."
 
     #expect(secondHalf.now(in: .battle(.regular), at: date("2026-11-01T06:00:00Z")) == comesBack)
     #expect(secondHalf.next(in: .battle(.regular), at: date("2026-11-01T06:00:00Z")) == firstAfter)
     #expect(secondHalf.next(Self.turfWar, in: .regular, at: date("2026-11-01T06:00:00Z")) == firstAfter)
     #expect(firstHalf.next(in: .battle(.regular), at: date("2026-10-31T13:00:00Z")) == comesBack)
     #expect(firstHalf.next(Self.turfWar, in: .regular, at: date("2026-10-31T13:00:00Z")) == comesBack)
+  }
+
+  /// Council round 5 (Sol): a Rule's Rotation that starts after midnight following the return
+  /// reads its own weekday; the pause's weekday is the return's day, not the Rotation's.
+  @Test
+  func `A Rule's Rotation the day after the Splatfest's return reads its own weekday`() async throws {
+    let noronha = try #require(TimeZone(identifier: "America/Noronha"))
+    let answers = try await Self.answers(.splatfestSecondHalf, timeZone: noronha)
+
+    #expect(answers.next(Self.rainmaker, in: .x, at: date("2026-11-01T06:00:00Z")) ==
+      "X Battle: paused during the Splatfest until Sunday 10:00\u{202F}PM."
+      + " X Battle: Rainmaker on Um'ami Ruins and Barnacle & Dime, from Monday 12:00\u{202F}AM to 2:00\u{202F}AM.")
   }
 
   /// Ticket 21: a Rule absent from the remaining Rotations is not published, a pause or not.

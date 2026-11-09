@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if DEBUG
 import Foundation
 import IkaCore
 
@@ -37,3 +38,4 @@ public struct RunningClock: TimeSource {
       clock: .continuous)
   }
 }
+#endif

@@ -14,7 +14,7 @@ import SwiftUI
 /// player can judge how current it is.
 public struct FetchTimeLabel: View {
   @Environment(\.gameLanguage) private var language
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let fetchTime: Date
   private let now: Date
@@ -31,7 +31,7 @@ public struct FetchTimeLabel: View {
   }
 
   public var body: some View {
-    let format: ScheduleFormat = .init(language: language, timeZone: timeZone)
+    let format = time.format(language)
     VStack(spacing: 2) {
       Text(verbatim: ScreenText.fetchTime.text(in: language, format.time(fetchTime, relativeTo: now)))
       if isStale {

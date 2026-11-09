@@ -21,6 +21,8 @@ struct DecorativeMotionTests {
     .periodicPulse: .crossFade,
     .listReflow: .still,
     .countdownRoll: .crossFade,
+    // Council round 5, M5: the change happens at once.
+    .currentIconGrow: .still,
   ]
 
   @Test

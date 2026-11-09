@@ -226,9 +226,3 @@ extension Collection {
   /// The only element, or `nil` when there are none or several.
   var only: Element? { count == 1 ? first : nil }
 }
-
-/// Parses an ISO 8601 UTC time the way the feed writes it.
-func date(_ string: String) -> Date {
-  // swiftlint:disable:next force_try
-  try! Date(string, strategy: .iso8601)
-}
