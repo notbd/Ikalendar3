@@ -14,7 +14,7 @@ import SwiftUI
 /// One Shift's row of Classic's Salmon Run list, as ikalendar 2's `SalmonRotationRow` draws it:
 /// a header with its tag and kind when it has either, over the Shift's cell.
 struct ClassicShiftSection: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let shift: Shift
   let progress: WindowProgress?
@@ -59,11 +59,9 @@ struct ClassicShiftSection: View {
     }
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - ClassicShiftCell
@@ -74,7 +72,8 @@ struct ClassicShiftCell: View {
   typealias Scoped = ClassicMetrics.Shift
 
   @Environment(\.colorScheme) private var colorScheme
-  @Environment(\.timeZone) private var timeZone
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @TimeSettings private var time
 
   let shift: Shift
   let progress: WindowProgress?
@@ -114,6 +113,7 @@ struct ClassicShiftCell: View {
   /// ikalendar 2 drew its golden egg or salmon.
   private var timeSection: some View {
     let isRunning: Bool = progress != nil
+    let isGrowing: Bool = DecorativeMotion.currentIconGrow.form(reduceMotion: reduceMotion) == .full
     let range: AnyLayout = metrics.arrangement == .stacked
       ? AnyLayout(VStackLayout(alignment: .trailing, spacing: Scoped.timeTextSpacing))
       : AnyLayout(HStackLayout(spacing: Scoped.timeTextSpacing))
@@ -121,7 +121,7 @@ struct ClassicShiftCell: View {
     return HStack {
       kindIcon(isRunning: isRunning)
         .scaleEffect(isRunning ? Scoped.currentIconScale : Scoped.iconScale)
-        .animation(.default, value: isRunning)
+        .animation(isGrowing ? .default : nil, value: isRunning)
 
       Spacer()
 
@@ -187,9 +187,7 @@ struct ClassicShiftCell: View {
     .tint(ModeColor(shift.kind).classicTint(in: colorScheme))
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 }
 
 // MARK: - ClassicShiftStageCard

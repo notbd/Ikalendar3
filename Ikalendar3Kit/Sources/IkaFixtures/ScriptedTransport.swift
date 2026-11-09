@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if DEBUG
 import Foundation
 import IkaCore
 import Synchronization
@@ -107,3 +108,4 @@ extension ScriptedTransport {
     case hang
   }
 }
+#endif

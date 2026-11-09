@@ -24,6 +24,8 @@ final class AppStatus {
   private(set) var splatfestForm: SplatfestBattleForm = .open
   /// Whether Settings is shown on iPhone and iPad.
   var isSettingsPresented = false
+  /// The haptic the last refresh run ended with, which the tabs play; `nil` before the first.
+  var refreshHaptic: RefreshHaptic?
 
   /// A status that opens on `selectedPlace`: the default Mode.
   init(selectedPlace: ModeTab) {

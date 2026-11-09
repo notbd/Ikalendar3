@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if DEBUG
 import Foundation
 import IkaCore
 
@@ -28,3 +29,4 @@ extension Snapshot {
       festivals: fetched(.festivals, decode: FestivalFeed.decode))
   }
 }
+#endif

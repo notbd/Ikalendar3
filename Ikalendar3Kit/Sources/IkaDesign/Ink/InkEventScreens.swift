@@ -18,7 +18,7 @@ import SwiftUI
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store.
 public struct InkChallengeScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: ChallengeScreen
   private let terms: GameTerms
@@ -57,7 +57,7 @@ public struct InkChallengeScreenView: View {
     }
   }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkSplatfestScreenView
@@ -73,7 +73,7 @@ public struct InkChallengeScreenView: View {
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store.
 public struct InkSplatfestScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: SplatfestScreen
   private let terms: GameTerms
@@ -151,8 +151,8 @@ public struct InkSplatfestScreenView: View {
     }
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var format: ScheduleFormat { time.format(terms.language) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkChallengePanel
@@ -161,7 +161,7 @@ public struct InkSplatfestScreenView: View {
 /// then a row per window. Taped while one of its windows is on.
 private struct InkChallengePanel: View {
   @Environment(\.colorScheme) private var colorScheme
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let listing: ChallengeScreen.Listing
   let terms: GameTerms
@@ -231,7 +231,7 @@ private struct InkChallengePanel: View {
     .accessibilityLabel(writer.sentence(for: ChallengeWindow(challenge: challenge, window: window.window), at: now))
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
+  private var format: ScheduleFormat { time.format(terms.language) }
 }
 
 // MARK: - InkTricolorPanel
@@ -239,7 +239,7 @@ private struct InkChallengePanel: View {
 /// Tricolor Turf War's panel in the Splatfest's second half: its time tag with its tag and
 /// "Now!", its Stages and its progress. Not taped: the tape stays on the form's current Rotation.
 private struct InkTricolorPanel: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let tricolor: Running<TricolorTurfWar>
   let terms: GameTerms
@@ -249,8 +249,7 @@ private struct InkTricolorPanel: View {
   var body: some View {
     VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
       InkPanelHeader(
-        timeRange: ScheduleFormat(language: terms.language, timeZone: timeZone)
-          .timeRange(of: tricolor.item, withWeekday: true),
+        timeRange: time.format(terms.language).timeRange(of: tricolor.item, withWeekday: true),
         arrangement: metrics.arrangement)
       {
         InkModeTag(Text(verbatim: ModeLabel.tricolor.text(in: terms.language)), accent: .splatfest)

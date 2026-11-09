@@ -29,6 +29,8 @@ public enum DecorativeMotion: CaseIterable, Sendable {
   case listReflow
   /// The time-left digits rolling as they count down.
   case countdownRoll
+  /// A Shift's kind icon growing as the Shift becomes current.
+  case currentIconGrow
 
   /// How the motion plays: in full, or in its still or cross-fade form under Reduce Motion.
   public func form(reduceMotion: Bool) -> MotionForm {
@@ -43,7 +45,8 @@ public enum DecorativeMotion: CaseIterable, Sendable {
            .squashBounce,
            .iconNudge,
            .buttonPulse,
-           .listReflow:
+           .listReflow,
+           .currentIconGrow:
         .still
       case .stampDock,
            .periodicPulse,

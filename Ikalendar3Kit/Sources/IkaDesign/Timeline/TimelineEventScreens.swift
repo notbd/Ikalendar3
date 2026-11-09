@@ -102,6 +102,7 @@ public struct TimelineChallengeScreenView: View {
 /// values only and reads no store.
 public struct TimelineSplatfestScreenView: View {
   @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: SplatfestScreen
   private let terms: GameTerms
@@ -182,6 +183,6 @@ public struct TimelineSplatfestScreenView: View {
   }
 
   private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 #endif

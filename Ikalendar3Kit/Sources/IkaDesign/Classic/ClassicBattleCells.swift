@@ -19,7 +19,7 @@ import SwiftUI
 /// while the Rotation moves from a secondary cell to the primary one, so the Rotation glides into
 /// the featured place when it becomes current.
 struct ClassicBattleSection: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
   @Environment(\.colorScheme) private var colorScheme
 
   @Namespace private var glide
@@ -47,6 +47,8 @@ struct ClassicBattleSection: View {
   @ViewBuilder private var cell: some View {
     switch row {
       case .current(let running):
+        // Never `nil`: IkaCore hands out only Rotations that play and reads a pause as
+        // `.paused`, so these unwraps only satisfy `Rotation`'s optional `setting`.
         if let setting = running.item.setting {
           ClassicBattlePrimaryCell(
             setting: setting,
@@ -73,7 +75,7 @@ struct ClassicBattleSection: View {
         }
 
       case .paused(let returnTime):
-        let format: ScheduleFormat = .init(language: terms.language, timeZone: timeZone)
+        let format = time.format(terms.language)
         let status: ClassicStatusCell = .init(
           text: ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now)),
           arrangement: metrics.arrangement)
@@ -119,11 +121,9 @@ struct ClassicBattleSection: View {
     }
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - ClassicBattlePrimaryCell
@@ -138,7 +138,7 @@ struct ClassicBattleSection: View {
 struct ClassicBattlePrimaryCell: View {
   typealias Scoped = ClassicMetrics.BattlePrimary
 
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let setting: Rotation.Setting
   let progress: WindowProgress
@@ -235,9 +235,7 @@ struct ClassicBattlePrimaryCell: View {
       .ikaFont(.light, size: Scoped.remainingTimeFontSize, relativeTo: .headline)
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 }
 
 // MARK: - ClassicBattleSecondaryCell

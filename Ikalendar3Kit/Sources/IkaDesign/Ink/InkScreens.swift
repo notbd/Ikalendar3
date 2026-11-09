@@ -19,7 +19,7 @@ import SwiftUI
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store. Pull to
 /// refresh reaches its scroll view through the `refreshable` action the shared screen sets.
 public struct InkBattleScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: BattleScreen
   private let terms: GameTerms
@@ -84,8 +84,8 @@ public struct InkBattleScreenView: View {
     }
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var format: ScheduleFormat { time.format(terms.language) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkSalmonRunScreenView
@@ -95,7 +95,7 @@ public struct InkBattleScreenView: View {
 /// leaves and the next takes the featured place. It receives `IkaCore` values only and reads no
 /// store.
 public struct InkSalmonRunScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: SalmonRunScreen
   private let terms: GameTerms
@@ -157,8 +157,8 @@ public struct InkSalmonRunScreenView: View {
       .accessibilityLabel(writer.sentence(for: entry.item, at: now))
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var format: ScheduleFormat { time.format(terms.language) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkScheduleList

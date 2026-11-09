@@ -22,7 +22,7 @@ import SwiftUI
 /// sentence, a Splatfest's with its team names.
 public struct InkEventCard: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   @ScaledMetric(relativeTo: .title3) private var iconSize: CGFloat = InkScreenMetrics.eventIconSize
 
@@ -157,8 +157,8 @@ public struct InkEventCard: View {
 
   private var arrangement: CellArrangement { dynamicTypeSize.isAccessibilitySize ? .stacked : .sideBySide }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var format: ScheduleFormat { time.format(terms.language) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkEventKind

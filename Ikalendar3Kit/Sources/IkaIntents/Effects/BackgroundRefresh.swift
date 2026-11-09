@@ -33,7 +33,9 @@ public enum BackgroundRefresh {
     await shell.run()
   }
 
-  /// Asks for the next run about two hours after `now`.
+  /// Asks for the next run about two hours after `now`. It replaces any pending request, so a
+  /// caller that needs an earlier run, such as at a Live Activity boundary, asks for the earliest
+  /// of the two with `requestRun(at:)` instead.
   static public func requestNextRun(after now: Date = Date()) async {
     await requestRun(at: now.addingTimeInterval(interval / .seconds(1)))
   }
