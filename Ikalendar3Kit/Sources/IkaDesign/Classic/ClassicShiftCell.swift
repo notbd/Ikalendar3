@@ -72,6 +72,7 @@ struct ClassicShiftCell: View {
   typealias Scoped = ClassicMetrics.Shift
 
   @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @TimeSettings private var time
 
   let shift: Shift
@@ -112,6 +113,7 @@ struct ClassicShiftCell: View {
   /// ikalendar 2 drew its golden egg or salmon.
   private var timeSection: some View {
     let isRunning: Bool = progress != nil
+    let isGrowing: Bool = DecorativeMotion.currentIconGrow.form(reduceMotion: reduceMotion) == .full
     let range: AnyLayout = metrics.arrangement == .stacked
       ? AnyLayout(VStackLayout(alignment: .trailing, spacing: Scoped.timeTextSpacing))
       : AnyLayout(HStackLayout(spacing: Scoped.timeTextSpacing))
@@ -119,7 +121,7 @@ struct ClassicShiftCell: View {
     return HStack {
       kindIcon(isRunning: isRunning)
         .scaleEffect(isRunning ? Scoped.currentIconScale : Scoped.iconScale)
-        .animation(.default, value: isRunning)
+        .animation(isGrowing ? .default : nil, value: isRunning)
 
       Spacer()
 
