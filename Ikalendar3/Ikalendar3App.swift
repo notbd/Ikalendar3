@@ -29,8 +29,14 @@ struct Ikalendar3App: App {
         TestHostPlaceholder()
       }
       else if let services {
-        ModeTabsView()
-          .environment(services)
+        Group {
+          #if DEBUG
+          if DebugLaunch.showsEventCards() { EventCardGallery() } else { ModeTabsView() }
+          #else
+          ModeTabsView()
+          #endif
+        }
+        .environment(services)
       }
       else {
         // With nowhere to keep data the widget extension can see, there is nothing to show.

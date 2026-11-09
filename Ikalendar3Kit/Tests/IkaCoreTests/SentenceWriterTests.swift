@@ -100,6 +100,26 @@ struct SentenceWriterTests {
       + "from Thursday 8:00\u{202F}AM to Saturday 12:00\u{202F}AM, 2 hours left.")
   }
 
+  /// A Challenge window reads like a Rotation, with the Challenge's name in the Battle Mode's
+  /// place. Challenges are announced days ahead, so its times carry the weekday.
+  @Test
+  func `A Challenge window reads its Challenge, Rule, Stages, time range and time left`() async throws {
+    let snapshot: Snapshot = try await .schedules(.normalDay)
+    let challenge = try #require(snapshot.schedules?.content.challenges.first)
+    let window: ChallengeWindow = try .init(challenge: challenge, window: #require(challenge.windows.first))
+    let writer: SentenceWriter = .init(
+      terms: snapshot.terms(in: .enUS),
+      timeZone: Self.losAngeles,
+      hourCycle: .oneToTwelve)
+
+    #expect(writer.sentence(for: window, at: date("2026-10-23T02:30:00Z")) ==
+      "Dualies at Ten Paces: Splat Zones on Um'ami Ruins and Sturgeon Shipyard, "
+      + "from Thursday 7:00\u{202F}PM to Thursday 9:00\u{202F}PM, 1 hour 30 minutes left.")
+    #expect(writer.sentence(for: window, at: date("2026-10-20T13:00:00Z")) ==
+      "Dualies at Ten Paces: Splat Zones on Um'ami Ruins and Sturgeon Shipyard, "
+      + "from Thursday 7:00\u{202F}PM to Thursday 9:00\u{202F}PM.")
+  }
+
   /// The Salmon Run widget reads it, for the reason the battle widgets read a Rotation without
   /// an instant.
   @Test

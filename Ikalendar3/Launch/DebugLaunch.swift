@@ -22,6 +22,8 @@ import IkaIntents
 ///   run gets the App Group folder every worktree on the machine shares, so each Mac run from a
 ///   worktree passes a folder inside it and a suite named after it. It is an explicit option,
 ///   never a fallback.
+/// - The event card gallery: `--event-cards` shows every event card at the app clock's instant
+///   instead of the tabs, for screenshots until the iPad event strip shows them.
 ///
 /// A malformed option stops the launch with its reason: a launch that asked for test data never
 /// falls back to the network or the shared folder.
@@ -37,6 +39,11 @@ enum DebugLaunch {
     }
 
     return SharedStorage(feedDirectory: URL(filePath: folder, directoryHint: .isDirectory), defaults: defaults)
+  }
+
+  /// Whether the launch asks for the event card gallery instead of the tabs.
+  static func showsEventCards(_ arguments: [String] = ProcessInfo.processInfo.arguments) -> Bool {
+    LaunchArguments(arguments).contains("--event-cards")
   }
 
   /// The run of the fixture launch the arguments ask for, or `nil` when they ask for none.
