@@ -36,7 +36,7 @@ struct ModeColorTests {
   /// A view draws the colour with the icon, so one kind reads alike in both.
   @Test
   func `Every colour's kind has an icon of the same case name`() {
-    let iconNames = Set(ModeIcon.allCases.map { String(describing: $0) })
+    let iconNames: Set = .init(ModeIcon.allCases.map { String(describing: $0) })
 
     #expect(ModeColor.allCases.allSatisfy { iconNames.contains(String(describing: $0)) })
   }

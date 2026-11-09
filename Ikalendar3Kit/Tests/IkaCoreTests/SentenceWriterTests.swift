@@ -69,6 +69,7 @@ struct SentenceWriterTests {
       Issue.record("\(String(describing: summary))")
       return
     }
+
     #expect(Self.writer().sentence(forPauseOf: mode, returningAt: returnTime) ==
       "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM.")
   }
@@ -107,10 +108,12 @@ struct SentenceWriterTests {
       Issue.record("Tracking content of another Mode")
       return
     }
-    let writer = Self.writer()
+
+    let writer: SentenceWriter = Self.writer()
 
     #expect(try writer.sentence(for: #require(rotations.first), of: .x, at: instant) ==
-      "X Battle: Tower Control on Mahi-Mahi Resort and Robo ROM-en, from 5:00\u{202F}AM to 7:00\u{202F}AM, 1 hour left.")
+      "X Battle: Tower Control on Mahi-Mahi Resort and Robo ROM-en, "
+      + "from 5:00\u{202F}AM to 7:00\u{202F}AM, 1 hour left.")
     #expect(try writer.sentence(for: #require(pauses.first), of: .regular, at: instant) ==
       "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM.")
     #expect(try writer.sentence(for: #require(shifts.first), at: instant) ==

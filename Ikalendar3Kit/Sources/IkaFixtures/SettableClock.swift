@@ -25,8 +25,11 @@ final public class SettableClock: TimeSource {
     /// The pending sleep and its deadline.
     var sleep: (deadline: Date, continuation: CheckedContinuation<Void, any Error>)?
     /// A caller waiting in `pendingSleep()`.
-    var waiter: CheckedContinuation<Date, Never>?
+    var waiter: Waiter?
   }
+
+  /// A caller of `pendingSleep()`, waiting for a sleep's deadline.
+  private typealias Waiter = CheckedContinuation<Date, Never>
 
   /// A clock standing at an instant.
   public init(_ now: Date) {
@@ -54,7 +57,7 @@ final public class SettableClock: TimeSource {
   public func sleep(until deadline: Date) async throws {
     try await withTaskCancellationHandler {
       try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
-        let outcome = state.withLock { state -> (result: Result<Void, any Error>?, waiter: CheckedContinuation<Date, Never>?) in
+        let outcome = state.withLock { state -> (result: Result<Void, any Error>?, waiter: Waiter?) in
           // The cancellation flag is set before the handler runs, so this check under the lock
           // covers a cancellation that came before the sleep was stored.
           guard !Task.isCancelled else { return (.failure(CancellationError()), nil) }
@@ -77,7 +80,7 @@ final public class SettableClock: TimeSource {
   /// Waits until a sleep is pending and returns its deadline. A sleep that setting `now` ended is
   /// never returned again.
   public func pendingSleep() async -> Date {
-    await withCheckedContinuation { (waiter: CheckedContinuation<Date, Never>) in
+    await withCheckedContinuation { (waiter: Waiter) in
       let deadline = state.withLock { state -> Date? in
         if let sleep = state.sleep { return sleep.deadline }
 

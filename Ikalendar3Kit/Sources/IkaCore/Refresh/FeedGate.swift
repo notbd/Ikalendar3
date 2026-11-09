@@ -161,7 +161,7 @@ struct FeedGate {
 
 extension FeedGate {
   /// What one attempt record gates.
-  enum Key: Hashable, Sendable {
+  enum Key: Hashable {
     /// A feed's requests.
     case feed(Feed)
     /// The current Splatfest art's download.
