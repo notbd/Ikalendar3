@@ -3,7 +3,7 @@
 ## Tools
 
 - Xcode, SwiftFormat and SwiftLint at the versions pinned in `scripts/versions.env`. CI uses exactly these, and the verify script refuses other linter versions, because rule behaviour changes between releases.
-- Homebrew may carry newer linters. To install the pinned ones as CI does, download `swiftformat.zip` from the SwiftFormat release and `portable_swiftlint.zip` from the SwiftLint release with that version number, and put both binaries first on your `PATH`.
+- Homebrew may carry newer linters. To install the pinned ones as CI does, download `swiftformat.zip` from the SwiftFormat release and `portable_swiftlint.zip` from the SwiftLint release with that version number, check each with `shasum -a 256` against its checksum in `scripts/versions.env`, and put both binaries first on your `PATH`.
 - `jq`, `xmllint`, `perl` and `shasum` ship with macOS.
 
 ## Verify
@@ -78,4 +78,4 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 
 ## CI
 
-`.github/workflows/ci.yml` runs `scripts/verify.sh` on every push and on manual dispatch, on GitHub's `xcode-27` image with exactly the pinned Xcode. It fails when the image lacks that Xcode instead of falling back to another, because code built against a newer SDK breaks on an older one. It downloads the pinned linters and nothing else: no fonts, no assets. On failure, the verify logs are attached to the run as `verify-logs`.
+`.github/workflows/ci.yml` runs `scripts/verify.sh` on every push and on manual dispatch, on GitHub's `xcode-27` image with exactly the pinned Xcode. It fails when the image lacks that Xcode instead of falling back to another, because code built against a newer SDK breaks on an older one. It downloads the pinned linters, fails unless their SHA-256 matches `scripts/versions.env`, and downloads nothing else: no fonts, no assets. On failure, the verify logs are attached to the run as `verify-logs`.

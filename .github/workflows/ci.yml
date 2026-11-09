@@ -1,5 +1,6 @@
 # Runs scripts/verify.sh, the same checks in the same order as a local run, on every push and on
-# manual dispatch. The pinned Xcode and linters come from scripts/versions.env.
+# manual dispatch. The pinned Xcode and linters, and the linters' checksums, come from
+# scripts/versions.env.
 name: CI
 
 on:
@@ -71,6 +72,7 @@ jobs:
           set -euo pipefail
           curl -sSfL -o "$RUNNER_TEMP/swiftformat.zip" \
             "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat.zip"
+          echo "$SWIFTFORMAT_SHA256  $RUNNER_TEMP/swiftformat.zip" | shasum -a 256 -c -
           unzip -o -q "$RUNNER_TEMP/swiftformat.zip" -d "$RUNNER_TEMP/swiftformat"
           # A directory of its own, first on PATH: the image's Homebrew linters would shadow it.
           mkdir -p "$RUNNER_TEMP/pinned-tools"
@@ -82,6 +84,7 @@ jobs:
           set -euo pipefail
           curl -sSfL -o "$RUNNER_TEMP/swiftlint.zip" \
             "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip"
+          echo "$SWIFTLINT_SHA256  $RUNNER_TEMP/swiftlint.zip" | shasum -a 256 -c -
           unzip -o -q "$RUNNER_TEMP/swiftlint.zip" -d "$RUNNER_TEMP/swiftlint"
           mkdir -p "$RUNNER_TEMP/pinned-tools"
           install "$RUNNER_TEMP/swiftlint/swiftlint" "$RUNNER_TEMP/pinned-tools/swiftlint"
