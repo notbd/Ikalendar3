@@ -14,9 +14,9 @@ import Synchronization
 
 /// Registers SplatNet 3's faces with Core Text for this process and remembers which ones it has.
 ///
-/// Each target calls `register(from:)` once at start (ticket 16). Any number of faces may be
-/// present, none included (CI and fresh clones have no font files): text set in a missing face
-/// falls back along its `FontCascade`.
+/// Each target registers once at start, through `BundledResources.load(from:)`. Any number of
+/// faces may be present, none included (CI and fresh clones have no font files): text set in a
+/// missing face falls back along its `FontCascade`.
 public enum FontRegistry {
   static private let faces: Mutex<Set<FontFace>> = .init([])
 
@@ -26,11 +26,12 @@ public enum FontRegistry {
   }
 
   /// Registers every face found in `folder` as `<name>.otf` or `<name>.ttf` and logs which ones.
-  /// A missing folder counts as an empty one.
+  /// A missing folder counts as an empty one. Internal, so targets register only through
+  /// `BundledResources.load(from:)`.
   ///
   /// - Returns: The faces registered from `folder`.
   @discardableResult
-  static public func register(from folder: URL) -> Set<FontFace> {
+  static func register(from folder: URL) -> Set<FontFace> {
     let registeredNow: Set<FontFace> = Set(FontFace.allCases.filter { register($0, in: folder) })
     faces.withLock { $0.formUnion(registeredNow) }
 

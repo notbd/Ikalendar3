@@ -6,6 +6,7 @@
 //
 
 import IkaDesign
+import IkaResources
 import SwiftUI
 import WidgetKit
 
@@ -14,6 +15,11 @@ import WidgetKit
 /// The widget extension on iPhone, iPad and Mac.
 @main
 struct Ikalendar3Widgets: WidgetBundle {
+  /// Registers the fonts and points image lookups at the resource framework before anything draws.
+  init() {
+    BundledResources.load(from: IkaResources.bundle)
+  }
+
   var body: some Widget {
     PlaceholderWidget()
   }

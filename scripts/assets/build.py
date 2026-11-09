@@ -39,10 +39,10 @@ from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "scripts/assets/manifest.json"
-CATALOG = ROOT / "Ikalendar3Kit/Sources/IkaDesign/Resources/Images.xcassets"
+CATALOG = ROOT / "IkaResources/Images.xcassets"
 INDEX = ROOT / "Ikalendar3Kit/Sources/IkaDesign/Images/BundledImage+Index.swift"
-# Git-ignored: the fonts are never committed. App packaging copies them from here.
-FONTS = ROOT / "build/Fonts"
+# Git-ignored: the fonts are never committed. The IkaResources framework ships what is here.
+FONTS = ROOT / "IkaResources/Fonts"
 WORK = ROOT / "build/Assets"
 
 SIZES = ("small", "medium", "large")

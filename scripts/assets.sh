@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 #
 # Builds the bundled images and SplatNet 3's fonts from scripts/assets/manifest.json: downloads
-# every source and checks its hash, then renders three pixel sizes of each image into IkaDesign's
-# asset catalog and the Swift index of bundled ids (committed), and merges each font's web-font
-# subsets into one file in build/Fonts (git-ignored). CI never runs this; a release build runs it
-# first.
+# every source and checks its hash, then renders three pixel sizes of each image into the asset
+# catalog in IkaResources and the Swift index of bundled ids in IkaDesign (committed), and merges
+# each font's web-font subsets into one file in IkaResources/Fonts (git-ignored). CI never runs
+# this; a release build runs it first.
 #
 # The tools are pinned so a second run writes the same bytes: Python from scripts/versions.env,
 # its packages with hashes from scripts/assets/requirements.txt, installed into a virtual
