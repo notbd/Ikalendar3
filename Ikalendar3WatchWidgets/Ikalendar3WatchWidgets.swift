@@ -6,6 +6,7 @@
 //
 
 import IkaDesign
+import IkaResources
 import SwiftUI
 import WidgetKit
 
@@ -14,6 +15,11 @@ import WidgetKit
 /// The watch widget extension: complications and the Smart Stack.
 @main
 struct Ikalendar3WatchWidgets: WidgetBundle {
+  /// Registers the fonts and points image lookups at the resource framework before anything draws.
+  init() {
+    BundledResources.load(from: IkaResources.bundle)
+  }
+
   var body: some Widget {
     PlaceholderWidget()
   }

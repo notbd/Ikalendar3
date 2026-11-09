@@ -7,21 +7,17 @@
 
 import CoreGraphics
 import Foundation
+import ImageIO
 import Testing
 @testable import IkaCore
 @testable import IkaDesign
 
-#if canImport(UIKit)
-import UIKit
-#else
-import AppKit
-#endif
-
 // MARK: - BundledImageAlignmentTests
 
-/// Every manifest id must have its image in the built catalog at each of the three sizes, and
+/// Every manifest id must have its image in the asset catalog at each of the three sizes, and
 /// every id the recorded feeds carry must be in the manifest: a missing image ships as a
-/// placeholder, and nothing else would notice. The manifest and the fixtures are read by path.
+/// placeholder, and nothing else would notice. The manifest, the catalog and the fixtures are read
+/// by path: the catalog ships in the app's resource framework, which no package test links.
 struct BundledImageAlignmentTests {
   @Test
   func `The manifest's groups are the lookup's groups`() throws {
@@ -34,13 +30,14 @@ struct BundledImageAlignmentTests {
     throws
   {
     let group: Manifest.Group = try #require(Manifest.load().groups.first { $0.key == bundleGroup.rawValue })
+    let files: [String: URL] = try Catalog.imageFiles()
     #expect(!group.images.isEmpty)
 
     for id in group.images.map(\.id) {
       #expect(BundledImage.baseNames[bundleGroup]?[id] != nil, "\(group.key) \(id) is not in the index")
       for size in BundledImage.Size.allCases {
         let name: String = BundledImage.name(of: id, in: bundleGroup, size: size)
-        let pixels: CGSize = try #require(pixelSize(of: name), "\(name) is not in the catalog")
+        let pixels: CGSize = try #require(files[name].flatMap(pixelSize(of:)), "\(name) is not in the catalog")
         let box: [Int] = try #require(group.sizes[size.rawValue])
         #expect(Int(pixels.width) <= box[0] && Int(pixels.height) <= box[1], "\(name) is \(pixels)")
       }
@@ -48,9 +45,10 @@ struct BundledImageAlignmentTests {
   }
 
   @Test(arguments: BundledImage.Group.allCases)
-  func `Every group's placeholder is in the catalog`(group: BundledImage.Group) {
+  func `Every group's placeholder is in the catalog`(group: BundledImage.Group) throws {
+    let files: [String: URL] = try Catalog.imageFiles()
     for size in BundledImage.Size.allCases {
-      #expect(pixelSize(of: "placeholder-\(group.rawValue)_\(size.rawValue)") != nil)
+      #expect(files["placeholder-\(group.rawValue)_\(size.rawValue)"].flatMap(pixelSize(of:)) != nil)
     }
   }
 
@@ -94,16 +92,51 @@ struct BundledImageAlignmentTests {
       .filter { $0.lastPathComponent.hasPrefix("schedules-") && $0.pathExtension == "json" }
   }
 
-  /// The pixel size of a catalog image in the built catalog.
-  private func pixelSize(of name: String) -> CGSize? {
-    #if canImport(UIKit)
-    let image: CGImage? = UIImage(named: name, in: BundledImage.catalogBundle, with: nil)?.cgImage
-    #else
-    let image: CGImage? = BundledImage.catalogBundle
-      .image(forResource: name)?
-      .cgImage(forProposedRect: nil, context: nil, hints: nil)
-    #endif
-    return image.map { CGSize(width: $0.width, height: $0.height) }
+  /// The pixel size of the image file at `url`.
+  private func pixelSize(of url: URL) -> CGSize? {
+    guard
+      let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+      let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+      let width = properties[kCGImagePropertyPixelWidth] as? Int,
+      let height = properties[kCGImagePropertyPixelHeight] as? Int
+    else {
+      return nil
+    }
+
+    return CGSize(width: width, height: height)
+  }
+}
+
+// MARK: - Catalog
+
+/// The asset catalog `scripts/assets.sh` writes, read from its folder.
+enum Catalog {
+  /// The parts of an image set's `Contents.json` these tests read.
+  private struct ImageSet: Decodable {
+    struct Image: Decodable {
+      let filename: String?
+    }
+
+    let images: [Image]
+  }
+
+  /// `IkaResources/Images.xcassets` in the repository.
+  static let folder: URL = Manifest.packageFolder
+    .deletingLastPathComponent()
+    .appending(path: "IkaResources/Images.xcassets", directoryHint: .isDirectory)
+
+  /// The file of each image set, by image name (the set's folder name without `.imageset`).
+  static func imageFiles() throws -> [String: URL] {
+    let sets: [URL] = (FileManager.default.enumerator(at: folder, includingPropertiesForKeys: nil)?.allObjects ?? [])
+      .compactMap { $0 as? URL }
+      .filter { $0.pathExtension == "imageset" }
+    return try sets.reduce(into: [:]) { files, set in
+      let contents: ImageSet = try JSONDecoder()
+        .decode(ImageSet.self, from: Data(contentsOf: set.appending(path: "Contents.json")))
+      if let filename = contents.images.lazy.compactMap(\.filename).first {
+        files[set.deletingPathExtension().lastPathComponent] = set.appending(path: filename)
+      }
+    }
   }
 }
 

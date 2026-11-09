@@ -7,6 +7,7 @@
 
 import Foundation
 import IkaCore
+import Synchronization
 
 // MARK: - BundledImage
 
@@ -16,8 +17,7 @@ import IkaCore
 /// `scripts/assets.sh` builds the catalog and the index of bundled ids from
 /// `scripts/assets/manifest.json`. An id the catalog lacks, such as a Stage the game added after
 /// this build, gets its group's placeholder, so a name always resolves and the cache holds only
-/// feeds and Splatfest art. This only names images: the caller loads them from the bundle that
-/// ships the catalog.
+/// feeds and Splatfest art. This only names images: the caller loads them from `catalogBundle`.
 public enum BundledImage {
   /// The image of a Stage, battle or Salmon Run.
   static public func name(for stage: StageID, size: Size) -> String {
@@ -39,10 +39,14 @@ public enum BundledImage {
     name(of: kingSalmonid.rawValue, in: .kingSalmonid, size: size)
   }
 
-  /// Where the build puts the catalog for now: this module's resource bundle. Where it ships is
-  /// still open (the build copies it into every product that links this module), so callers do
-  /// not rely on this yet.
-  static let catalogBundle: Bundle = .module
+  /// The bundle whose asset catalog holds these images: the one `BundledResources.load(from:)` was
+  /// given at start. Before that, the main bundle, which holds none of them.
+  static public var catalogBundle: Bundle {
+    catalog.withLock { $0 }
+  }
+
+  /// Where `catalogBundle` points.
+  static let catalog: Mutex<Bundle> = .init(.main)
 
   /// The image name of a manifest id: `<base name>_<size>`.
   static func name(of id: String, in group: Group, size: Size) -> String {
