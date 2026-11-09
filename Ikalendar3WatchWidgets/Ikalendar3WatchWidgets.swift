@@ -27,9 +27,9 @@ struct Ikalendar3WatchWidgets: WidgetBundle {
 }
 
 extension Ikalendar3WatchWidgets {
-  /// The app language: the text set of the localization the system resolved for this extension's
-  /// bundle. It declares the watch app's 14 localizations, so it resolves the watch app's.
-  static let language: GameLanguage = .init(localization: Bundle.main.preferredLocalizations.first ?? "en")
+  /// The app language, resolved for this extension's bundle. It declares the watch app's 14
+  /// localizations, so it resolves the watch app's.
+  static let language: GameLanguage = .init(resolvedFor: .main)
 }
 
 // MARK: - PlaceholderWidget

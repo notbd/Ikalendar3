@@ -17,8 +17,8 @@ import SwiftUI
 /// It is one VoiceOver element reading the Splatfest's sentence, with the team names as its
 /// value. It receives `IkaCore` values only.
 struct SplatfestTeamsPanel: View {
-  @Environment(\.timeZone) private var timeZone
   @Environment(\.colorScheme) private var colorScheme
+  @TimeSettings private var time
 
   let splatfest: Splatfest
   let terms: GameTerms
@@ -27,7 +27,7 @@ struct SplatfestTeamsPanel: View {
   var body: some View {
     // Looked up one by one: the source may lack them.
     let teamNames = terms.splatfest(splatfest.id).teamNames ?? []
-    let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+    let writer: SentenceWriter = time.writer(terms)
 
     VStack(alignment: .leading, spacing: NowMetrics.lineSpacing) {
       Text(verbatim: ModeLabel.splatfest.text(in: terms.language))

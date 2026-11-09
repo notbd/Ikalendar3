@@ -38,10 +38,9 @@ struct WatchServices {
 }
 
 extension WatchServices {
-  /// The app language: the text set of the localization the system resolved for the watch app's
-  /// bundle. Every target declares the same 14 localizations, so the watch widget extension
-  /// resolves the same one.
-  static let language: GameLanguage = .init(localization: Bundle.main.preferredLocalizations.first ?? "en")
+  /// The app language, resolved for the watch app's bundle. Every target declares the same 14
+  /// localizations, so the watch widget extension resolves the same one.
+  static let language: GameLanguage = .init(resolvedFor: .main)
 
   /// The services this launch asks for.
   ///

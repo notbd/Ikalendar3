@@ -18,8 +18,8 @@ import SwiftUI
 ///
 /// It is one VoiceOver element reading the summary's sentence. It receives `IkaCore` values only.
 struct NowRow: View {
-  @Environment(\.timeZone) private var timeZone
   @Environment(\.colorScheme) private var colorScheme
+  @TimeSettings private var time
 
   let summary: ModeSummary
   let terms: GameTerms
@@ -90,8 +90,8 @@ struct NowRow: View {
     }
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var format: ScheduleFormat { time.format(terms.language) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: NowRow.Look
