@@ -47,10 +47,10 @@ public struct TimelineBattleScreenView: View {
     TimelineScheduleList(
       icon: ModeIcon(Mode.battle(screen.mode)),
       title: screen.mode.name(in: terms.language),
-      headerName: headerName,
+      headerName: screen.mode.timelineHeaderName(in: terms.language),
       reflowValue: entries.map(\.id))
     {
-      if isAnarchy {
+      if screen.mode.isAnarchy {
         TimelineFormStrip(shown: screen.mode, language: terms.language)
       }
       if let card = screen.announcedSplatfest {
@@ -87,33 +87,42 @@ public struct TimelineBattleScreenView: View {
       } color: { _ in
         color
       } sentence: { entry in
-        sentence(for: entry, writer: writer)
+        entry.sentence(of: screen.mode, writer: writer, at: now)
       }
     } footer: {
       FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
     }
   }
 
-  /// Whether the screen shows a form of Anarchy Battle, which the header names without its form
-  /// and the strip below it marks.
-  private var isAnarchy: Bool {
-    screen.mode == .anarchySeries || screen.mode == .anarchyOpen
+  private var format: ScheduleFormat { time.format(terms.language) }
+}
+
+// MARK: - BattleMode
+
+extension BattleMode {
+  /// Whether it is a form of Anarchy Battle, which Timeline's header names without its form and
+  /// the strip below the header marks.
+  var isAnarchy: Bool {
+    self == .anarchySeries || self == .anarchyOpen
   }
 
-  /// The header's name: "Anarchy Battle" over the strip, else the Battle Mode's name.
-  private var headerName: String {
-    isAnarchy ? ModeLabel.anarchyBattle.text(in: terms.language) : screen.mode.name(in: terms.language)
+  /// The name in Timeline's header: "Anarchy Battle" over the strip, else the Battle Mode's name.
+  func timelineHeaderName(in language: GameLanguage) -> String {
+    isAnarchy ? ModeLabel.anarchyBattle.text(in: language) : name(in: language)
   }
+}
 
-  private func sentence(for entry: TimelineEntry<Rotation>, writer: SentenceWriter) -> String {
-    switch entry {
+// MARK: - TimelineEntry
+
+extension TimelineEntry<Rotation> {
+  /// The sentence VoiceOver reads for the entry on `mode`'s screen at `now`.
+  func sentence(of mode: BattleMode, writer: SentenceWriter, at now: Date) -> String {
+    switch self {
       case .item(let rotation, _): writer.sentence(for: rotation, at: now)
-      case .paused(let returnTime): writer.sentence(forPauseOf: screen.mode, returningAt: returnTime)
-      case .nothingCurrent: ScreenText.nothingCurrent.text(in: terms.language)
+      case .paused(let returnTime): writer.sentence(forPauseOf: mode, returningAt: returnTime)
+      case .nothingCurrent: ScreenText.nothingCurrent.text(in: writer.terms.language)
     }
   }
-
-  private var format: ScheduleFormat { time.format(terms.language) }
 }
 
 // MARK: - TimelineSalmonRunScreenView

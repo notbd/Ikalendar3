@@ -42,7 +42,11 @@ struct NowRow: View {
 
       HStack(spacing: NowMetrics.rowSpacing) {
         ZStack {
-          ProgressRing(share: look.share, color: Color(look.color.base), lineWidth: NowMetrics.ringLineWidth)
+          ProgressRing(
+            share: look.share,
+            color: Color(look.color.base),
+            lineWidth: NowMetrics.ringLineWidth,
+            timeLeft: look.progress.map(writer.timeLeft))
           Image(decorative: BundledImage.name(for: look.icon, size: .small), bundle: BundledImage.catalogBundle)
             .resizable()
             .scaledToFit()

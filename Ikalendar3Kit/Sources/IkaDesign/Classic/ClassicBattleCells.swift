@@ -193,7 +193,7 @@ struct ClassicBattlePrimaryCell: View {
         .layoutPriority(1)
         .matchedGeometryEffect(id: GlidePart.ruleIcon, in: glide)
 
-      ruleTitle
+      ClassicPrimaryRuleTitle(rule: setting.rule, terms: terms, arrangement: metrics.arrangement)
         .padding(.vertical, Scoped.ruleTitlePaddingV)
         .matchedGeometryEffect(id: GlidePart.ruleTitle, in: glide)
     }
@@ -202,29 +202,6 @@ struct ClassicBattlePrimaryCell: View {
       height: metrics.arrangement == .sideBySide ? metrics.length(.battleRuleSectionHeight) : nil,
       alignment: .leading)
     .frame(maxWidth: .infinity, alignment: .leading)
-  }
-
-  /// The Rule's name at the size that also fits every other Rule's, so the title keeps one size
-  /// from Rotation to Rotation; wrapped at full size when stacked.
-  @ViewBuilder private var ruleTitle: some View {
-    switch metrics.arrangement {
-      case .sideBySide:
-        IdealFontLayout(anchor: .leading) {
-          title(terms.name(of: setting.rule))
-          ForEach(RuleID.bundled, id: \.self) { rule in
-            title(terms.name(of: rule))
-          }
-        }
-
-      case .stacked:
-        title(terms.name(of: setting.rule))
-    }
-  }
-
-  private func title(_ name: String) -> some View {
-    Text(verbatim: name)
-      .scaledLimitedLine(for: metrics.arrangement)
-      .ikaFont(.heavy, size: Scoped.ruleTitleFontSize, relativeTo: .title)
   }
 
   private var remainingTime: some View {
@@ -236,6 +213,38 @@ struct ClassicBattlePrimaryCell: View {
   }
 
   private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
+}
+
+// MARK: - ClassicPrimaryRuleTitle
+
+/// The featured Rotation's Rule name, large and heavy, at the size that also fits every other
+/// Rule's, so the title keeps one size from Rotation to Rotation; wrapped at full size when
+/// stacked.
+struct ClassicPrimaryRuleTitle: View {
+  let rule: RuleID
+  let terms: GameTerms
+  let arrangement: CellArrangement
+
+  var body: some View {
+    switch arrangement {
+      case .sideBySide:
+        IdealFontLayout(anchor: .leading) {
+          title(terms.name(of: rule))
+          ForEach(RuleID.bundled, id: \.self) { rule in
+            title(terms.name(of: rule))
+          }
+        }
+
+      case .stacked:
+        title(terms.name(of: rule))
+    }
+  }
+
+  private func title(_ name: String) -> some View {
+    Text(verbatim: name)
+      .scaledLimitedLine(for: arrangement)
+      .ikaFont(.heavy, size: ClassicMetrics.BattlePrimary.ruleTitleFontSize, relativeTo: .title)
+  }
 }
 
 // MARK: - ClassicBattleSecondaryCell
