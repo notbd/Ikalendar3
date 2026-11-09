@@ -66,7 +66,7 @@ extension ModeStampMath {
 
   /// The 3D tilt in degrees: proportional to the length of the gravity delta, and none under
   /// Reduce Motion.
-  static public func rotationAngle(for tilt: Tilt, reduceMotion: Bool = false) -> Double {
+  static public func rotationAngle(for tilt: Tilt, reduceMotion: Bool) -> Double {
     guard DecorativeMotion.stampTilt.form(reduceMotion: reduceMotion) == .full else { return 0 }
 
     return Double(hypot(tilt.dx, tilt.dy)) * rotation3dIntensity
@@ -121,7 +121,7 @@ extension ModeStampMath {
 
   /// The stamp shrinks toward its top-trailing corner, is gone by `dockFadeOutEnd`, and stops
   /// tilting once docked. Under Reduce Motion it only cross-fades: no scaling, no tilt.
-  static public func dockStyle(progress: Double, reduceMotion: Bool = false) -> DockStyle {
+  static public func dockStyle(progress: Double, reduceMotion: Bool) -> DockStyle {
     let opacity: Double = 1 - min(progress / dockFadeOutEnd, 1)
 
     switch DecorativeMotion.stampDock.form(reduceMotion: reduceMotion) {

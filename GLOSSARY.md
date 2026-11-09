@@ -6,7 +6,7 @@ ikalendar 3 shows Splatoon 3's public schedules: which battles and Salmon Run Sh
 
 **Mode**:
 A Battle Mode or Salmon Run, each with a Schedule of its own.
-_Avoid_: game mode, category, section
+_Avoid_: game mode, category, section (that is a part of the feed)
 
 **Battle Mode**:
 A battle matchmaking queue with its own schedule, such as Regular Battle, Anarchy Series, Anarchy Open or X Battle.
@@ -91,3 +91,9 @@ _Avoid_: theme, skin, layout
 **Support site**:
 The public website shared by the ikalendar apps, carrying each app's home page, support page and privacy policy.
 _Avoid_: landing page, homepage (for the whole site), docs
+
+## Data
+
+**Section**:
+A part of the schedules feed that decodes on its own: one Battle Mode's Rotations, the Challenges, Salmon Run's regular Shifts and Big Runs, the Eggstra Works, or the current Splatfest. A Section that fails is empty and reported; the others stay intact.
+_Avoid_: part, block

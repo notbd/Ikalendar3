@@ -24,6 +24,7 @@ struct FeedIDTests {
   @Test(arguments: schedules)
   func `Every decoded item is keyed by a feed id, never by an English name`(_ fixture: Fixture) async throws {
     let feed = try await ScheduleFeed.decode(from: fixture.data())
+    let splatfest = Snapshot(schedules: .init(content: feed, fetchTime: .distantPast)).splatfest
     let rotations = (BattleMode.allCases.map(RotationMode.battle)
       + SplatfestBattleForm.allCases.map(RotationMode.splatfestBattle))
       .flatMap(feed.rotations(for:))
@@ -31,7 +32,7 @@ struct FeedIDTests {
     let shifts = feed.salmonRun + feed.eggstraWork
 
     let stages = rotations.flatMap(\.stages) + feed.challenges.flatMap(\.stages) + shifts.map(\.stage)
-      + (feed.currentSplatfest?.splatfest.tricolorStages ?? [])
+      + (splatfest?.tricolorStages ?? [])
     let rules = rotations.map(\.rule) + feed.challenges.map(\.rule)
     #expect(!stages.isEmpty && !rules.isEmpty && !shifts.isEmpty)
 
@@ -50,7 +51,7 @@ struct FeedIDTests {
     for id in shifts.flatMap(\.weapons) {
       #expect(id.rawValue.contains(/^[0-9a-f]{16}$/), "\(id)")
     }
-    if let id = feed.currentSplatfest?.splatfest.id {
+    if let id = splatfest?.id {
       #expect(id.rawValue.contains(/^[A-Z]+-\d{5}$/), "\(id)")
     }
   }

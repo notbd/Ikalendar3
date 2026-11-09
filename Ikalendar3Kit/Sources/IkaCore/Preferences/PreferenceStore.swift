@@ -12,62 +12,107 @@ import Observation
 
 /// The user's preferences and the app's first-run state, read and written through one
 /// `UserDefaults` suite. Ship it on the App Group's suite, so the app, the widget extension and
-/// the intents on one device all see the same values; a store reads the suite once, at init.
+/// the intents on one device all see the same values; a store reads the suite once, at init,
+/// and writes a value only when it changes.
 @Observable
 final public class PreferenceStore {
   /// The tab the iPhone app opens on.
   public var defaultMode: ModeTab {
-    didSet { defaults.set(defaultMode.rawValue, forKey: Key.defaultMode) }
+    didSet {
+      guard defaultMode != oldValue else { return }
+
+      defaults.set(defaultMode.rawValue, forKey: Key.defaultMode)
+    }
   }
 
   /// The colour scheme the app asks for.
   public var colorScheme: ColorSchemePreference {
-    didSet { defaults.set(colorScheme.rawValue, forKey: Key.colorScheme) }
+    didSet {
+      guard colorScheme != oldValue else { return }
+
+      defaults.set(colorScheme.rawValue, forKey: Key.colorScheme)
+    }
   }
 
   /// The look of the app's own screens.
   public var style: Style {
-    didSet { defaults.set(style.rawValue, forKey: Key.style) }
+    didSet {
+      guard style != oldValue else { return }
+
+      defaults.set(style.rawValue, forKey: Key.style)
+    }
   }
 
   /// Minimizes the iPhone tab bar while scrolling.
   public var shouldMinimizeTabBar: Bool {
-    didSet { defaults.set(shouldMinimizeTabBar, forKey: Key.shouldMinimizeTabBar) }
+    didSet {
+      guard shouldMinimizeTabBar != oldValue else { return }
+
+      defaults.set(shouldMinimizeTabBar, forKey: Key.shouldMinimizeTabBar)
+    }
   }
 
   /// Reminds at the start of each Big Run.
   public var isBigRunReminderOn: Bool {
-    didSet { defaults.set(isBigRunReminderOn, forKey: Key.isBigRunReminderOn) }
+    didSet {
+      guard isBigRunReminderOn != oldValue else { return }
+
+      defaults.set(isBigRunReminderOn, forKey: Key.isBigRunReminderOn)
+    }
   }
 
   /// Reminds at the start of each Eggstra Work.
   public var isEggstraWorkReminderOn: Bool {
-    didSet { defaults.set(isEggstraWorkReminderOn, forKey: Key.isEggstraWorkReminderOn) }
+    didSet {
+      guard isEggstraWorkReminderOn != oldValue else { return }
+
+      defaults.set(isEggstraWorkReminderOn, forKey: Key.isEggstraWorkReminderOn)
+    }
   }
 
   /// Reminds at the start of each Splatfest.
   public var isSplatfestReminderOn: Bool {
-    didSet { defaults.set(isSplatfestReminderOn, forKey: Key.isSplatfestReminderOn) }
+    didSet {
+      guard isSplatfestReminderOn != oldValue else { return }
+
+      defaults.set(isSplatfestReminderOn, forKey: Key.isSplatfestReminderOn)
+    }
   }
 
   /// Reminds at the start of each Challenge's first window.
   public var isChallengeReminderOn: Bool {
-    didSet { defaults.set(isChallengeReminderOn, forKey: Key.isChallengeReminderOn) }
+    didSet {
+      guard isChallengeReminderOn != oldValue else { return }
+
+      defaults.set(isChallengeReminderOn, forKey: Key.isChallengeReminderOn)
+    }
   }
 
   /// The Mac window's last layout, which it reopens on.
   public var macLayout: MacLayout {
-    didSet { defaults.set(macLayout.rawValue, forKey: Key.macLayout) }
+    didSet {
+      guard macLayout != oldValue else { return }
+
+      defaults.set(macLayout.rawValue, forKey: Key.macLayout)
+    }
   }
 
   /// True until the welcome screen has been shown once.
   public var shouldShowOnboarding: Bool {
-    didSet { defaults.set(shouldShowOnboarding, forKey: Key.shouldShowOnboarding) }
+    didSet {
+      guard shouldShowOnboarding != oldValue else { return }
+
+      defaults.set(shouldShowOnboarding, forKey: Key.shouldShowOnboarding)
+    }
   }
 
   /// True once the player has used the Rate row, which ends its nudge.
   public var hasDiscoveredRating: Bool {
-    didSet { defaults.set(hasDiscoveredRating, forKey: Key.hasDiscoveredRating) }
+    didSet {
+      guard hasDiscoveredRating != oldValue else { return }
+
+      defaults.set(hasDiscoveredRating, forKey: Key.hasDiscoveredRating)
+    }
   }
 
   @ObservationIgnored private let defaults: UserDefaults

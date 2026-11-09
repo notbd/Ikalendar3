@@ -47,6 +47,7 @@ public struct SplatfestTerms: Hashable, Sendable {
   /// The title, the question the teams answer.
   public let title: String
   /// The team names in the feed's order (Alpha, Bravo, Charlie), the order of
-  /// `Splatfest.teamColors`.
-  public let teamNames: [String]
+  /// `Splatfest.teamColors`; `nil` when the source has none, as the schedules feed does. Never
+  /// index them beside the colours without checking: look each team's name up on its own.
+  public let teamNames: [String]?
 }

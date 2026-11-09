@@ -76,21 +76,21 @@ public struct SquashBounceValues: Sendable {
 ///
 /// A modifier on purpose: in a `(some View) -> some View` helper, the animator's content
 /// closure captures an opaque metatype and trips a non-Sendable warning (ikalendar 2's a58eaf9).
-private struct SquashBounce: ViewModifier {
+struct SquashBounce: ViewModifier {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
   let trigger: Int
   let amplitude: SquashBounceValues.Amplitude
 
   func body(content: Content) -> some View {
-    let isPlaying: Bool = DecorativeMotion.squashBounce.form(reduceMotion: reduceMotion) == .full
+    let input: AnimatorInput = .init(trigger: trigger, reduceMotion: reduceMotion)
 
-    // A constant trigger keeps the view's identity and never starts the keyframes.
     content
       .keyframeAnimator(
         initialValue: SquashBounceValues(),
-        trigger: isPlaying ? trigger : 0)
+        trigger: input.trigger)
       { content, values in
+        let values: SquashBounceValues = input.drawn(values)
         content
           .scaleEffect(values.scale)
           .scaleEffect(y: values.vStretch)
@@ -98,6 +98,28 @@ private struct SquashBounce: ViewModifier {
       } keyframes: { _ in
         SquashBounceValues.keyframes(amplitude)
       }
+  }
+}
+
+// MARK: SquashBounce.AnimatorInput
+
+extension SquashBounce {
+  /// What the keyframe animator gets for one render.
+  struct AnimatorInput {
+    /// The caller's trigger. It never depends on Reduce Motion: a trigger that changed with the
+    /// setting would start the keyframes the moment Reduce Motion turns on or off.
+    let trigger: Int
+    let isPlaying: Bool
+
+    init(trigger: Int, reduceMotion: Bool) {
+      self.trigger = trigger
+      isPlaying = DecorativeMotion.squashBounce.form(reduceMotion: reduceMotion) == .full
+    }
+
+    /// The values the content draws: the keyframes' while the bounce plays, rest otherwise.
+    func drawn(_ values: SquashBounceValues) -> SquashBounceValues {
+      isPlaying ? values : SquashBounceValues()
+    }
   }
 }
 

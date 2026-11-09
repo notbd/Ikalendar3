@@ -1,0 +1,223 @@
+//
+//  SentenceWriterTests.swift
+//  Ikalendar3
+//
+//  Copyright (c) TIANWEI ZHANG. All rights reserved.
+//
+
+import Foundation
+import Testing
+@testable import IkaCore
+
+struct SentenceWriterTests {
+  /// X Battle's Splat Zones on Scorch Gorge and Eeltail Alley, 16:00 to 18:00 UTC on the epoch's
+  /// day (a Thursday).
+  static let rotation: Rotation = .init(
+    mode: .battle(.x),
+    startTime: TestData.instant(hours: 16),
+    endTime: TestData.instant(hours: 18),
+    setting: .init(rule: RuleID("VnNSdWxlLTE="), stages: [StageID("VnNTdGFnZS0x"), StageID("VnNTdGFnZS0y")]))
+
+  static let losAngeles: TimeZone = .init(identifier: "America/Los_Angeles")!
+
+  /// A writer in en-US, Los Angeles time and the 12-hour cycle.
+  static func writer(
+    _ language: GameLanguage = .enUS,
+    timeZone: TimeZone = losAngeles,
+    hourCycle: Locale.HourCycle = .oneToTwelve)
+    -> SentenceWriter
+  {
+    SentenceWriter(
+      terms: GameTerms(language: language, refreshed: nil, feed: TermTable()),
+      timeZone: timeZone,
+      hourCycle: hourCycle)
+  }
+
+  @Test
+  func `A running Rotation reads its Battle Mode, Rule, Stages, time range and time left`() {
+    let sentence = Self.writer().sentence(for: Self.rotation, at: TestData.instant(hours: 16 + 40.0 / 60))
+
+    #expect(sentence == "X Battle: Splat Zones on Scorch Gorge and Eeltail Alley, "
+      + "from 8:00\u{202F}AM to 10:00\u{202F}AM, 1 hour 20 minutes left.")
+  }
+
+  @Test
+  func `A Rotation not running reads no time left`() {
+    let sentence = Self.writer().sentence(for: Self.rotation, at: TestData.instant(hours: 15))
+
+    #expect(sentence ==
+      "X Battle: Splat Zones on Scorch Gorge and Eeltail Alley, from 8:00\u{202F}AM to 10:00\u{202F}AM.")
+  }
+
+  @Test
+  func `A paused Rotation reads its Battle Mode with its form and the Splatfest`() {
+    let paused: Rotation = .init(
+      mode: .battle(.anarchySeries),
+      startTime: TestData.instant(hours: 16),
+      endTime: TestData.instant(hours: 18),
+      setting: nil)
+
+    let sentence = Self.writer().sentence(for: paused, at: TestData.instant(hours: 17.5))
+
+    #expect(sentence ==
+      "Anarchy Battle (Series): paused during the Splatfest, from 8:00\u{202F}AM to 10:00\u{202F}AM, 30 minutes left.")
+  }
+
+  @Test
+  func `A Shift reads its Stage, four weapons with random marks, time range and time left`() {
+    let shift: Shift = .init(
+      kind: .regular,
+      startTime: TestData.instant(hours: 16),
+      endTime: TestData.instant(hours: 56),
+      stage: StageID("Q29vcFN0YWdlLTE="),
+      weapons: [WeaponID("e60629ecf35192a1"), .random, WeaponID("961a7063fc94f087"), .rareRandom],
+      kingSalmonid: nil)
+
+    let sentence = Self.writer().sentence(for: shift, at: TestData.instant(hours: 54))
+
+    #expect(sentence == "Salmon Run: Spawning Grounds with Splattershot, Random, Splat Charger, and Rare Random, "
+      + "from Thursday 8:00\u{202F}AM to Saturday 12:00\u{202F}AM, 2 hours left.")
+  }
+
+  // MARK: Languages
+
+  @Test(arguments: GameLanguage.allCases)
+  func `Every sentence resolves with every name in each language`(language: GameLanguage) {
+    let writer: SentenceWriter = Self.writer(language)
+    let terms = writer.terms
+    let series: Rotation = .init(
+      mode: .battle(.anarchySeries),
+      startTime: Self.rotation.startTime,
+      endTime: Self.rotation.endTime,
+      setting: Self.rotation.setting)
+    let paused: Rotation = .init(
+      mode: .splatfestBattle(.pro),
+      startTime: series.startTime,
+      endTime: series.endTime,
+      setting: nil)
+    let bigRun: Shift = .init(
+      kind: .bigRun,
+      startTime: TestData.instant(hours: 16),
+      endTime: TestData.instant(hours: 64),
+      stage: StageID("VnNTdGFnZS0x"),
+      weapons: [WeaponID("e60629ecf35192a1"), .random, .rareRandom, .rareRandom],
+      kingSalmonid: nil)
+    let instant: Date = TestData.instant(hours: 16.5)
+
+    let names: [String] = [
+      terms.name(of: RuleID("VnNSdWxlLTE=")),
+      terms.name(of: StageID("VnNTdGFnZS0x")),
+      terms.name(of: StageID("VnNTdGFnZS0y")),
+      terms.name(of: WeaponID("e60629ecf35192a1")),
+      terms.name(of: WeaponID.random),
+      ModeLabel.anarchyBattle.text(in: language),
+      ModeLabel.series.text(in: language),
+      ModeLabel.bigRun.text(in: language),
+    ]
+    let texts = [
+      writer.sentence(for: series, at: instant),
+      writer.sentence(for: paused, at: instant),
+      writer.sentence(for: bigRun, at: instant),
+      writer.timeLeft(WindowProgress(timeLeft: .seconds(4800), sharePassed: 0.5)),
+    ] + MissedBoundaryReminder.allCases.map { $0.text(in: language) }
+
+    for text in texts {
+      #expect(!text.isEmpty && !text.contains("%"), "\(language.rawValue): \(text)")
+      for key in ["sentence.", "weapon.", "reminder."] {
+        #expect(!text.contains(key), "\(language.rawValue): \(text)")
+      }
+    }
+    for name in names {
+      #expect(!name.isEmpty && !name.contains("="), "\(language.rawValue): [\(name)]")
+    }
+    #expect(texts[0].contains(names[0]) && texts[0].contains(names[1]) && texts[0].contains(names[2]), "\(texts[0])")
+    #expect(texts[0].contains(names[5]) && texts[0].contains(names[6]), "\(texts[0])")
+    #expect(texts[2].contains(names[3]) && texts[2].contains(names[4]) && texts[2].contains(names[7]), "\(texts[2])")
+    if ![.enUS, .enGB].contains(language) {
+      #expect(texts[0] != Self.writer(.enUS).sentence(for: series, at: instant))
+    }
+  }
+
+  // MARK: Time left
+
+  /// A time left in seconds and how it reads in a text set.
+  struct TimeLeftCase: CustomTestStringConvertible {
+    let seconds: Int64
+    let language: GameLanguage
+    let text: String
+
+    var testDescription: String { "\(seconds) s in \(language.rawValue)" }
+  }
+
+  @Test(arguments: [
+    TimeLeftCase(seconds: 7200, language: .enUS, text: "2 hours left"),
+    TimeLeftCase(seconds: 3660, language: .enUS, text: "1 hour 1 minute left"),
+    TimeLeftCase(seconds: 59 * 60 + 1, language: .enUS, text: "1 hour left"),
+    TimeLeftCase(seconds: 1, language: .enUS, text: "1 minute left"),
+    TimeLeftCase(seconds: 39 * 3600 + 5 * 60, language: .enUS, text: "39 hours 5 minutes left"),
+    TimeLeftCase(seconds: 4800, language: .jaJP, text: "残り1時間20分"),
+    TimeLeftCase(seconds: 4800, language: .zhCN, text: "剩余1小时20分钟"),
+    TimeLeftCase(seconds: 2 * 3600 + 22 * 60, language: .ruRU, text: "осталось: 2 часа 22 минуты"),
+  ])
+  func `Progress reads as the time left in hours and minutes, rounded up`(_ timeLeft: TimeLeftCase) {
+    let progress: WindowProgress = .init(timeLeft: .seconds(timeLeft.seconds), sharePassed: 0.5)
+
+    #expect(Self.writer(timeLeft.language).timeLeft(progress) == timeLeft.text)
+  }
+
+  // MARK: Time ranges
+
+  /// A text set, time zone and hour cycle, and how the epoch's 16:00 to 18:00 UTC Rotation reads.
+  struct TimeRangeCase: CustomTestStringConvertible {
+    let language: GameLanguage
+    let timeZone: String
+    let hourCycle: Locale.HourCycle
+    let range: String
+
+    var testDescription: String { "\(language.rawValue), \(timeZone), \(hourCycle)" }
+  }
+
+  @Test(arguments: [
+    TimeRangeCase(
+      language: .enUS,
+      timeZone: "America/Los_Angeles",
+      hourCycle: .oneToTwelve,
+      range: "from 8:00\u{202F}AM to 10:00\u{202F}AM"),
+    TimeRangeCase(
+      language: .enUS,
+      timeZone: "America/Los_Angeles",
+      hourCycle: .zeroToTwentyThree,
+      range: "from 08:00 to 10:00"),
+    TimeRangeCase(
+      language: .enUS,
+      timeZone: "Asia/Tokyo",
+      hourCycle: .oneToTwelve,
+      range: "from 1:00\u{202F}AM to 3:00\u{202F}AM"),
+    TimeRangeCase(language: .enUS, timeZone: "Asia/Tokyo", hourCycle: .zeroToTwentyThree, range: "from 01:00 to 03:00"),
+    TimeRangeCase(language: .jaJP, timeZone: "Asia/Tokyo", hourCycle: .zeroToTwentyThree, range: "1:00から3:00まで"),
+    TimeRangeCase(language: .jaJP, timeZone: "Asia/Tokyo", hourCycle: .oneToTwelve, range: "午前1:00から午前3:00まで"),
+    TimeRangeCase(
+      language: .deDE,
+      timeZone: "America/Los_Angeles",
+      hourCycle: .zeroToTwentyThree,
+      range: "von 08:00 bis 10:00"),
+  ])
+  func `Times are written in the time zone and hour cycle passed in`(_ range: TimeRangeCase) throws {
+    let writer: SentenceWriter = try Self.writer(
+      range.language,
+      timeZone: #require(TimeZone(identifier: range.timeZone)),
+      hourCycle: range.hourCycle)
+
+    let sentence = writer.sentence(for: Self.rotation, at: TestData.instant(hours: 0))
+
+    #expect(sentence.contains(range.range), "\(sentence)")
+  }
+
+  // MARK: Missed boundaries
+
+  @Test
+  func `The missed-boundary reminders read in the Live Activity's two levels`() {
+    #expect(MissedBoundaryReminder.nextSwitchNeedsRefresh.text(in: .enUS) == "The next switch needs a Refresh.")
+    #expect(MissedBoundaryReminder.outOfDate.text(in: .enUS) == "Schedule out of date, tap Refresh.")
+  }
+}

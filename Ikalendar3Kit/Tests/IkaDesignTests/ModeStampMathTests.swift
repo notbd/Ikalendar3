@@ -60,9 +60,9 @@ struct ModeStampMathTests {
 
   @Test
   func `Rotation angle is zero at rest and scales linearly`() {
-    #expect(ModeStampMath.rotationAngle(for: Tilt(dx: 0, dy: 0)) == 0)
+    #expect(ModeStampMath.rotationAngle(for: Tilt(dx: 0, dy: 0), reduceMotion: false) == 0)
     // A delta of length 0.5 at 24 degrees per unit.
-    #expect(abs(ModeStampMath.rotationAngle(for: Tilt(dx: 0.3, dy: 0.4)) - 12) < 1e-9)
+    #expect(abs(ModeStampMath.rotationAngle(for: Tilt(dx: 0.3, dy: 0.4), reduceMotion: false) - 12) < 1e-9)
   }
 
   @Test
@@ -90,9 +90,12 @@ struct ModeStampMathTests {
 
   @Test
   func `Dock style is at rest at zero and docked at one`() {
-    let docked: DockStyle = ModeStampMath.dockStyle(progress: 1)
+    let docked: DockStyle = ModeStampMath.dockStyle(progress: 1, reduceMotion: false)
 
-    #expect(ModeStampMath.dockStyle(progress: 0) == DockStyle(scale: 1, opacity: 1, parallaxGain: 1))
+    #expect(ModeStampMath.dockStyle(progress: 0, reduceMotion: false) == DockStyle(
+      scale: 1,
+      opacity: 1,
+      parallaxGain: 1))
     #expect(abs(docked.scale - 0.65) < 1e-9)
     #expect(docked.opacity == 0)
     #expect(docked.parallaxGain == 0)
@@ -103,8 +106,8 @@ struct ModeStampMathTests {
   @Test
   func `Dock style changes monotonically`() {
     for (lower, upper) in zip(Self.progressSteps, Self.progressSteps.dropFirst()) {
-      let before: DockStyle = ModeStampMath.dockStyle(progress: lower)
-      let after: DockStyle = ModeStampMath.dockStyle(progress: upper)
+      let before: DockStyle = ModeStampMath.dockStyle(progress: lower, reduceMotion: false)
+      let after: DockStyle = ModeStampMath.dockStyle(progress: upper, reduceMotion: false)
 
       #expect(after.opacity <= before.opacity)
       #expect(after.scale <= before.scale)
@@ -116,10 +119,11 @@ struct ModeStampMathTests {
   @Test
   func `Stamp and badge are never both invisible`() {
     for progress in Self.progressSteps {
-      #expect(ModeStampMath.dockStyle(progress: progress).opacity + ModeStampMath.badgeOpacity(progress: progress) > 0)
+      #expect(ModeStampMath.dockStyle(progress: progress, reduceMotion: false).opacity + ModeStampMath
+        .badgeOpacity(progress: progress) > 0)
     }
     // The handover window: the badge starts at 0.5 and the stamp is gone by 0.7.
-    #expect(ModeStampMath.dockStyle(progress: 0.7).opacity == 0)
+    #expect(ModeStampMath.dockStyle(progress: 0.7, reduceMotion: false).opacity == 0)
     #expect(ModeStampMath.badgeOpacity(progress: 0.5) == 0)
   }
 
@@ -132,7 +136,7 @@ struct ModeStampMathTests {
 
       #expect(reduced.scale == 1)
       #expect(reduced.parallaxGain == 0)
-      #expect(reduced.opacity == ModeStampMath.dockStyle(progress: progress).opacity)
+      #expect(reduced.opacity == ModeStampMath.dockStyle(progress: progress, reduceMotion: false).opacity)
     }
   }
 

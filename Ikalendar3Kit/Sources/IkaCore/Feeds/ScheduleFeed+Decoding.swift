@@ -36,10 +36,18 @@ extension ScheduleFeed {
 
     var rotationsByMode: [RotationMode: [Rotation]] = [:]
     func addRotations<Node: BattleNodeDTO>(of list: Isolated<NodesDTO<Node>>?) {
-      let rotations = isolate(Node.modes.map(Section.rotations)) {
-        try Self.rotations(of: value(of: list).nodes)
+      // A list that cannot be read fails every Battle Mode it holds: they share its windows.
+      let nodes = isolate(Node.modes.map(Section.rotations)) {
+        let nodes = try value(of: list).nodes
+        guard !nodes.isEmpty else { throw FeedDecodingError.emptyList }
+
+        return nodes.sorted { $0.startTime < $1.startTime }
       }
-      rotationsByMode.merge(rotations ?? [:]) { $1 }
+      guard let nodes else { return }
+
+      for mode in Node.modes {
+        rotationsByMode[mode] = isolate([.rotations(mode)]) { try Self.rotations(of: mode, in: nodes) }
+      }
     }
     addRotations(of: dto.regularSchedules)
     addRotations(of: dto.bankaraSchedules)
@@ -76,46 +84,29 @@ extension ScheduleFeed {
     self.failedSections = failedSections
   }
 
-  /// The Rotations of each Battle Mode a battle list holds, in time order.
+  /// One Battle Mode's Rotations in a battle list's windows, which are in time order.
   ///
   /// A window with no settings pauses a continuous Battle Mode (a Splatfest replaces it) and
   /// holds no Splatfest Battle (no Splatfest runs). A window with settings must hold one for
-  /// every Battle Mode of the list.
-  static private func rotations<Node: BattleNodeDTO>(of nodes: [Node]) throws -> [RotationMode: [Rotation]] {
-    guard !nodes.isEmpty else { throw FeedDecodingError.emptyList }
+  /// the Battle Mode.
+  static private func rotations<Node: BattleNodeDTO>(of mode: RotationMode, in nodes: [Node]) throws -> [Rotation] {
+    try nodes.compactMap { node in
+      let setting: Rotation.Setting?
+      if let settings = node.settings {
+        guard let vsSetting = settings.first(where: { Node.mode(of: $0) == mode })
+        else { throw FeedDecodingError.missingSetting(mode) }
 
-    var rotationsByMode: [RotationMode: [Rotation]] = .init(uniqueKeysWithValues: Node.modes.map { ($0, []) })
-    for node in nodes.sorted(by: { $0.startTime < $1.startTime }) {
-      let settings = node.settings.map { settings in
-        [RotationMode: VsSettingDTO](
-          settings.compactMap { setting in Node.mode(of: setting).map { ($0, setting) } },
-          uniquingKeysWith: { first, _ in first })
+        setting = Rotation.Setting(
+          rule: RuleID(vsSetting.vsRule.id),
+          stages: vsSetting.vsStages.map { StageID($0.id) })
       }
-      for mode in Node.modes {
-        let setting: Rotation.Setting?
-        switch (settings, mode) {
-          case (let settings?, _):
-            guard let vsSetting = settings[mode] else { throw FeedDecodingError.missingSetting(mode) }
+      else {
+        guard case .battle = mode else { return nil }
 
-            setting = Rotation.Setting(
-              rule: RuleID(vsSetting.vsRule.id),
-              stages: vsSetting.vsStages.map { StageID($0.id) })
-
-          case (nil, .battle):
-            setting = nil
-
-          case (nil, .splatfestBattle):
-            continue
-        }
-
-        rotationsByMode[mode, default: []].append(Rotation(
-          mode: mode,
-          startTime: node.startTime,
-          endTime: node.endTime,
-          setting: setting))
+        setting = nil
       }
+      return Rotation(mode: mode, startTime: node.startTime, endTime: node.endTime, setting: setting)
     }
-    return rotationsByMode
   }
 
   /// The published Challenges, in the order their first windows open.
@@ -216,7 +207,7 @@ extension TermTable {
       let title = splatfest.title, !title.isEmpty
     {
       add(splatfest.tricolorStages ?? [], to: \.stages)
-      splatfests[id] = SplatfestTerms(title: title, teamNames: [])
+      splatfests[id] = SplatfestTerms(title: title, teamNames: nil)
     }
   }
 

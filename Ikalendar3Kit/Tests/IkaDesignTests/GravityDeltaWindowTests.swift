@@ -73,5 +73,16 @@ struct GravityDeltaWindowTests {
   func `Capacity derives from the window length and the update interval`() {
     #expect(GravityDeltaWindow(windowLength: 10, updateInterval: 0.1).capacity == 100)
     #expect(GravityDeltaWindow().capacity == 100)
+    #expect(GravityDeltaWindow(windowLength: 0.3, updateInterval: 0.1).capacity == 3)
+  }
+
+  @Test
+  func `A window shorter than half an update interval still holds the newest sample`() throws {
+    var window: GravityDeltaWindow = .init(windowLength: 0.04, updateInterval: 0.1)
+    try #require(window.capacity == 1)
+
+    #expect(window.push(0.3) == 0)
+    #expect(window.push(0.5) == 0)
+    #expect(window.samples == [0.5])
   }
 }

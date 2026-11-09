@@ -57,7 +57,7 @@ public struct GameTerms: Sendable {
   /// A Splatfest's texts. With no table that has it, the title is the id and there are no
   /// team names.
   public func splatfest(_ id: SplatfestID) -> SplatfestTerms {
-    lookUp(id, in: \.splatfests) ?? SplatfestTerms(title: id.rawValue, teamNames: [])
+    lookUp(id, in: \.splatfests) ?? SplatfestTerms(title: id.rawValue, teamNames: nil)
   }
 
   /// The term of the first table that has the id.

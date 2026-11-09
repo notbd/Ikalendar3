@@ -10,14 +10,14 @@ import SwiftUI
 // MARK: - AdaptiveGlassVariant
 
 /// The glass the adaptive glass effect uses in a colour scheme.
-public enum AdaptiveGlassVariant: Sendable {
+enum AdaptiveGlassVariant {
   /// Regular glass, on light.
   case regular
   /// Clear glass, on dark, where regular glass washes out.
   case clear
 
   /// The variant for `colorScheme`.
-  public init(colorScheme: ColorScheme) {
+  init(colorScheme: ColorScheme) {
     self = colorScheme == .dark ? .clear : .regular
   }
 

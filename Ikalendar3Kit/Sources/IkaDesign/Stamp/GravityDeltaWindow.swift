@@ -24,14 +24,16 @@ public struct GravityDeltaWindow: Sendable {
   public let capacity: Int
 
   /// Oldest first.
-  private(set) public var samples: [CGFloat] = []
+  private(set) var samples: [CGFloat] = []
 
-  /// An empty window covering `windowLength` seconds of samples taken every `updateInterval`.
+  /// An empty window covering `windowLength` seconds of samples taken every `updateInterval`, and
+  /// at least the newest sample.
   public init(
     windowLength: TimeInterval = windowLength,
     updateInterval: TimeInterval = updateInterval)
   {
-    capacity = Int((windowLength / updateInterval).rounded())
+    // Rounded where ikalendar 2 truncates: a quotient such as 0.3 / 0.1 is 2.9999999999999996.
+    capacity = max(Int((windowLength / updateInterval).rounded()), 1)
   }
 
   /// Appends `sample`, dropping the oldest once the window is full, and returns `sample` minus the

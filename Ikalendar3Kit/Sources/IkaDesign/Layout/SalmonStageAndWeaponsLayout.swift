@@ -54,14 +54,16 @@ public struct SalmonStageAndWeaponsLayout: Layout {
 
     let split: Split = .init(width: proposalWidth, spacing: subviews.horizontalSpacings[0])
 
+    // Each card sits at the centre of its slot, so one narrower than its proposal (an
+    // aspect-fit picture) stays centred in it.
     subviews[0].place(
-      at: CGPoint(x: bounds.minX, y: bounds.midY),
-      anchor: .leading,
+      at: CGPoint(x: bounds.minX + split.stage.width / 2, y: bounds.midY),
+      anchor: .center,
       proposal: ProposedViewSize(split.stage))
 
     subviews[1].place(
-      at: CGPoint(x: bounds.maxX, y: bounds.midY),
-      anchor: .trailing,
+      at: CGPoint(x: bounds.maxX - split.weapons.width / 2, y: bounds.midY),
+      anchor: .center,
       proposal: ProposedViewSize(split.weapons))
   }
 }

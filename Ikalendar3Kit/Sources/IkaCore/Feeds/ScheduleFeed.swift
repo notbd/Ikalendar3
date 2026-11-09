@@ -9,8 +9,10 @@
 
 /// splatoon3.ink's `schedules.json`, decoded: every Schedule it publishes.
 ///
-/// Each Schedule decodes on its own. A malformed or empty list leaves the Schedules it holds
-/// empty and names them in `failedSections`; every other Schedule stays intact.
+/// Each Schedule decodes on its own: a window that lacks one Battle Mode's setting fails only
+/// that Battle Mode. A list that is missing, empty or malformed fails every Schedule it holds,
+/// because they share its windows; so does a malformed setting, which names no Battle Mode. A
+/// failed Schedule is empty and named in `failedSections`; every other Schedule stays intact.
 public struct ScheduleFeed: Hashable, Sendable {
   let rotationsByMode: [RotationMode: [Rotation]]
 
@@ -44,7 +46,7 @@ public struct ScheduleFeed: Hashable, Sendable {
 // MARK: ScheduleFeed.Section
 
 extension ScheduleFeed {
-  /// A part of the feed that decodes on its own.
+  /// A part of the feed that decodes on its own (GLOSSARY.md's Section).
   public enum Section: Hashable, Sendable {
     /// One Battle Mode's Rotations.
     case rotations(RotationMode)

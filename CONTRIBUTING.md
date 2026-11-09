@@ -3,7 +3,7 @@
 ## Tools
 
 - Xcode, SwiftFormat and SwiftLint at the versions pinned in `scripts/versions.env`. CI uses exactly these, and the verify script refuses other linter versions, because rule behaviour changes between releases.
-- Homebrew may carry newer linters. To install the pinned ones as CI does, download `swiftformat.zip` from the SwiftFormat release and `portable_swiftlint.zip` from the SwiftLint release with that version number, and put both binaries first on your `PATH`.
+- Homebrew may carry newer linters. To install the pinned ones as CI does, download `swiftformat.zip` from the SwiftFormat release and `portable_swiftlint.zip` from the SwiftLint release with that version number, check each with `shasum -a 256` against its checksum in `scripts/versions.env`, and put both binaries first on your `PATH`.
 - `jq`, `xmllint`, `perl` and `shasum` ship with macOS.
 - Only the asset script (see Bundled images) needs Python, at the version `scripts/versions.env` pins.
 
@@ -54,11 +54,11 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 - Every target folder is a synchronized folder: a Swift file or subfolder added inside it is compiled with no project file change. A non-source file there becomes a resource of the target unless the project lists an exception, as it does for the widget extensions' `Info.plist`.
 - Code that more than one target needs goes into a package module, never into two target folders.
 - `IkaCore` imports no SwiftUI, UIKit, AppKit, WidgetKit, ActivityKit or App Intents; a SwiftLint rule fails the run if it does.
-- A new package test target must be listed in `Ikalendar3.xctestplan`, or `xcodebuild` never runs it; verify fails until it is.
+- `Ikalendar3.xctestplan` must list the app's test target and every package test target, or `xcodebuild` never runs them; verify fails until it does.
 - A resource folder a package target declares must be committed, even if empty (a placeholder file keeps it). Font files are never committed, and no build step may need them.
 - The package folder is also a file reference in the project. Without it, `xcodebuild` silently skips the package's tests.
 - Signing: builds and macOS runs pass `CODE_SIGNING_ALLOWED=NO`. Simulator test runs keep automatic signing with no team (Xcode signs to run locally), so the test host carries its App Group entitlement.
-- Swift 6 language mode with Approachable Concurrency everywhere. The app and its tests run on the main actor by default; package modules stay nonisolated.
+- Swift 6 language mode with Approachable Concurrency everywhere. The app, its tests and the watch app run on the main actor by default; the widget extensions and package modules stay nonisolated.
 
 ## Bundled images
 
@@ -95,4 +95,4 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 
 ## CI
 
-`.github/workflows/ci.yml` runs `scripts/verify.sh` on every push and on manual dispatch, on GitHub's `xcode-27` image with exactly the pinned Xcode. It fails when the image lacks that Xcode instead of falling back to another, because code built against a newer SDK breaks on an older one. It downloads the pinned linters and nothing else: no fonts, no assets. On failure, the verify logs are attached to the run as `verify-logs`.
+`.github/workflows/ci.yml` runs `scripts/verify.sh` on every push and on manual dispatch, on GitHub's `xcode-27` image with exactly the pinned Xcode. It fails when the image lacks that Xcode instead of falling back to another, because code built against a newer SDK breaks on an older one. It downloads the pinned linters, fails unless their SHA-256 matches `scripts/versions.env`, and downloads nothing else: no fonts, no assets. On failure, the verify logs are attached to the run as `verify-logs`.

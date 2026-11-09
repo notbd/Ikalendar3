@@ -31,6 +31,8 @@ source scripts/versions.env
 readonly PROJECT=Ikalendar3.xcodeproj
 readonly TEST_PLAN=Ikalendar3.xctestplan
 readonly PACKAGE=Ikalendar3Kit
+# The app's test bundle. The test plan must list it beside every package test target.
+readonly APP_TEST_TARGET=Ikalendar3Tests
 readonly STEP_COUNT=10
 
 # MARK: - Output
@@ -279,11 +281,12 @@ run_logged string-catalogs scripts/check-string-catalogs.sh
 step_done "$(<"$VERIFY_DIR/string-catalogs.log")"
 
 step "Package tests, macOS"
-# Every package test target must be in the test plan, or the simulator run never builds it.
+# The app's and every package test target must be in the test plan, or the simulator run never
+# builds them.
 test_plan_targets=$(jq -r '.testTargets[].target.name' "$TEST_PLAN" | sort)
 package_targets=$(package_test_targets)
-unplanned=$(comm -23 <(printf '%s\n' "$package_targets") <(printf '%s\n' "$test_plan_targets"))
-[[ -z $unplanned ]] || fail "Package test targets missing from $TEST_PLAN, so xcodebuild never runs them:"$'\n'"$unplanned"
+unplanned=$(comm -23 <(printf '%s\n' "$package_targets" "$APP_TEST_TARGET" | sort) <(printf '%s\n' "$test_plan_targets"))
+[[ -z $unplanned ]] || fail "Test targets missing from $TEST_PLAN, so xcodebuild never runs them:"$'\n'"$unplanned"
 run_logged package-tests swift test --package-path "$PACKAGE" --scratch-path "$derived_data/SwiftPM" \
   -Xswiftc -warnings-as-errors --xunit-output "$VERIFY_DIR/package-tests.xml"
 # Swift warnings are errors already; anything else (a manifest warning) also clears the build.

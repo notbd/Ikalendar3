@@ -6,13 +6,15 @@
 //
 
 import Foundation
+import OSLog
 
 extension TermTable {
   /// Decodes a `locale/<code>.json` response body. Runs off the main actor.
   ///
   /// An entry the app cannot use is left out, so lookup falls back for it: one without a name,
   /// such as the bogus `"undefined": {}` Rule key some files carry, or one whose name is empty.
-  /// The tables the app does not show (brands, gear, abilities) are not read.
+  /// A table that fails on its own is left out whole. The tables the app does not show (brands,
+  /// gear, abilities) are not read.
   ///
   /// - Throws: `DecodingError` when the body is not a locale file.
   @concurrent
@@ -37,13 +39,22 @@ extension TermTable {
     }
   }
 
-  /// The entries of a locale table that decode and that `term` accepts, keyed by typed id.
+  /// The entries of a locale table that decode and that `term` accepts, keyed by typed id. A
+  /// missing table has none; so does a malformed one, which is logged (the error names it).
   static private func usable<Kind, Entry, Term>(
-    _ entries: [String: Isolated<Entry>]?,
+    _ table: Isolated<[String: Isolated<Entry>]>?,
     _ term: (Entry) -> Term?)
     -> [FeedID<Kind>: Term]
   {
-    .init(uniqueKeysWithValues: (entries ?? [:]).compactMap { key, entry in
+    let entries: [String: Isolated<Entry>]
+    do {
+      entries = try table?.result.get() ?? [:]
+    }
+    catch {
+      Logger.decode.error("locale: a table failed: \(error, privacy: .public)")
+      return [:]
+    }
+    return .init(uniqueKeysWithValues: entries.compactMap { key, entry in
       (try? entry.result.get()).flatMap(term).map { (FeedID(key), $0) }
     })
   }
@@ -56,14 +67,15 @@ extension String {
 
 // MARK: - LocaleDTO
 
-/// A locale file: one table per kind of term, each keyed by id. Each entry decodes on its own.
+/// A locale file: one table per kind of term, each keyed by id. Each table and each entry
+/// decodes on its own.
 private struct LocaleDTO: Decodable {
-  let stages: [String: Isolated<NameDTO>]?
-  let rules: [String: Isolated<NameDTO>]?
-  let weapons: [String: Isolated<NameDTO>]?
-  let bosses: [String: Isolated<NameDTO>]?
-  let events: [String: Isolated<EventDTO>]?
-  let festivals: [String: Isolated<FestivalDTO>]?
+  let stages: Isolated<[String: Isolated<NameDTO>]>?
+  let rules: Isolated<[String: Isolated<NameDTO>]>?
+  let weapons: Isolated<[String: Isolated<NameDTO>]>?
+  let bosses: Isolated<[String: Isolated<NameDTO>]>?
+  let events: Isolated<[String: Isolated<EventDTO>]>?
+  let festivals: Isolated<[String: Isolated<FestivalDTO>]>?
 }
 
 // MARK: - NameDTO
