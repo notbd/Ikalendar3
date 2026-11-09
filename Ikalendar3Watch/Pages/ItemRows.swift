@@ -106,7 +106,7 @@ private struct ItemTime: View {
   var body: some View {
     HStack(spacing: WatchMetrics.lineSpacing) {
       if isNext {
-        Text(verbatim: ScreenText.next.text(in: language))
+        Text(verbatim: InkText.next.text(in: language))
           .inkFont(.label)
       }
       Text(verbatim: text)

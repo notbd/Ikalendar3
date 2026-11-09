@@ -92,7 +92,7 @@
       }
     },
     "ink.next" : {
-      "comment" : "The state tag on the panel after the featured one: the next Rotation or Shift. Short, like the game's tags.",
+      "comment" : "The state tag on the panel after the featured one: the next Rotation or Shift; also the tag before the next item on the Live Activity and the watch's Mode pages. Short, like the game's tags.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {

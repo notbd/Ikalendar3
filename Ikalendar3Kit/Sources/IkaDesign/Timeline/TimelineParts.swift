@@ -140,8 +140,8 @@ struct TimelineHeadline<Leading: View, Trailing: View>: View {
 
 // MARK: - TimelineNowTag
 
-/// "Now" in the Mode colour, with the time left counting down on whole seconds beside it, or under
-/// it from the first accessibility text size so the line fits the slot.
+/// "Now" in the Mode colour, with the time left counting down on whole seconds beside it on one
+/// line; from the first accessibility text size under it, each wrapping within the slot.
 struct TimelineNowTag: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -152,8 +152,9 @@ struct TimelineNowTag: View {
   let now: Date
 
   var body: some View {
+    let arrangement: CellArrangement = .init(dynamicTypeSize)
     let layout: AnyLayout =
-      switch CellArrangement(dynamicTypeSize) {
+      switch arrangement {
         case .sideBySide: .init(HStackLayout(alignment: .firstTextBaseline, spacing: 6))
         case .stacked: .init(VStackLayout(alignment: .leading, spacing: 2))
       }
@@ -168,8 +169,8 @@ struct TimelineNowTag: View {
         .foregroundStyle(TimelinePalette.secondaryText)
         .countdownRoll(value: now)
     }
-    .lineLimit(1)
-    .fixedSize()
+    .lineLimit(arrangement.lineLimit)
+    .fixedSize(horizontal: arrangement == .sideBySide, vertical: true)
   }
 }
 

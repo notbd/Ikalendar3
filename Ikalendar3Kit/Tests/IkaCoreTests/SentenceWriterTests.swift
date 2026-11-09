@@ -153,6 +153,26 @@ struct SentenceWriterTests {
       + "from Saturday 5:00\u{202F}PM to Sunday 4:00\u{202F}PM, 18 hours left.")
   }
 
+  /// A Splatfest's sentence leaves the teams out; VoiceOver reads their names after it.
+  @Test(arguments: [
+    (GameLanguage.enUS, "Wizard, Knight, and Ninja"),
+    (.jaJP, "魔法使い、ナイト、忍者"),
+  ])
+  func `A Splatfest's team names read as one list in the text set`(language: GameLanguage, names: String) async throws {
+    let snapshot: Snapshot = try await .schedules(.splatfestSecondHalf)
+    let splatfest = try #require(snapshot.splatfest)
+    var refreshed: TermTable = .init()
+    refreshed.splatfests[splatfest.id] = SplatfestTerms(
+      title: "",
+      teamNames: language == .jaJP ? ["魔法使い", "ナイト", "忍者"] : ["Wizard", "Knight", "Ninja"])
+    let writer: SentenceWriter = .init(
+      terms: GameTerms(language: language, refreshed: refreshed, feed: TermTable()),
+      timeZone: Self.losAngeles,
+      hourCycle: .oneToTwelve)
+
+    #expect(writer.teamNames(of: splatfest) == names)
+  }
+
   /// An event card reads as the event it shows: a Big Run as its Shift.
   @Test
   func `An event reads as the Challenge window, Splatfest or Shift it shows`() async throws {
@@ -304,6 +324,9 @@ struct SentenceWriterTests {
     TimeLeftCase(seconds: 59 * 60 + 1, language: .enUS, text: "1 hour left"),
     TimeLeftCase(seconds: 1, language: .enUS, text: "1 minute left"),
     TimeLeftCase(seconds: 39 * 3600 + 5 * 60, language: .enUS, text: "39 hours 5 minutes left"),
+    // Whole minutes whose seconds divide to a hair above them through `Double`.
+    TimeLeftCase(seconds: 161 * 60, language: .enUS, text: "2 hours 41 minutes left"),
+    TimeLeftCase(seconds: 165 * 60, language: .enUS, text: "2 hours 45 minutes left"),
     TimeLeftCase(seconds: 4800, language: .jaJP, text: "残り1時間20分"),
     TimeLeftCase(seconds: 4800, language: .zhCN, text: "剩余1小时20分钟"),
     TimeLeftCase(seconds: 2 * 3600 + 22 * 60, language: .ruRU, text: "осталось: 2 часа 22 минуты"),

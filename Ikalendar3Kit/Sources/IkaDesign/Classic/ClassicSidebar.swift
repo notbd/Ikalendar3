@@ -13,13 +13,13 @@ import SwiftUI
 
 /// Classic's sidebar row on the system's sidebar list, as ikalendar 2's lists sit on the system's
 /// grouped lists: the Mode's icon in a ring of its colour, the name in the heavy face and the
-/// summary in the light face. It receives a sidebar row's content only and reads no store.
+/// line in the light face. It receives a summary row's content only and reads no store.
 public struct ClassicSidebarRow: View {
   @Environment(\.colorScheme) private var colorScheme
 
-  private let content: SidebarRowContent
+  private let content: SummaryRowContent
 
-  public init(content: SidebarRowContent) {
+  public init(content: SummaryRowContent) {
     self.content = content
   }
 
@@ -27,8 +27,8 @@ public struct ClassicSidebarRow: View {
     SidebarRowFrame(content: content, ringColor: ringColor) { name in
       Text(verbatim: name)
         .ikaFont(.heavy, size: 17, relativeTo: .headline)
-    } summary: { summary in
-      Text(verbatim: summary)
+    } line: { line in
+      Text(verbatim: line)
         .ikaFont(.light, size: 14, relativeTo: .subheadline)
         .foregroundStyle(.secondary)
     }

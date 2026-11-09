@@ -91,6 +91,15 @@ final class AppStatus {
     presentedMenu = nil
   }
 
+  /// Closes the menu once the tab at the selected place no longer offers it, as when the
+  /// Splatfest ends and its tab gives Regular Battle its place back, so the next Splatfest's tab
+  /// does not open with its menu already shown.
+  func closeMenu(unlessOfferedBy selectedTab: AppTab) {
+    guard let menu = presentedMenu, selectedTab.repeatedSelectionAction != .openMenu(menu) else { return }
+
+    presentedMenu = nil
+  }
+
   /// The Battle Mode `menu`'s tab shows: one of the menu's modes.
   func mode(of menu: TabMenu) -> RotationMode {
     switch menu {

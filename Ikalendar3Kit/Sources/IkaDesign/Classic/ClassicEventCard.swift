@@ -51,9 +51,7 @@ public struct ClassicEventCard: View {
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding(Scoped.padding)
     .background(Self.background, in: .rect(cornerRadius: Scoped.cornerRadius))
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(sentence)
-    .accessibilityValue(value)
+    .eventAccessibility(item, writer: writer, at: now)
   }
 
   // MARK: Header
@@ -178,17 +176,6 @@ public struct ClassicEventCard: View {
       case .bigRun: (.bigRun, .bigRun, .bigRun)
       case .eggstraWork: (.eggstraWork, .eggstraWork, .eggstraWork)
     }
-  }
-
-  // MARK: Accessibility
-
-  private var sentence: String {
-    writer.sentence(for: item, at: now)
-  }
-
-  /// A Splatfest's team names; the other events' sentences say all.
-  private var value: String {
-    if case .splatfest(let card) = item { ClassicTeamList.names(of: card.splatfest, terms: terms) } else { "" }
   }
 
   // MARK: Parts

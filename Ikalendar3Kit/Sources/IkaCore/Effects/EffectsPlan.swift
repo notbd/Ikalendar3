@@ -21,14 +21,28 @@ public struct EffectsPlan: Equatable, Sendable {
   /// While the cache holds no schedules feed, a running Tracking has no entry and stays as it is.
   public let tracking: [String: TrackingEffect]
   /// When the run asks the background task to run next: at the next boundary of a running
-  /// Tracking, so one update lands between any two boundaries, or two hours on if that is sooner.
-  /// `nil` while no Tracking runs: the request made as the app last moved to the background
-  /// stands.
+  /// Tracking, the end of its current item or its own end, so one update lands between any two
+  /// boundaries and an ended Tracking leaves at once, or two hours on if that is sooner. `nil`
+  /// while no Tracking runs: the request made as the app last moved to the background stands.
   public let nextBackgroundRun: Date?
+  /// The event reminders that replace every pending one of the app's, or `nil` to leave them as
+  /// they are. Rebuilt from the cache after each refresh that committed a feed, a 304 included,
+  /// and whenever a switch changes, so a newly published or moved event is reminded of at its
+  /// start. A refresh that committed nothing leaves them, since the data they came from stands.
+  public let reminders: [EventReminder]?
 
-  /// The plan after a refresh at `instant`, with `tracking` running.
-  public init(after result: RefreshResult, tracking: [RunningTracking] = [], at instant: Date) {
+  /// The plan after a refresh at `instant`, with `tracking` running. With no `reminders`
+  /// settings, as on the watch, the plan leaves the pending reminders as they are.
+  public init(
+    after result: RefreshResult,
+    tracking: [RunningTracking] = [],
+    reminders reminderSettings: ReminderSettings? = nil,
+    at instant: Date)
+  {
     reloadsWidgetTimelines = result.hasCommitted
+    reminders = result.hasCommitted
+      ? reminderSettings.map { result.snapshot.eventReminders(for: $0, after: instant) }
+      : nil
 
     var effects: [String: TrackingEffect] = [:]
     for running in tracking {
@@ -42,14 +56,33 @@ public struct EffectsPlan: Equatable, Sendable {
     self.tracking = effects
     nextBackgroundRun = tracking.isEmpty
       ? nil
-      : Self.nextBackgroundRun(after: instant, trackingBoundaries: effects.values.compactMap { $0.state?.staleDate })
+      : Self.nextBackgroundRun(
+        after: instant,
+        tracking: tracking.filter { effects[$0.id] != .end },
+        staleDates: effects.values.compactMap { $0.state?.staleDate })
   }
 
-  /// When the background task should run next after `now`, given the next boundary of each
-  /// running Tracking: the first of them, or two hours on if that is sooner. The system holds one
-  /// pending request for the task, so every request, wherever it is made, asks for this run.
-  static public func nextBackgroundRun(after now: Date, trackingBoundaries: some Sequence<Date>) -> Date {
-    trackingBoundaries.reduce(now.addingTimeInterval(backgroundRefreshInterval)) { min($0, $1) }
+  /// The plan after a reminder switch changed at `instant`: the reminders `settings` call for
+  /// from `snapshot`, the cache as last read, and no other effect.
+  public init(remindersChangedTo settings: ReminderSettings, in snapshot: Snapshot, at instant: Date) {
+    reloadsWidgetTimelines = false
+    tracking = [:]
+    nextBackgroundRun = nil
+    reminders = snapshot.eventReminders(for: settings, after: instant)
+  }
+
+  /// When the background task should run next after `now`: at the first boundary of the running
+  /// `tracking`, the end of a current item (an activity's stale date, in `staleDates`) or a
+  /// Tracking's own end, or two hours on if that is sooner. The system holds one pending request
+  /// for the task, so every request, wherever it is made, asks for this run.
+  static public func nextBackgroundRun(
+    after now: Date,
+    tracking: [RunningTracking],
+    staleDates: some Sequence<Date>)
+    -> Date
+  {
+    let ends = tracking.lazy.map { TrackingContent.endDate(startedAt: $0.startTime) }
+    return ends.reduce(staleDates.reduce(now.addingTimeInterval(backgroundRefreshInterval), min), min)
   }
 
   /// How long after a run the background task is due again with no boundary sooner: about two

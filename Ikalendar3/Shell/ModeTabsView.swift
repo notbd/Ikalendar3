@@ -59,6 +59,9 @@ struct ModeTabsView: View {
     .interceptingTabReselection(isEnabled: selectedTab.repeatedSelectionAction != .scrollToTop) {
       status.select(selectedTab)
     }
+    .onChange(of: selectedTab) { _, tab in
+      status.closeMenu(unlessOfferedBy: tab)
+    }
     .minimizingTabBar(preferences.shouldMinimizeTabBar)
     .sensoryFeedback(Haptic.modeSwitch, trigger: status.selectedPlace)
     .sensoryFeedback(Haptic.modeSwitch, trigger: status.mode(of: .anarchy))

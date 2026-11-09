@@ -37,6 +37,17 @@ public struct InkModeHeading: Equatable, Sendable {
     }
   }
 
+  /// The heading of a Mode summary's row: its Mode's, Splatfest Battle's in its form, or a running
+  /// Big Run's, which shows as one, as `SummaryRowContent` names the row.
+  public init(_ summary: ModeSummary) {
+    switch summary {
+      case .battle(let mode, _): self.init(.battle(mode))
+      case .splatfestBattle(let form, _): self.init(splatfestBattle: form)
+      case .salmonRun(.running(let running)): self.init(name: ModeLabel(running.item.kind), form: nil)
+      case .salmonRun: self.init(.salmonRun)
+    }
+  }
+
   /// A heading of `name`, with `form` under it when the Mode has one.
   public init(name: ModeLabel, form: ModeLabel?) {
     self.name = name

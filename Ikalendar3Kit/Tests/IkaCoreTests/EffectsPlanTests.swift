@@ -28,11 +28,18 @@ final class EffectsPlanTests {
     try? FileManager.default.removeItem(at: directory)
   }
 
+  /// The Challenge switch on, in English (US) in UTC.
+  private let reminderSettings: ReminderSettings = .init(
+    kinds: [.challenge],
+    language: .enUS,
+    timeZone: .gmt,
+    hourCycle: .zeroToTwentyThree)
+
   /// The plan after one refresh of an engine on the test's directory, with `tracking` running.
   @discardableResult
   private func planAfterRefresh(tracking: [RunningTracking] = []) async -> EffectsPlan {
     let result = await RefreshEngine(directory: directory, transport: transport, clock: clock).refresh()
-    return EffectsPlan(after: result, tracking: tracking, at: clock.now)
+    return EffectsPlan(after: result, tracking: tracking, reminders: reminderSettings, at: clock.now)
   }
 
   // MARK: - Widget timelines
@@ -211,14 +218,108 @@ final class EffectsPlanTests {
   }
 
   @Test
+  func `The background task runs again when a running Tracking ends, if that comes first`() async throws {
+    try transport.scriptFeeds()
+    // Ends at 12:35, before the current Rotation's 14:00 boundary and the two hours.
+    let started = date("2026-10-20T04:35:00Z")
+
+    let plan = await planAfterRefresh(tracking: [
+      RunningTracking(id: "ending soon", mode: .battle(.x), startTime: started),
+    ])
+
+    #expect(plan.nextBackgroundRun == date("2026-10-20T12:35:00Z"))
+  }
+
+  @Test
   func `A boundary two hours or more away leaves the background task's two hours`() {
     let now = date("2026-10-20T13:15:00Z")
+    let tracking = [RunningTracking(id: "a", mode: .salmonRun, startTime: date("2026-10-20T13:00:00Z"))]
 
-    #expect(EffectsPlan.nextBackgroundRun(after: now, trackingBoundaries: [date("2026-10-20T16:00:00Z")]) ==
+    #expect(EffectsPlan.nextBackgroundRun(after: now, tracking: tracking, staleDates: [date("2026-10-20T16:00:00Z")]) ==
       date("2026-10-20T15:15:00Z"))
-    #expect(EffectsPlan.nextBackgroundRun(after: now, trackingBoundaries: [
+    #expect(EffectsPlan.nextBackgroundRun(after: now, tracking: tracking, staleDates: [
       date("2026-10-20T16:00:00Z"),
       date("2026-10-20T14:00:00Z"),
     ]) == date("2026-10-20T14:00:00Z"))
+  }
+
+  // MARK: - Reminders
+
+  /// The normal day's two Challenges, at their first windows.
+  private let normalDayReminderStarts = [date("2026-10-23T02:00:00Z"), date("2026-10-30T02:00:00Z")]
+
+  @Test
+  func `A refresh that commits a new body replaces the pending reminders`() async throws {
+    try transport.scriptFeeds()
+
+    let plan = await planAfterRefresh()
+
+    #expect(plan.reminders?.map(\.fireDate) == normalDayReminderStarts)
+  }
+
+  /// A 304 may come after the switches changed in another process, so it rebuilds them too.
+  @Test
+  func `A refresh a 304 confirms replaces the pending reminders`() async throws {
+    try transport.scriptFeeds()
+    await planAfterRefresh()
+    transport.replyToFeeds(with: .notModified)
+    clock.now = date("2026-10-20T13:05:00Z")
+
+    let plan = await planAfterRefresh()
+
+    #expect(plan.reminders?.map(\.fireDate) == normalDayReminderStarts)
+  }
+
+  @Test(arguments: [
+    ScriptedTransport.Reply.status(500),
+    .failure(URLError(.notConnectedToInternet)),
+  ])
+  func `A failed refresh leaves the pending reminders as they are`(_ reply: ScriptedTransport.Reply) async throws {
+    try transport.scriptFeeds()
+    await planAfterRefresh()
+    transport.replyToFeeds(with: reply)
+    clock.now = date("2026-10-20T13:05:00Z")
+
+    let plan = await planAfterRefresh()
+
+    #expect(plan.reminders == nil)
+  }
+
+  @Test
+  func `A refresh the gate kept from the network leaves the pending reminders as they are`() async throws {
+    try transport.scriptFeeds()
+    await planAfterRefresh()
+    clock.now = date("2026-10-20T12:35:00Z")
+
+    let plan = await planAfterRefresh()
+
+    #expect(transport.requests.count == 3)
+    #expect(plan.reminders == nil)
+  }
+
+  /// The watch app plans with no reminder settings: the iPhone's reminders reach the watch.
+  @Test
+  func `A plan without reminder settings leaves the pending reminders as they are`() async throws {
+    try transport.scriptFeeds()
+    let result = await RefreshEngine(directory: directory, transport: transport, clock: clock).refresh()
+
+    #expect(EffectsPlan(after: result, at: clock.now).reminders == nil)
+  }
+
+  @Test
+  func `A switch change replaces the pending reminders from the cache, and nothing else`() async throws {
+    let snapshot = try await Snapshot.schedules(.normalDay)
+    let on: ReminderSettings = reminderSettings
+    var off = reminderSettings
+    off.kinds = []
+
+    let switchedOn: EffectsPlan = .init(remindersChangedTo: on, in: snapshot, at: clock.now)
+    let switchedOff: EffectsPlan = .init(remindersChangedTo: off, in: snapshot, at: clock.now)
+
+    #expect(switchedOn.reminders?.map(\.fireDate) == normalDayReminderStarts)
+    #expect(switchedOff.reminders == [])
+    #expect(!switchedOn.reloadsWidgetTimelines)
+    #expect(switchedOn.tracking.isEmpty)
+    #expect(switchedOn.nextBackgroundRun == nil)
   }
 }

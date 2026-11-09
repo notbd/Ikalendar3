@@ -20,8 +20,6 @@ public enum ScreenText: String, CaseIterable, Sendable {
   case empty = "screen.empty"
   /// "Updated %@", with the fetch time.
   case fetchTime = "screen.fetchTime"
-  /// "Next": the next Challenge window.
-  case next = "screen.next"
   /// "Nothing on right now".
   case nothingCurrent = "screen.nothingCurrent"
   /// "Returns %@", with the time a paused Battle Mode returns.
@@ -29,7 +27,8 @@ public enum ScreenText: String, CaseIterable, Sendable {
   /// "Couldn't refresh".
   case refreshFailed = "screen.refreshFailed"
   /// "%1$@ - %2$@", a range's start and end joined as the game joins them: a wave dash in
-  /// Japanese and Korean. Every Style joins its ranges with it.
+  /// Japanese and Korean. Classic and Timeline join their ranges with it; Ink and the widgets
+  /// write theirs through `ScheduleFormat`, with the locale's own joiner.
   case timeRange = "screen.timeRange"
 
   /// The string in a text set, its placeholders filled in.

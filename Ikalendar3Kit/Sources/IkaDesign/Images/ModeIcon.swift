@@ -51,6 +51,17 @@ public enum ModeIcon: String, CaseIterable, Sendable {
       case .splatfestBattle: self = .splatfestBattle
     }
   }
+
+  /// The icon of a Mode summary: its Battle Mode's, or the Shift kind's while a Big Run is Salmon
+  /// Run's current Shift, so a running Big Run shows as one.
+  public init(_ summary: ModeSummary) {
+    switch summary {
+      case .battle(let mode, _): self.init(Mode.battle(mode))
+      case .splatfestBattle(let form, _): self.init(RotationMode.splatfestBattle(form))
+      case .salmonRun(.running(let running)): self.init(running.item.kind)
+      case .salmonRun: self = .salmonRun
+    }
+  }
 }
 
 extension BundledImage {

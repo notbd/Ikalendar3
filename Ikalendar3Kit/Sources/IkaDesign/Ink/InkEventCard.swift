@@ -72,9 +72,7 @@ public struct InkEventCard: View {
     .task(id: art) {
       artImage = art.flatMap(Image.init(contentsOf:))
     }
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(writer.sentence(for: item, at: now))
-    .accessibilityValue(teamNames)
+    .eventAccessibility(item, writer: writer, at: now)
   }
 
   // MARK: Header
@@ -143,13 +141,6 @@ public struct InkEventCard: View {
            .bigRun,
            .eggstraWork: format.dateRange(of: item)
     }
-  }
-
-  /// A Splatfest's team names, which its sentence leaves out; the other events' sentences say all.
-  private var teamNames: String {
-    guard case .splatfest(let card) = item else { return "" }
-
-    return InkTeamList.names(of: card.splatfest, terms: terms)
   }
 
   /// A Splatfest's stored art; the other events have none.
