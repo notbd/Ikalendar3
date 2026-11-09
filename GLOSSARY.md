@@ -29,7 +29,7 @@ A limited-time Battle Mode event with its own rules and restrictions, held in se
 _Avoid_: event match, league
 
 **Rule**:
-The win condition a battle is played under: Turf War, Splat Zones, Tower Control, Rainmaker or Clam Blitz.
+The set of rules a battle is played under, which fixes its objective, how it plays and how its Stage is laid out: Turf War, Splat Zones, Tower Control, Rainmaker or Clam Blitz.
 _Avoid_: mode, game type
 
 **Stage**:
