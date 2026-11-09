@@ -13,19 +13,23 @@ import Testing
 // MARK: - FixtureLaunchTests
 
 /// The Debug fixture launch: which recorded payloads a process runs on, from which instant, and
-/// where they land. Serialized: unrebased launches share one temporary folder.
+/// where they land.
 @MainActor
-@Suite(.serialized)
 final class FixtureLaunchTests {
   /// Stands in for the App Group container's feed folder.
   private let sharedDirectory: URL
+  /// Stands in for the process's temporary directory, which every process of the user shares on
+  /// a Mac.
+  private let temporaryDirectory: URL
 
   init() throws {
     sharedDirectory = try makeTestDirectory()
+    temporaryDirectory = try makeTestDirectory()
   }
 
   deinit {
     try? FileManager.default.removeItem(at: sharedDirectory)
+    try? FileManager.default.removeItem(at: temporaryDirectory)
   }
 
   /// A launch on the normal day at 13:15 UTC.
@@ -89,7 +93,10 @@ final class FixtureLaunchTests {
 
   @Test
   func `An unrebased fixture launch refreshes from the recordings on a clock running from the instant`() async throws {
-    let run = try launch(isRebased: false).prepare(sharedCache: FeedCache(directory: sharedDirectory), now: Date())
+    let run = try launch(isRebased: false).prepare(
+      sharedCache: FeedCache(directory: sharedDirectory),
+      temporaryDirectory: temporaryDirectory,
+      now: Date())
     // German has no recorded locale file: its names come from the shipped snapshot, with no failure.
     let engine: RefreshEngine = .init(client: run.client, language: .deDE)
 
@@ -106,19 +113,37 @@ final class FixtureLaunchTests {
       "the shared cache is untouched")
   }
 
-  /// Launches leave no folder behind.
+  /// No two processes share a cache folder (launches from two worktrees, or one during the
+  /// package tests), and launches leave no folder behind for long: each removes the ones of ended
+  /// processes.
   @Test
-  func `An unrebased fixture launch keeps its cache in one temporary folder, wiped at start`() async throws {
-    let folder: URL = FixtureLaunch.unrebasedCacheDirectory
-    try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
-    let leftover = folder.appending(path: "leftover")
-    try Data().write(to: leftover)
+  func `An unrebased fixture launch keeps its cache in its own process's folder and removes ended processes' folders`()
+    async throws
+  {
+    let fileManager: FileManager = .default
+    func folder(_ name: String) throws -> URL {
+      let folder = temporaryDirectory.appending(path: name, directoryHint: .isDirectory)
+      try fileManager.createDirectory(at: folder, withIntermediateDirectories: true)
+      try Data().write(to: folder.appending(path: "leftover"))
+      return folder
+    }
+    let own = try folder("ikalendar3-fixture-\(getpid())")
+    // No process has an id this high; launchd's is 1 and runs.
+    let ended = try folder("ikalendar3-fixture-\(Int32.max)")
+    let running = try folder("ikalendar3-fixture-1")
+    let unrelated = try folder("ikalendar3-other")
 
-    let run = try launch(isRebased: false).prepare(sharedCache: FeedCache(directory: sharedDirectory), now: Date())
+    let run = try launch(isRebased: false).prepare(
+      sharedCache: FeedCache(directory: sharedDirectory),
+      temporaryDirectory: temporaryDirectory,
+      now: Date())
     await RefreshEngine(client: run.client, language: .enUS).refresh()
 
-    #expect(!FileManager.default.fileExists(atPath: leftover.path()))
-    #expect(await FeedCache(directory: folder).snapshot().schedules != nil)
+    #expect(!fileManager.fileExists(atPath: own.appending(path: "leftover").path()), "wiped at start")
+    #expect(await FeedCache(directory: own).snapshot().schedules != nil)
+    #expect(!fileManager.fileExists(atPath: ended.path()))
+    #expect(fileManager.fileExists(atPath: running.appending(path: "leftover").path()))
+    #expect(fileManager.fileExists(atPath: unrelated.appending(path: "leftover").path()))
   }
 
   @Test

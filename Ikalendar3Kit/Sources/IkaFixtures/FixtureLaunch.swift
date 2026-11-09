@@ -145,16 +145,11 @@ public struct FixtureRun: Sendable {
 }
 
 extension FixtureLaunch {
-  /// The cache folder of an unrebased launch: one fixed folder in the temporary directory, wiped
-  /// at each launch, so launches leave no folder behind.
-  static let unrebasedCacheDirectory: URL = FileManager.default.temporaryDirectory.appending(
-    path: "ikalendar3-fixture",
-    directoryHint: .isDirectory)
-
   /// Reads the payloads and builds the run.
   ///
-  /// - An unrebased launch keeps the payloads as recorded in `unrebasedCacheDirectory`, which it
-  ///   wipes first, and starts its clock at the instant: the shared cache stays untouched.
+  /// - An unrebased launch keeps the payloads as recorded in a cache folder of its own process
+  ///   (`processCacheDirectory(in:)`), and starts its clock at the instant: the shared cache stays
+  ///   untouched.
   /// - A rebased launch moves the payloads by `now` minus the instant and commits them to
   ///   `sharedCache` before anything reads it, then runs on the system's clock.
   ///
@@ -164,8 +159,14 @@ extension FixtureLaunch {
   /// - Parameters:
   ///   - sharedCache: The cache every process on the device reads: the App Group's, or the
   ///     worktree's on a Mac.
+  ///   - temporaryDirectory: Where an unrebased launch keeps its cache folder.
   ///   - now: The wall clock at launch.
-  public func prepare(sharedCache: FeedCache, now: Date) throws -> FixtureRun {
+  public func prepare(
+    sharedCache: FeedCache,
+    temporaryDirectory: URL = FileManager.default.temporaryDirectory,
+    now: Date)
+    throws -> FixtureRun
+  {
     let offset: Duration = .seconds(now.timeIntervalSince(instant).rounded(.towardZero))
     var payloads: [Feed: Data] = [:]
     for fixture in [schedules, .festivals] + Fixture.allCases.filter({ $0.rawValue.hasPrefix("locale-") }) {
@@ -185,8 +186,7 @@ extension FixtureLaunch {
 
     guard isRebased else {
       let clock: RunningClock = .init(startingAt: instant)
-      let directory: URL = Self.unrebasedCacheDirectory
-      try? FileManager.default.removeItem(at: directory)
+      let directory: URL = Self.processCacheDirectory(in: temporaryDirectory)
       let client: FeedClient = .init(transport: transport, cache: FeedCache(directory: directory), now: { clock.now })
       return FixtureRun(client: client, timeSource: clock)
     }
@@ -195,6 +195,32 @@ extension FixtureLaunch {
       try sharedCache.commit(FeedRecord(body: payload, etag: nil, fetchTime: now), for: feed)
     }
     return FixtureRun(client: FeedClient(transport: transport, cache: sharedCache), timeSource: SystemTimeSource())
+  }
+
+  /// The cache folder of an unrebased launch in `temporaryDirectory`: one per process, named with
+  /// its id, since the Mac app is not sandboxed and every process of the user shares one
+  /// temporary directory (other worktrees' launches, the package tests). It wipes the folder, which
+  /// an ended process with the same id may have left, and removes every other process's folder
+  /// whose process has ended, so launches leave no folder behind for long.
+  static func processCacheDirectory(in temporaryDirectory: URL) -> URL {
+    let prefix = "ikalendar3-fixture-"
+    let fileManager: FileManager = .default
+    let folders = (try? fileManager.contentsOfDirectory(at: temporaryDirectory, includingPropertiesForKeys: nil)) ?? []
+    for folder in folders where folder.lastPathComponent.hasPrefix(prefix) {
+      guard
+        let id = pid_t(folder.lastPathComponent.dropFirst(prefix.count)),
+        id == getpid() || !isRunning(id)
+      else { continue }
+
+      try? fileManager.removeItem(at: folder)
+    }
+    return temporaryDirectory.appending(path: "\(prefix)\(getpid())", directoryHint: .isDirectory)
+  }
+
+  /// Whether a process with `id` runs: a signal-less `kill` fails with `ESRCH` only when none
+  /// does, and with `EPERM` for another user's.
+  static private func isRunning(_ id: pid_t) -> Bool {
+    kill(id, 0) == 0 || errno != ESRCH
   }
 }
 #endif
