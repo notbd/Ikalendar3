@@ -26,7 +26,7 @@ import IkaIntents
 ///   (the scripted transport with nothing scripted), so with the worktree data option naming a new
 ///   folder and suite it shows the first launch with no network and no cache.
 /// - The event card gallery: `--event-cards` shows every event card at the app clock's instant
-///   instead of the tabs, for screenshots until the iPad event strip shows them.
+///   instead of the tabs, for screenshots of each card at an iPhone's width.
 /// - The short-item Tracking, on iOS: `--fixture-short-tracking <Mode>` Tracks the Mode with
 ///   items two minutes long after each activation run (`restartShortTracking(with:)`).
 ///

@@ -163,6 +163,42 @@ final public class PreferenceStore {
   }
 }
 
+// MARK: Reminder switches
+
+extension PreferenceStore {
+  /// The kinds of event whose reminder switch is on, read from and written to the four switches.
+  public var reminderKinds: Set<EventReminder.Kind> {
+    get {
+      Set(EventReminder.Kind.allCases.filter { self[reminderSwitch: $0] })
+    }
+    set {
+      for kind in EventReminder.Kind.allCases {
+        self[reminderSwitch: kind] = newValue.contains(kind)
+      }
+    }
+  }
+
+  /// The switch of one kind.
+  private subscript(reminderSwitch kind: EventReminder.Kind) -> Bool {
+    get {
+      switch kind {
+        case .bigRun: isBigRunReminderOn
+        case .eggstraWork: isEggstraWorkReminderOn
+        case .splatfest: isSplatfestReminderOn
+        case .challenge: isChallengeReminderOn
+      }
+    }
+    set {
+      switch kind {
+        case .bigRun: isBigRunReminderOn = newValue
+        case .eggstraWork: isEggstraWorkReminderOn = newValue
+        case .splatfest: isSplatfestReminderOn = newValue
+        case .challenge: isChallengeReminderOn = newValue
+      }
+    }
+  }
+}
+
 // MARK: PreferenceStore.Key
 
 extension PreferenceStore {

@@ -36,7 +36,7 @@ struct AppServices {
     let engine: RefreshEngine = .init(client: client, language: Self.language)
     let preferences: PreferenceStore = .init(defaults: defaults)
     self.engine = engine
-    effects = EffectsShell(engine: engine)
+    effects = EffectsShell(engine: engine, preferences: preferences)
     self.preferences = preferences
     clock = AppClock(source: timeSource)
     status = AppStatus(selectedPlace: preferences.defaultMode)

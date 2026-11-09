@@ -25,10 +25,24 @@ public struct EffectsPlan: Equatable, Sendable {
   /// `nil` while no Tracking runs: the request made as the app last moved to the background
   /// stands.
   public let nextBackgroundRun: Date?
+  /// The event reminders that replace every pending one of the app's, or `nil` to leave them as
+  /// they are. Rebuilt from the cache after each refresh that committed a feed, a 304 included,
+  /// and whenever a switch changes, so a newly published or moved event is reminded of at its
+  /// start. A refresh that committed nothing leaves them, since the data they came from stands.
+  public let reminders: [EventReminder]?
 
-  /// The plan after a refresh at `instant`, with `tracking` running.
-  public init(after result: RefreshResult, tracking: [RunningTracking] = [], at instant: Date) {
+  /// The plan after a refresh at `instant`, with `tracking` running. With no `reminders`
+  /// settings, as on the watch, the plan leaves the pending reminders as they are.
+  public init(
+    after result: RefreshResult,
+    tracking: [RunningTracking] = [],
+    reminders reminderSettings: ReminderSettings? = nil,
+    at instant: Date)
+  {
     reloadsWidgetTimelines = result.hasCommitted
+    reminders = result.hasCommitted
+      ? reminderSettings.map { result.snapshot.eventReminders(for: $0, after: instant) }
+      : nil
 
     var effects: [String: TrackingEffect] = [:]
     for running in tracking {
@@ -43,6 +57,15 @@ public struct EffectsPlan: Equatable, Sendable {
     nextBackgroundRun = tracking.isEmpty
       ? nil
       : Self.nextBackgroundRun(after: instant, trackingBoundaries: effects.values.compactMap { $0.state?.staleDate })
+  }
+
+  /// The plan after a reminder switch changed at `instant`: the reminders `settings` call for
+  /// from `snapshot`, the cache as last read, and no other effect.
+  public init(remindersChangedTo settings: ReminderSettings, in snapshot: Snapshot, at instant: Date) {
+    reloadsWidgetTimelines = false
+    tracking = [:]
+    nextBackgroundRun = nil
+    reminders = snapshot.eventReminders(for: settings, after: instant)
   }
 
   /// When the background task should run next after `now`, given the next boundary of each

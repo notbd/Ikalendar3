@@ -19,6 +19,10 @@ extension Logger {
   /// Tracking: each Live Activity started, updated and ended, at info level.
   static let tracking: Logger = .init(subsystem: subsystem, category: "tracking")
 
+  /// Reminders: each replacement of the pending event reminders and each permission answer, at
+  /// info level, and requests the system refused.
+  static let reminders: Logger = .init(subsystem: subsystem, category: "reminders")
+
   /// Intents: each run of a Siri intent, naming the process that runs it, at notice level, so
   /// the line stays in the log store.
   static let intents: Logger = .init(subsystem: subsystem, category: "intents")

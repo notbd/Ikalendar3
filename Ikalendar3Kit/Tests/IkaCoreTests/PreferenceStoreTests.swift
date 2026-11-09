@@ -215,6 +215,22 @@ struct PreferenceStoreTests {
   }
 
   @Test
+  func `The reminder kinds are the switches that are on, both ways`() {
+    let store: PreferenceStore = .init(defaults: defaults)
+    #expect(store.reminderKinds.isEmpty)
+
+    store.isBigRunReminderOn = true
+    store.isChallengeReminderOn = true
+    #expect(store.reminderKinds == [.bigRun, .challenge])
+
+    store.reminderKinds = [.eggstraWork, .splatfest]
+    #expect(!store.isBigRunReminderOn)
+    #expect(store.isEggstraWorkReminderOn)
+    #expect(store.isSplatfestReminderOn)
+    #expect(!store.isChallengeReminderOn)
+  }
+
+  @Test
   func `Five tabs in tab bar order`() {
     #expect(ModeTab.allCases == [.regularBattle, .anarchy, .xBattle, .challenge, .salmonRun])
   }
