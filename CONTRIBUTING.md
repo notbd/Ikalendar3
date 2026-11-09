@@ -9,7 +9,7 @@
 
 ## Verify
 
-`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
+`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, the string catalog check, package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
 
 | Option | Environment variable | Default |
 |---|---|---|
@@ -79,6 +79,13 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
   SwiftFormat removes a leading "Test" from such names, so start with the subject.
 - The test plan runs in English (US). A test of another language passes the language explicitly.
 - No test may depend on a font file being present: CI has none.
+
+## Strings
+
+- The app speaks the game's 14 text sets. Every target declares the same 14 localizations (`en`, `en-GB`, `es`, `es-419`, `fr`, `fr-CA`, `de`, `it`, `nl`, `ru`, `ja`, `ko`, `zh-Hans`, `zh-Hant`), so each process resolves the same text set; `GameLanguage(localization:)` maps them.
+- Every key of every string catalog has a value in all 14, the source language included; `scripts/check-string-catalogs.sh` fails verify otherwise. Only keys marked Don't Translate are exempt.
+- Game terms come from splatoon3.ink's locale files (shipped in `IkaCore`, looked up through `GameTerms`), Mode names and labels from its MIT-licensed site strings (`ModeLabel`). Strings written for this app use each language's in-game vocabulary; in es-ES, es-MX, fr-FR, fr-CA, de-DE, it-IT, nl-NL, ru-RU and ko-KR they carry the Needs Review state until a native speaker checks them.
+- Package modules look their strings up with `Bundle.module.localizedString(forKey:in:)` in the language the process passes in, never in the process locale.
 
 ## Code and commits
 
