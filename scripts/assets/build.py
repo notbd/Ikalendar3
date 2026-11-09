@@ -1,14 +1,17 @@
-"""Builds ikalendar 3's bundled images from manifest.json.
+"""Builds ikalendar 3's bundled images and SplatNet 3's fonts from manifest.json.
 
 Run it through scripts/assets.sh, which installs the pinned tools first. Steps, each finished
-before the next starts, so a failure leaves every committed file as it was:
+before the next starts, so a failure leaves every output as it was:
 
-  1. Check the manifest: groups, sizes, sources, the id namespaces each group lists, and no two
-     ids giving one file name.
+  1. Check the manifest: groups, sizes, sources, the id namespaces each group lists, no two ids
+     giving one file name, and no two font files with one name.
   2. Download every source (cached by hash) and check it against the manifest's sha256.
   3. Render each image at its group's three sizes: SVGs drawn at the size, raster images scaled
      down to fit and never up.
-  4. Replace the asset catalog and the Swift index of bundled ids.
+  4. Unpack each font file's web-font subsets, merge them into one file whose PostScript name is
+     the file's name, and check that every character keeps its source outline and advance.
+  5. Replace the asset catalog and the Swift index of bundled ids, which are committed, and the
+     font folder, which is git-ignored.
 
 A second run with the same manifest writes the same bytes.
 """
@@ -23,16 +26,23 @@ import re
 import shutil
 import sys
 import urllib.request
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
 import resvg_py
+from fontTools.merge import Merger
+from fontTools.misc.psCharStrings import T2WidthExtractor
+from fontTools.pens.recordingPen import DecomposingRecordingPen
+from fontTools.ttLib import TTFont
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST = ROOT / "scripts/assets/manifest.json"
 CATALOG = ROOT / "Ikalendar3Kit/Sources/IkaDesign/Resources/Images.xcassets"
 INDEX = ROOT / "Ikalendar3Kit/Sources/IkaDesign/Images/BundledImage+Index.swift"
+# Git-ignored: the fonts are never committed. App packaging copies them from here.
+FONTS = ROOT / "build/Fonts"
 WORK = ROOT / "build/Assets"
 
 SIZES = ("small", "medium", "large")
@@ -50,6 +60,15 @@ class Failure(Exception):
 
 
 @dataclass(frozen=True)
+class Source:
+    """One file to download or read, under the name the maintainer sees in messages."""
+
+    label: str
+    location: str  # an https URL or a local path
+    sha256: str | None  # required before an https source is used; local files have none
+
+
+@dataclass(frozen=True)
 class Picture:
     """One image to render at its group's three sizes."""
 
@@ -60,20 +79,34 @@ class Picture:
     id: str | None  # None for the group's placeholder
     name: str
     note: str
-    source: str
-    sha256: str | None
+    source: Source
+
+
+@dataclass(frozen=True)
+class FontFile:
+    """One font file to build: SplatNet 3's subsets of one face, merged in order."""
+
+    name: str  # the file name stem and PostScript name, as FontFace.name in IkaDesign
+    note: str
+    subsets: tuple[Source, ...]
+
+
+@dataclass(frozen=True)
+class Manifest:
+    pictures: list[Picture]  # placeholders included
+    fonts: list[FontFile]
 
 
 # MARK: - Manifest
 
 
-def load_manifest(path: Path) -> list[Picture]:
-    """Reads and checks the manifest; returns every picture, placeholders included."""
+def load_manifest(path: Path) -> Manifest:
+    """Reads and checks the manifest."""
     try:
         manifest = json.loads(path.read_text())
     except (OSError, json.JSONDecodeError) as error:
         raise Failure(f"{path}: {error}")
-    expect_keys(manifest, "manifest", {"bases", "groups"})
+    expect_keys(manifest, "manifest", {"bases", "groups", "fonts"})
     bases = manifest["bases"]
     pictures = []
     for group in manifest["groups"]:
@@ -91,7 +124,31 @@ def load_manifest(path: Path) -> list[Picture]:
         owners[symbol] = owner
     if collisions:
         raise Failure("Two ids give one file name:\n  " + "\n  ".join(collisions))
-    return pictures
+
+    fonts = [load_font(font, bases, path.parent) for font in manifest["fonts"]]
+    duplicates = sorted(name for name, count in Counter(font.name for font in fonts).items() if count > 1)
+    if duplicates:
+        raise Failure(f"Font files listed twice: {', '.join(duplicates)}")
+    return Manifest(pictures, fonts)
+
+
+def load_font(font: dict, bases: dict, folder: Path) -> FontFile:
+    expect_keys(font, "font", {"name", "note", "subsets"})
+    name = font["name"]
+    where = f"font {name}"
+    if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z0-9]+", name):
+        raise Failure(f"{where}: names are letters and digits, the PostScript name of the file")
+    if not font["subsets"]:
+        raise Failure(f"{where}: lists no subsets")
+    subsets = []
+    for subset in font["subsets"]:
+        expect_keys(subset, where, {"source"}, {"sha256"})
+        sha256 = subset.get("sha256")
+        if sha256 is not None and not re.fullmatch(r"[0-9a-f]{64}", sha256):
+            raise Failure(f"{where}, {subset['source']}: sha256 is 64 lowercase hex digits")
+        location = resolve(subset["source"], bases, folder, where)
+        subsets.append(Source(location.rsplit("/", 1)[-1], location, sha256))
+    return FontFile(name, font["note"], tuple(subsets))
 
 
 def load_group(group: dict, bases: dict, folder: Path) -> list[Picture]:
@@ -113,7 +170,7 @@ def load_group(group: dict, bases: dict, folder: Path) -> list[Picture]:
 
     def picture(image_id: str | None, name: str, note: str, source: str, sha256: str | None) -> Picture:
         return Picture(key, group["folder"], group["format"], sizes, image_id, name, note,
-                       resolve(source, bases, folder, where), sha256)
+                       Source(image_id or name, resolve(source, bases, folder, where), sha256))
 
     pictures = [picture(None, f"placeholder-{key}", "Placeholder", group["placeholder"], None)]
     namespaces = group.get("namespaces")
@@ -174,22 +231,22 @@ def expect_keys(value: dict, where: str, required: set[str], optional: set[str] 
 # MARK: - Sources
 
 
-def fetch_all(pictures: list[Picture]) -> dict[str, bytes]:
-    """Every source's bytes by source. Stops before anything is written if a hash is off."""
+def fetch_all(sources: list[Source]) -> dict[str, bytes]:
+    """Every source's bytes by location. Stops before anything is written if a hash is off."""
     contents, problems = {}, []
-    for picture in pictures:
-        if picture.source in contents:
+    for source in sources:
+        if source.location in contents:
             continue
-        if picture.source.startswith("https://"):
-            data = download(picture.source, picture.sha256)
+        if source.location.startswith("https://"):
+            data = download(source.location, source.sha256)
             actual = hashlib.sha256(data).hexdigest()
-            if picture.sha256 is None:
-                problems.append(f"{picture.id}: add \"sha256\": \"{actual}\"")
-            elif actual != picture.sha256:
-                problems.append(f"{picture.id}: sha256 is {actual}, the manifest says {picture.sha256}")
+            if source.sha256 is None:
+                problems.append(f"{source.label}: add \"sha256\": \"{actual}\"")
+            elif actual != source.sha256:
+                problems.append(f"{source.label}: sha256 is {actual}, the manifest says {source.sha256}")
         else:
-            data = Path(picture.source).read_bytes()
-        contents[picture.source] = data
+            data = Path(source.location).read_bytes()
+        contents[source.location] = data
     if problems:
         raise Failure("Downloads that do not match the manifest:\n  " + "\n  ".join(problems))
     return contents
@@ -217,7 +274,7 @@ def download(url: str, sha256: str | None) -> bytes:
 
 def render(picture: Picture, data: bytes, box: tuple[int, int]) -> bytes:
     """The picture fitted into `box`, encoded in its group's format."""
-    if picture.source.endswith(".svg"):
+    if picture.source.location.endswith(".svg"):
         image = render_svg(data, box)
     else:
         image = scale_down(Image.open(io.BytesIO(data)), box)
@@ -260,6 +317,133 @@ def fit(size: tuple[int, int], box: tuple[int, int], allow_upscale: bool) -> tup
     return max(1, round(size[0] * scale)), max(1, round(size[1] * scale))
 
 
+# MARK: - Fonts
+
+
+def merge_font(font: FontFile, contents: dict[str, bytes]) -> TTFont:
+    """The font file's subsets as one font whose PostScript name is `font.name`."""
+    subsets = [unpack(contents[subset.location]) for subset in font.subsets]
+    for subset in subsets:
+        make_name_keyed(subset)
+    if len(subsets) == 1:
+        merged = subsets[0]
+    else:
+        merged = Merger().merge([sfnt(subset) for subset in subsets])
+        # The merger stamps the current time; the subsets' own dates keep a second run's bytes equal.
+        merged["head"].created = min(subset["head"].created for subset in subsets)
+        merged["head"].modified = max(subset["head"].modified for subset in subsets)
+    rename(merged, font.name)
+    check_outlines(font, merged, contents)
+    return merged
+
+
+def unpack(web_font: bytes) -> TTFont:
+    """A woff file as plain TrueType or OpenType: the same tables, uncompressed."""
+    font = TTFont(io.BytesIO(web_font), recalcTimestamp=False)
+    font.flavor = None
+    return font
+
+
+def sfnt(font: TTFont) -> io.BytesIO:
+    data = io.BytesIO()
+    font.save(data)
+    data.seek(0)
+    return data
+
+
+def make_name_keyed(font: TTFont) -> None:
+    """Turns a CID-keyed CFF font into a name-keyed one, the only kind fontTools merges (Fontworks'
+    Rowdy subsets are CID-keyed). Every glyph moves to the private dict most glyphs use; that
+    changes hint zones of the others (only .notdef in Rowdy), never an outline, and each moved
+    glyph's width is restated against its new private dict."""
+    if "CFF " not in font or not hasattr(font["CFF "].cff[0], "FDSelect"):
+        return
+    cff = font["CFF "].cff
+    cff.desubroutinize()
+    top = cff[0]
+    font_dicts = list(top.FDSelect)
+    kept = Counter(font_dicts).most_common(1)[0][0]
+    private = top.FDArray[kept].Private
+    for name, font_dict in zip(top.charset, font_dicts):
+        charstring = top.CharStrings[name]
+        if font_dict != kept:
+            restate_width(charstring, private)
+        charstring.private = private
+    top.Private = private
+    for key in ("ROS", "CIDFontVersion", "CIDFontRevision", "CIDFontType", "CIDCount", "UIDBase", "FDArray",
+                "FDSelect"):
+        top.rawDict.pop(key, None)
+        if hasattr(top, key):
+            delattr(top, key)
+    for holder in (top.CharStrings, top.CharStrings.charStringsIndex):
+        for key in ("fdSelect", "fdArray"):
+            if hasattr(holder, key):
+                delattr(holder, key)
+    top.CharStrings.charStringsIndex.private = private
+
+
+def restate_width(charstring, private) -> None:
+    """Rewrites a desubroutinized charstring's width, stated against its own private dict, against
+    `private` instead: the same advance in other numbers, as fontTools' merger does."""
+    unset = object()
+    extractor = T2WidthExtractor([], [], charstring.private.nominalWidthX, unset)
+    extractor.execute(charstring)
+    width = charstring.private.defaultWidthX if extractor.width is unset else extractor.width
+    if extractor.width is not unset:
+        charstring.program.pop(0)
+    if width != private.defaultWidthX:
+        charstring.program.insert(0, width - private.nominalWidthX)
+
+
+def rename(font: TTFont, name: str) -> None:
+    """Sets the PostScript name, which Core Text registers and finds a face by. The subsets of one
+    region share their source font's name, so every face needs its own."""
+    table = font["name"]
+    table.removeNames(nameID=6)
+    table.setName(name, 6, 3, 1, 0x409)
+    table.setName(name, 6, 1, 0, 0)
+    if "CFF " in font:
+        font["CFF "].cff.fontNames = [name]
+
+
+def check_outlines(font: FontFile, merged: TTFont, contents: dict[str, bytes]) -> None:
+    """Stops unless `merged` maps exactly the characters of the subsets and draws each one with its
+    subset's outline and advance (the first subset's, where two map one character). Hints may
+    differ; outlines may not."""
+    glyphs, cmap = merged.getGlyphSet(), merged.getBestCmap()
+    checked, problems = set(), []
+    for subset in font.subsets:
+        source = unpack(contents[subset.location])
+        source_glyphs = source.getGlyphSet()
+        for code_point, name in source.getBestCmap().items():
+            if code_point in checked:
+                continue
+            checked.add(code_point)
+            if code_point not in cmap or drawing(source_glyphs, name) != drawing(glyphs, cmap[code_point]):
+                problems.append(f"U+{code_point:04X} ({subset.label})")
+    problems += [f"U+{code_point:04X} is in no subset" for code_point in sorted(cmap.keys() - checked)]
+    if problems:
+        raise Failure(f"{font.name}: merging changed {len(problems)} characters, such as " + ", ".join(problems[:5]))
+
+
+def drawing(glyphs, name: str) -> tuple:
+    """A glyph's advance and outline, components drawn in place, so renamed glyphs compare equal."""
+    pen = DecomposingRecordingPen(glyphs)
+    glyphs[name].draw(pen)
+    return glyphs[name].width, pen.value
+
+
+def write_fonts(fonts: list[FontFile], contents: dict[str, bytes], folder: Path) -> None:
+    """Writes each font file as `<name>.otf` (CFF outlines) or `<name>.ttf` (TrueType outlines)."""
+    folder.mkdir(parents=True)
+    for font in fonts:
+        merged = merge_font(font, contents)
+        merged.recalcTimestamp = False
+        extension = "otf" if merged.sfntVersion == "OTTO" else "ttf"
+        merged.save(folder / f"{font.name}.{extension}")
+        print(f"Built {font.name}.{extension} from {', '.join(subset.label for subset in font.subsets)}")
+
+
 # MARK: - Output
 
 
@@ -273,7 +457,7 @@ def write_catalog(pictures: list[Picture], contents: dict[str, bytes], catalog: 
             file = f"{name}.{FORMATS[picture.format]}"
             image_set = folder / f"{name}.imageset"
             image_set.mkdir()
-            (image_set / file).write_bytes(render(picture, contents[picture.source], picture.sizes[size]))
+            (image_set / file).write_bytes(render(picture, contents[picture.source.location], picture.sizes[size]))
             write_json(image_set / "Contents.json",
                        {"images": [{"filename": file, "idiom": "universal"}], "info": CONTENTS_INFO})
 
@@ -310,27 +494,43 @@ def index_source(pictures: list[Picture]) -> str:
     return "\n".join(lines)
 
 
-def build(manifest: Path) -> None:
-    pictures = load_manifest(manifest)
-    contents = fetch_all(pictures)
+def build(path: Path, only: str | None) -> None:
+    manifest = load_manifest(path)
+    pictures = [] if only == "fonts" else manifest.pictures
+    fonts = [] if only == "images" else manifest.fonts
+    sources = [picture.source for picture in pictures] + [source for font in fonts for source in font.subsets]
+    contents = fetch_all(sources)
 
     staging = WORK / "Staging"
     shutil.rmtree(staging, ignore_errors=True)
-    write_catalog(pictures, contents, staging / CATALOG.name)
-    (staging / INDEX.name).write_text(index_source(pictures))
+    if pictures:
+        write_catalog(pictures, contents, staging / CATALOG.name)
+        (staging / INDEX.name).write_text(index_source(pictures))
+    if fonts:
+        write_fonts(fonts, contents, staging / FONTS.name)
 
-    shutil.rmtree(CATALOG, ignore_errors=True)
-    CATALOG.parent.mkdir(parents=True, exist_ok=True)
-    shutil.move(staging / CATALOG.name, CATALOG)
-    shutil.move(staging / INDEX.name, INDEX)
-    print(f"Wrote {len(pictures) * len(SIZES)} images to {CATALOG.relative_to(ROOT)}")
+    if pictures:
+        replace(staging / CATALOG.name, CATALOG)
+        shutil.move(staging / INDEX.name, INDEX)
+        print(f"Wrote {len(pictures) * len(SIZES)} images to {CATALOG.relative_to(ROOT)}")
+    if fonts:
+        replace(staging / FONTS.name, FONTS)
+        print(f"Wrote {len(fonts)} fonts to {FONTS.relative_to(ROOT)}")
+
+
+def replace(staged: Path, destination: Path) -> None:
+    shutil.rmtree(destination, ignore_errors=True)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.move(staged, destination)
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--manifest", type=Path, default=MANIFEST, help="the manifest to build (default: %(default)s)")
+    parser.add_argument("--only", choices=["images", "fonts"], help="build only the images or only the fonts")
+    arguments = parser.parse_args()
     try:
-        build(parser.parse_args().manifest)
+        build(arguments.manifest, arguments.only)
     except Failure as failure:
         sys.exit(f"error: {failure}")
 

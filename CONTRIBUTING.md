@@ -5,7 +5,7 @@
 - Xcode, SwiftFormat and SwiftLint at the versions pinned in `scripts/versions.env`. CI uses exactly these, and the verify script refuses other linter versions, because rule behaviour changes between releases.
 - Homebrew may carry newer linters. To install the pinned ones as CI does, download `swiftformat.zip` from the SwiftFormat release and `portable_swiftlint.zip` from the SwiftLint release with that version number, check each with `shasum -a 256` against its checksum in `scripts/versions.env`, and put both binaries first on your `PATH`.
 - `jq`, `xmllint`, `perl` and `shasum` ship with macOS.
-- Only the asset script (see Bundled images) needs Python, at the version `scripts/versions.env` pins.
+- Only the asset script (see Bundled images and Fonts) needs Python, at the version `scripts/versions.env` pins.
 
 ## Verify
 
@@ -67,6 +67,13 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 - Names are the decoded feed id, lowercased (`VsStage-1` gives `vsstage-1_small`); weapons and Mode icons carry their group (`weapon-<id>`, `mode-<name>`). The script refuses an id outside the namespaces its group lists, and two ids that give one name.
 - Stage art is JPEG (opaque photos, about a quarter of the size of PNG); everything else is PNG with alpha. Raster sources are scaled down to fit each size, never up.
 - An id with no bundled image, such as a Stage added after a release, shows its group's placeholder.
+
+## Fonts
+
+- `scripts/assets.sh` also builds SplatNet 3's fonts into `build/Fonts`, which git ignores: one file per face, named for the face and carrying it as its PostScript name, as `FontFace` expects (`Splatoon1`, `Splatoon1KRko`, `Splatoon1JP`, `Splatoon1CHzh`, `Splatoon1TWzh` and the same five for `Splatoon2`). App packaging copies them from there. `scripts/assets.sh --only fonts` builds only the fonts; a release build runs it first. CI and the verify script never run it.
+- Sources: the manifest's `fonts` list SplatNet 3's woff subsets in splatoon3.ink's repository at the commit its `repo` base pins, each with its sha256. `KRko-level2` is left out: its Hangul outlines are empty. If splatoon3.ink drops the files, point the sources at Nintendo's host (`https://api.lp1.av5ja.srv.nintendo.net/static/media/`) and keep the hashes: Nintendo serves the same bytes under names with a content hash, which SplatNet 3's main CSS lists.
+- The script unpacks each woff to plain TrueType or OpenType, merges a face's subsets with fontTools and sets the PostScript name; Fontworks' Rowdy subsets are CID-keyed, so they become name-keyed first. It stops if any character's outline or advance differs from its subset's. Merging drops the vertical-origin table (`VORG`), which only vertical text uses.
+- A face whose file is missing falls back to the system font for its script, so a checkout without fonts builds and runs. `FontManifestTests` keeps the manifest's faces equal to `FontFace.allCases` without needing a font file.
 
 ## Tests
 

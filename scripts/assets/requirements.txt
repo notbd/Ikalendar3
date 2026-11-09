@@ -1,9 +1,12 @@
 # The asset script's Python packages, pinned with the hash of each macOS wheel for Python 3.14,
-# so every machine renders with the same code. scripts/assets.sh installs them with
-# --require-hashes into build/Assets/Tools.
+# so every machine renders the images and merges the fonts with the same code. scripts/assets.sh
+# installs them with --require-hashes into build/Assets/Tools.
 pillow==13.0.0 \
     --hash=sha256:49c12af515073e9bf511e4ef736743bf70d531a643668722279314b937742ba4 \
     --hash=sha256:d9b0a2bee3f3e03e9f29057aedb807dbf1e1d96ee1b9d0f422d9db6c8583271d
 resvg-py==0.5.0 \
     --hash=sha256:9d3f5c2544d6b5f74847513e07e6ab6a70f9e7f0d8a141bc16bd4b0c555f4234 \
     --hash=sha256:7b43f942157f5d16126e108dab8ab37e4bc2b198099e5f6274b753a3b1ac7b6e
+fonttools==4.68.0 \
+    --hash=sha256:b2ee7b9c1a5e1d637073c39b0978956febad7e862a1269719f527934c65535a4 \
+    --hash=sha256:9d80813ae74b969ef2166a3040b591826e80ecd879bdeab7f13f4e8eaf08b345
