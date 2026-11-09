@@ -64,7 +64,19 @@ public struct SentenceWriter: Sendable {
       kind.text(in: language),
       terms.name(of: shift.stage),
       list(shift.weapons.map(weaponName)),
-      when(shift, at: instant, times: .init().weekday(.wide).hour().minute()))
+      when(shift, at: instant, times: Self.weekdayAndTimeStyle))
+  }
+
+  /// A Splatfest's sentence: its title and time range, plus the time left while it runs at
+  /// `instant`.
+  ///
+  /// A Splatfest is announced up to weeks ahead, so its times carry the date.
+  public func sentence(for splatfest: Splatfest, at instant: Date) -> String {
+    format(
+      "sentence.splatfest",
+      ModeLabel.splatfest.text(in: language),
+      terms.splatfest(splatfest.id).title,
+      when(splatfest, at: instant, times: .init().weekday(.wide).month(.wide).day().hour().minute()))
   }
 
   /// The time left in a window, which is how a progress bar or ring reads: whole hours and
@@ -85,13 +97,20 @@ public struct SentenceWriter: Sendable {
     return format("sentence.timeLeft", span)
   }
 
+  /// An instant within the coming days, as a Shift's times read: its weekday and time.
+  func weekdayAndTime(_ instant: Date) -> String {
+    instant.formatted(localized(Self.weekdayAndTimeStyle))
+  }
+
   // MARK: Parts
+
+  /// A weekday and a time: "Thursday 8:00 AM".
+  static private let weekdayAndTimeStyle: Date.FormatStyle = .init().weekday(.wide).hour().minute()
 
   /// The time range of a window with its times in `style`, plus the time left while it runs at
   /// `instant`.
   private func when(_ window: some TimeWindow, at instant: Date, times style: Date.FormatStyle) -> String {
-    var style = style.locale(locale)
-    style.timeZone = timeZone
+    let style = localized(style)
     let range = format("sentence.timeRange", window.startTime.formatted(style), window.endTime.formatted(style))
     guard window.isRunning(at: instant) else { return range }
 
@@ -125,9 +144,24 @@ public struct SentenceWriter: Sendable {
     names.formatted(.list(type: .and).locale(locale))
   }
 
-  /// A catalog template in the text set, filled in.
-  private func format(_ key: String, _ arguments: any CVarArg...) -> String {
-    String(format: Bundle.module.localizedString(forKey: key, in: language), locale: locale, arguments: arguments)
+  /// A format style in the text set, time zone and hour cycle.
+  private func localized(_ style: Date.FormatStyle) -> Date.FormatStyle {
+    var style = style.locale(locale)
+    style.timeZone = timeZone
+    return style
+  }
+
+  /// A catalog template in the text set, filled in. `SiriAnswers` writes its own templates
+  /// with it.
+  ///
+  /// A sentence whose last time ends in an abbreviation ("4:00 p. m.") ends on that period,
+  /// not on a second one.
+  func format(_ key: String, _ arguments: any CVarArg...) -> String {
+    let text: String = .init(
+      format: Bundle.module.localizedString(forKey: key, in: language),
+      locale: locale,
+      arguments: arguments)
+    return text.hasSuffix("..") ? String(text.dropLast()) : text
   }
 
   private var language: GameLanguage { terms.language }
