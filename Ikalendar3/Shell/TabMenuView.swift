@@ -18,10 +18,16 @@ import SwiftUI
 /// nothing, and a `Tab`'s `popover` stops the app ("UIViewController cannot be shared between
 /// multiple UITab"). So the second tap reaches `AppStatus.select(_:)` through
 /// `interceptingTabReselection`, and `ModeTabsView` draws this panel as an overlay.
+///
+/// For VoiceOver the panel is modal: focus moves to the selected option when it opens, and the
+/// escape gesture closes it, as a tap outside it does.
 struct TabMenuView: View {
   @Environment(RefreshEngine.self) private var engine
   @Environment(AppClock.self) private var clock
   @Environment(\.gameLanguage) private var language
+
+  /// The option VoiceOver focuses.
+  @AccessibilityFocusState private var focusedMode: RotationMode?
 
   /// The menu shown.
   let menu: TabMenu
@@ -29,6 +35,8 @@ struct TabMenuView: View {
   let selection: RotationMode
   /// Switches the tab to an option's Battle Mode.
   let choose: (TabMenuOption) -> Void
+  /// Closes the menu with no change.
+  let dismiss: () -> Void
 
   var body: some View {
     // As wide as the widest row while the screen holds it, so both rows share one width and the
@@ -48,6 +56,10 @@ struct TabMenuView: View {
     // Regular glass in both colour schemes: the clear glass the adaptive effect uses on dark lets
     // the list show through the text.
     .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 28))
+    .accessibilityElement(children: .contain)
+    .accessibilityAddTraits(.isModal)
+    .accessibilityAction(.escape, dismiss)
+    .onAppear { focusedMode = selection }
   }
 
   private var rows: some View {
@@ -60,6 +72,7 @@ struct TabMenuView: View {
           TabMenuRow(option: option, isSelected: option.mode == selection, terms: terms, now: now)
         }
         .buttonStyle(.plain)
+        .accessibilityFocused($focusedMode, equals: option.mode)
       }
     }
     .padding(.vertical, 6)
@@ -119,6 +132,8 @@ private struct TabMenuRow: View {
       Image(systemName: "checkmark")
         .font(.body.weight(.semibold))
         .opacity(isSelected ? 1 : 0)
+        // The row's selected trait says it.
+        .accessibilityHidden(true)
     }
     .padding(.horizontal, 16)
     .padding(.vertical, 10)

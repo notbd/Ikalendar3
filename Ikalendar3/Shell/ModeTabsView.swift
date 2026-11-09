@@ -103,7 +103,7 @@ struct ModeTabsView: View {
   }
 
   /// `tab`'s menu while it is shown, over a layer that closes it on a tap anywhere else above the
-  /// tab bar.
+  /// tab bar. VoiceOver skips the layer: the menu is modal and closes with the escape gesture.
   @ViewBuilder
   private func tabMenu(for tab: AppTab) -> some View {
     if let menu = status.presentedMenu, tab.repeatedSelectionAction == .openMenu(menu) {
@@ -114,7 +114,7 @@ struct ModeTabsView: View {
           .onTapGesture { status.dismissMenu() }
           .accessibilityHidden(true)
 
-        TabMenuView(menu: menu, selection: status.mode(of: menu), choose: status.choose)
+        TabMenuView(menu: menu, selection: status.mode(of: menu), choose: status.choose, dismiss: status.dismissMenu)
           .padding([.horizontal, .bottom], 16)
           .transition(menuTransition)
       }
