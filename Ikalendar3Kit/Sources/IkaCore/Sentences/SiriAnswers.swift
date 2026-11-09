@@ -53,7 +53,8 @@ public struct SiriAnswers: Sendable {
   }
 
   /// When a Rule next comes up in a Battle Mode: the first published Rotation from the one on
-  /// now on that plays it, with the time left when it is on now.
+  /// now on that plays it, with the time left when it is on now. A Rule no published Rotation
+  /// plays is not published, unless a pause leaves nothing after it published yet.
   public func next(_ rule: RuleID, in battleMode: BattleMode, at instant: Date) -> String {
     let lineup = battleLineup(battleMode, at: instant)
     if let rotation = lineup.items.first(where: { $0.setting?.rule == rule }) {
@@ -62,10 +63,11 @@ public struct SiriAnswers: Sendable {
 
     let mode = Mode.battle(battleMode).name(in: language)
     return switch lineup.current {
-      case .paused(let returnTime): writer.pauseSentence(named: mode, returningAt: returnTime)
+      case .paused(let returnTime) where lineup.next == nil: writer.pauseSentence(named: mode, returningAt: returnTime)
       case .ranOut: writer.format("answer.outOfDate", mode)
       case .item,
            .gap,
+           .paused,
            .noneAnnounced: writer.format("answer.notPublished.rule", mode, writer.terms.name(of: rule))
     }
   }

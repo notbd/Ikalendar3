@@ -124,6 +124,17 @@ struct SiriAnswersTests {
     #expect(firstHalf.next(Self.turfWar, in: .regular, at: date("2026-10-31T13:00:00Z")) == comesBack)
   }
 
+  /// Ticket 21: a Rule absent from the remaining Rotations is not published, a pause or not.
+  @Test
+  func `A Rule no published Rotation after the Splatfest plays is not in the published Schedule`() async throws {
+    let answers = try await Self.answers(.splatfestSecondHalf)
+    let instant: Date = date("2026-11-01T06:00:00Z")
+
+    #expect(answers.next(Self.rainmaker, in: .regular, at: instant) ==
+      "Regular Battle: Rainmaker is not in the published Schedule.")
+    #expect(answers.next(Self.turfWar, in: .x, at: instant) == "X Battle: Turf War is not in the published Schedule.")
+  }
+
   // MARK: Big Run and Splatfest
 
   @Test
