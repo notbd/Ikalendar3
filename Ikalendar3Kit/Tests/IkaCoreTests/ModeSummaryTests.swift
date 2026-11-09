@@ -104,4 +104,37 @@ struct ModeSummaryTests {
   func `No Mode summary exists before the schedules feed's first good response`(_ mode: Mode) {
     #expect(Snapshot().summary(of: mode, at: TestData.epoch) == nil)
   }
+
+  @Test
+  func `The Mode value's summaries list its five Modes in its order`() async throws {
+    let snapshot = try await Snapshot.schedules(.normalDay)
+
+    let summaries = try #require(snapshot.summaries(at: date("2026-10-20T13:30:00Z")))
+
+    #expect(summaries.map(\.mode) == [
+      .battle(.regular),
+      .battle(.anarchySeries),
+      .battle(.anarchyOpen),
+      .battle(.x),
+      .salmonRun,
+    ])
+  }
+
+  @Test
+  func `During the Splatfest the Mode value's summaries keep the paused Battle Modes, never Splatfest Battle`()
+    async throws
+  {
+    let snapshot = try await Snapshot.schedules(.splatfestSecondHalf)
+
+    let summaries = try #require(snapshot.summaries(at: date("2026-11-01T05:23:00Z")))
+
+    let returnTime = date("2026-11-02T00:00:00Z")
+    #expect(Array(summaries.prefix(4)) == BattleMode.allCases.map { .battle($0, .paused(returnTime: returnTime)) })
+    #expect(summaries.count == 5)
+  }
+
+  @Test
+  func `No list of the Mode value's summaries exists before the schedules feed's first good response`() {
+    #expect(Snapshot().summaries(at: TestData.epoch) == nil)
+  }
 }
