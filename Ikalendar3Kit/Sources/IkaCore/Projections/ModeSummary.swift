@@ -49,12 +49,10 @@ public enum ModeSummary: Hashable, Sendable {
 }
 
 extension Snapshot {
-  /// `mode`'s summary at `instant`, or `nil` before the schedules feed's first good response.
+  /// `mode`'s summary at `instant`, or `nil` before the schedules feed's first good response:
+  /// the current item of its page, so a Now row and the page it opens always agree.
   public func summary(of mode: Mode, at instant: Date) -> ModeSummary? {
-    switch mode {
-      case .battle(let battleMode): battleScreen(of: battleMode, at: instant).map { .battle(battleMode, $0.current) }
-      case .salmonRun: salmonRunScreen(at: instant).map { .salmonRun($0.current) }
-    }
+    modePage(of: mode, at: instant)?.summary
   }
 
   /// The summary of `form` of Splatfest Battle at `instant`: the current item of its Splatfest

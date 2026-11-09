@@ -57,16 +57,17 @@ struct NowPageView: View {
 
   var body: some View {
     ScrollView {
-      VStack(spacing: NowMetrics.rowSpacing) {
+      VStack(spacing: WatchMetrics.rowSpacing) {
         if let splatfest = page.splatfest {
           SplatfestTeamsPanel(splatfest: splatfest, terms: terms, now: now)
         }
-        VStack(spacing: NowMetrics.rowSpacing) {
+        VStack(spacing: WatchMetrics.rowSpacing) {
           ForEach(page.summaries, id: \.mode) { summary in
             if summary.mode != page.summaries.first?.mode {
               InkDottedRule()
             }
-            NavigationLink(value: summary.mode) {
+            // Every row of the Now page is a Mode's; a summary with none would not open a page.
+            NavigationLink(value: summary.mode.map(WatchRoute.modePages)) {
               NowRow(summary: summary, terms: terms, now: now)
             }
             .buttonStyle(.plain)
@@ -80,34 +81,5 @@ struct NowPageView: View {
       InkBackground()
         .ignoresSafeArea()
     }
-  }
-}
-
-// MARK: - ModePagePlaceholder
-
-/// Where a Now row leads until the Mode's own page lands (ticket 46): the Mode's row under its
-/// name.
-struct ModePagePlaceholder: View {
-  @Environment(RefreshEngine.self) private var engine
-  @Environment(AppClock.self) private var clock
-  @Environment(\.gameLanguage) private var language
-
-  let mode: Mode
-
-  var body: some View {
-    let snapshot = engine.snapshot
-    let now = clock.now
-
-    ScrollView {
-      if let summary = snapshot.summary(of: mode, at: now) {
-        NowRow(summary: summary, terms: snapshot.terms(in: language), now: now)
-          .inkPanel()
-      }
-    }
-    .background {
-      InkBackground()
-        .ignoresSafeArea()
-    }
-    .navigationTitle(mode.name(in: language))
   }
 }
