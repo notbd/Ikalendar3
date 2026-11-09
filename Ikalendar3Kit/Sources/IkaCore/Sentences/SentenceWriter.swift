@@ -9,8 +9,9 @@ import Foundation
 
 // MARK: - SentenceWriter
 
-/// Writes the one sentence a Rotation or a Shift reads as, in one of the 14 text sets. VoiceOver
-/// reads it on every Surface and Siri's answers are built from it, so every Surface reads alike.
+/// Writes the one sentence a Rotation, a Shift, a Challenge window or a Splatfest reads as, in one
+/// of the 14 text sets. VoiceOver reads it on every Surface and Siri's answers are built from it,
+/// so every Surface reads alike.
 ///
 /// Names come from the game's terms in their text set. Times are written in the time zone and
 /// the hour cycle passed in; Surfaces pass the device's own (views through `IkaDesign`'s
@@ -88,6 +89,21 @@ public struct SentenceWriter: Sendable {
     sentence(of: item.isBigRun ? .bigRun : .salmonRun, on: item.stage, with: item.weapons, in: item, at: instant)
   }
 
+  /// A Challenge window's sentence: a Rotation's, with the Challenge's name in the Battle Mode's
+  /// place, plus the time left while the window runs at `instant`.
+  ///
+  /// A Challenge window lasts hours, so its times read as a Rotation's do: its start carries the
+  /// weekday only when the window is not on at `instant` and starts on another day.
+  public func sentence(for window: ChallengeWindow, at instant: Date) -> String {
+    let challenge = window.challenge
+    return format(
+      "sentence.rotation",
+      terms.challenge(challenge.id).name,
+      terms.name(of: challenge.rule),
+      list(challenge.stages.map(terms.name(of:))),
+      hoursLongWhen(window, at: instant))
+  }
+
   /// A Splatfest's sentence: its title and time range, plus the time left while it runs at
   /// `instant`.
   ///
@@ -153,14 +169,12 @@ public struct SentenceWriter: Sendable {
   {
     guard let setting else { return pauseSentence(named: mode, returningAt: window.endTime) }
 
-    let time: Date.FormatStyle = .init().hour().minute()
-    let startsOnAnotherDay = instant.map { !window.isRunning(at: $0) && !isSameDay(window.startTime, $0) } ?? false
     return format(
       "sentence.rotation",
       mode,
       terms.name(of: setting.rule),
       list(setting.stages.map(terms.name(of:))),
-      when(window, at: instant, times: time, startTime: startsOnAnotherDay ? Self.weekdayAndTimeStyle : time))
+      hoursLongWhen(window, at: instant))
   }
 
   /// A Shift's sentence. With no `instant`, it reads no time left.
@@ -187,6 +201,15 @@ public struct SentenceWriter: Sendable {
 
   /// A weekday and a time: "Thursday 8:00 AM".
   static private let weekdayAndTimeStyle: Date.FormatStyle = .init().weekday(.wide).hour().minute()
+
+  /// The time range of a window hours long, a Rotation's or a Challenge window's, plus the time
+  /// left while it runs at `instant`: times only, except that a window not on at `instant` that
+  /// starts on another day reads its start's weekday. With no `instant`, no time left and no day.
+  private func hoursLongWhen(_ window: some TimeWindow, at instant: Date?) -> String {
+    let time: Date.FormatStyle = .init().hour().minute()
+    let startsOnAnotherDay = instant.map { !window.isRunning(at: $0) && !isSameDay(window.startTime, $0) } ?? false
+    return when(window, at: instant, times: time, startTime: startsOnAnotherDay ? Self.weekdayAndTimeStyle : time)
+  }
 
   /// The time range of a window with its times in `style`, its start in `startStyle` if one is
   /// given, plus the time left while it runs at `instant`, if one is given.

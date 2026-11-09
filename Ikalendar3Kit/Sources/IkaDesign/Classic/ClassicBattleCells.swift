@@ -11,8 +11,9 @@ import SwiftUI
 
 // MARK: - ClassicBattleSection
 
-/// One row of Classic's Battle Mode list: its header (tag and time range) over the featured
-/// primary cell or a secondary cell, as ikalendar 2's `BattleRotationRow` draws it.
+/// One row of Classic's Battle Mode or Splatfest Battle list: its header (tag and time range)
+/// over the featured primary cell or a secondary cell, as ikalendar 2's `BattleRotationRow` draws
+/// it.
 ///
 /// The section owns the namespace its Rotation's Rule and Stages glide in, and keeps its identity
 /// while the Rotation moves from a secondary cell to the primary one, so the Rotation glides into
@@ -24,10 +25,14 @@ struct ClassicBattleSection: View {
   @Namespace private var glide
 
   let row: ClassicBattleRow
-  let mode: BattleMode
+  /// The Battle Mode or the form of Splatfest Battle the Rotation belongs to.
+  let mode: RotationMode
   let terms: GameTerms
   let now: Date
   let metrics: CellMetrics
+  /// Whether the header names the Battle Mode on its colour, as on Regular Battle's first
+  /// Rotation after a Splatfest.
+  var showsModeTag = false
 
   var body: some View {
     Section {
@@ -48,7 +53,7 @@ struct ClassicBattleSection: View {
           ClassicBattlePrimaryCell(
             setting: setting,
             progress: running.progress,
-            tint: ModeColor(mode).classicTint(in: colorScheme),
+            tint: tint,
             terms: terms,
             now: now,
             metrics: metrics,
@@ -59,17 +64,28 @@ struct ClassicBattleSection: View {
 
       case .upcoming(let rotation, _):
         if let setting = rotation.setting {
-          ClassicBattleSecondaryCell(setting: setting, terms: terms, metrics: metrics, glide: glide)
+          ClassicBattleSecondaryCell(
+            rule: setting.rule,
+            stages: setting.stages,
+            terms: terms,
+            metrics: metrics,
+            glide: glide)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(writer.sentence(for: rotation, at: now))
         }
 
       case .paused(let returnTime):
         let format = time.format(terms.language)
-        ClassicStatusCell(
+        let status: ClassicStatusCell = .init(
           text: ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now)),
           arrangement: metrics.arrangement)
-          .accessibilityLabel(writer.sentence(forPauseOf: mode, returningAt: returnTime))
+        // Only a Battle Mode is paused; a Splatfest Battle form never is.
+        if case .battle(let battleMode) = mode {
+          status.accessibilityLabel(writer.sentence(forPauseOf: battleMode, returningAt: returnTime))
+        }
+        else {
+          status
+        }
 
       case .nothingCurrent:
         ClassicStatusCell(text: ScreenText.nothingCurrent.text(in: terms.language), arrangement: metrics.arrangement)
@@ -83,13 +99,25 @@ struct ClassicBattleSection: View {
 
     layout {
       if let tag = row.tag {
-        ClassicTag(text: tag)
+        ClassicTag(text: tag.text(in: terms.language))
+      }
+      if showsModeTag, case .battle(let battleMode) = mode {
+        ClassicKindTag(text: mode.name(in: terms.language), color: ModeColor(battleMode))
       }
       if let window = row.window {
         Text(verbatim: timeFormat.battleRange(from: window.startTime, to: window.endTime, now: now))
           .scaledLimitedLine(for: metrics.arrangement)
           .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       }
+    }
+  }
+
+  /// The progress bar's tint: the Battle Mode's colour. Splatfest Battle has no Mode colour of
+  /// its own, and no one team's colour stands for it, so its bar stays neutral.
+  private var tint: Color {
+    switch mode {
+      case .battle(let battleMode): ModeColor(battleMode).classicTint(in: colorScheme)
+      case .splatfestBattle: .primary
     }
   }
 
@@ -213,13 +241,15 @@ struct ClassicBattlePrimaryCell: View {
 // MARK: - ClassicBattleSecondaryCell
 
 /// A later Rotation's cell: the Rule's icon on glass over its name, beside both Stages with their
-/// names under their pictures. It matches the primary cell's geometry, never sources it.
+/// names under their pictures. It matches the primary cell's geometry, never sources it. A
+/// Challenge shows its Rule and Stages in it too.
 struct ClassicBattleSecondaryCell: View {
   typealias Scoped = ClassicMetrics.BattleSecondary
 
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-  let setting: Rotation.Setting
+  let rule: RuleID
+  let stages: [StageID]
   let terms: GameTerms
   let metrics: CellMetrics
   let glide: Namespace.ID
@@ -253,7 +283,7 @@ struct ClassicBattleSecondaryCell: View {
   }
 
   private var ruleIcon: some View {
-    ClassicPicture(name: BundledImage.name(for: setting.rule, size: .medium))
+    ClassicPicture(name: BundledImage.name(for: rule, size: .medium))
       .shadow(radius: ClassicMetrics.shadowRadius)
       .frame(height: metrics.length(.battleSecondaryRuleImageHeight))
       .padding(Scoped.ruleImagePadding)
@@ -265,7 +295,7 @@ struct ClassicBattleSecondaryCell: View {
   @ViewBuilder private var ruleTitle: some View {
     if horizontalSizeClass != .compact, metrics.arrangement == .sideBySide {
       IdealFontLayout(anchor: .center) {
-        title(terms.name(of: setting.rule))
+        title(terms.name(of: rule))
         ForEach(RuleID.bundled, id: \.self) { rule in
           title(terms.name(of: rule))
         }
@@ -273,7 +303,7 @@ struct ClassicBattleSecondaryCell: View {
       .matchedGeometryEffect(id: GlidePart.ruleTitle, in: glide, isSource: false)
     }
     else {
-      title(terms.name(of: setting.rule))
+      title(terms.name(of: rule))
         .matchedGeometryEffect(id: GlidePart.ruleTitle, in: glide, isSource: false)
     }
   }
@@ -285,7 +315,7 @@ struct ClassicBattleSecondaryCell: View {
   }
 
   private var stageCards: some View {
-    ForEach(Array(setting.stages.enumerated()), id: \.offset) { index, stage in
+    ForEach(Array(stages.enumerated()), id: \.offset) { index, stage in
       ClassicBattleStageCard(
         stage: stage,
         name: terms.name(of: stage),
