@@ -166,6 +166,11 @@
 			membershipExceptions = (
 				"Info-iOS.plist",
 			);
+			platformFiltersByRelativePath = {
+				Siri/AppShortcuts.xcstrings = (
+					ios,
+				);
+			};
 			target = B10000000000000000000001 /* Ikalendar3 */;
 		};
 		AC0000000000000000000003 /* Exceptions for "Ikalendar3Widgets" folder in "Ikalendar3Widgets" target */ = {
