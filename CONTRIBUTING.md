@@ -56,7 +56,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 - A resource folder a package target declares must be committed, even if empty (a placeholder file keeps it). Font files are never committed, and no build step may need them.
 - The package folder is also a file reference in the project. Without it, `xcodebuild` silently skips the package's tests.
 - Signing: builds and macOS runs pass `CODE_SIGNING_ALLOWED=NO`. Simulator test runs keep automatic signing with no team (Xcode signs to run locally), so the test host carries its App Group entitlement.
-- Swift 6 language mode with Approachable Concurrency everywhere. The app and its tests run on the main actor by default; package modules stay nonisolated.
+- Swift 6 language mode with Approachable Concurrency everywhere. The app, its tests and the watch app run on the main actor by default; the widget extensions and package modules stay nonisolated.
 
 ## Tests
 
