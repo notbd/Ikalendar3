@@ -34,5 +34,6 @@ struct BattleModeScreenView: View {
         case .timeline: TimelineBattleScreenView(screen: screen, terms: terms, now: now, isStale: isStale)
       }
     }
+    .trackButton(for: .battle(mode), language: language)
   }
 }

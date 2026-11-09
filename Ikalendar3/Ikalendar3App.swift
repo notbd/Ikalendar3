@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import AppIntents
 import IkaCore
 import IkaDesign
 import IkaIntents
@@ -64,6 +65,14 @@ struct Ikalendar3App: App {
   }
 }
 
+// MARK: - AppIntentsPackageList
+
+/// Adds `IkaIntents`' types to the app's App Intents metadata, so the system finds the intents the
+/// app's process runs, such as the start-Tracking and Refresh Live Activity intents.
+struct AppIntentsPackageList: AppIntentsPackage {
+  static var includedPackages: [any AppIntentsPackage.Type] { [IkaIntentsPackage.self] }
+}
+
 // MARK: - TestHostPlaceholder
 
 /// What the app shows while it hosts unit tests: no animations, no timers and no refresh, so
@@ -89,7 +98,12 @@ extension Scene {
 
       switch phase {
         case .active:
-          Task { await services.effects.run(isRequested: false, reportingTo: services.status) }
+          Task {
+            await services.effects.run(isRequested: false, reportingTo: services.status)
+            #if DEBUG && os(iOS)
+            await DebugLaunch.restartShortTracking(with: services)
+            #endif
+          }
 
         case .background:
           #if os(iOS)

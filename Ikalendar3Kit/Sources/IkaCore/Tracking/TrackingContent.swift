@@ -61,6 +61,12 @@ public struct TrackedRotation: TimeWindow, Codable, Hashable, Sendable {
   /// The Rule and Stages played, or `nil` for a Splatfest's pause.
   public let setting: Rotation.Setting?
 
+  public init(startTime: Date, endTime: Date, setting: Rotation.Setting?) {
+    self.startTime = startTime
+    self.endTime = endTime
+    self.setting = setting
+  }
+
   /// Whether a Splatfest pauses the Battle Mode during this item.
   public var isPaused: Bool { setting == nil }
 }
@@ -86,6 +92,14 @@ public struct TrackedShift: TimeWindow, Codable, Hashable, Sendable {
   public let stage: StageID
   /// The four weapons in the feed's order, random marks included.
   public let weapons: [WeaponID]
+
+  public init(startTime: Date, endTime: Date, isBigRun: Bool, stage: StageID, weapons: [WeaponID]) {
+    self.startTime = startTime
+    self.endTime = endTime
+    self.isBigRun = isBigRun
+    self.stage = stage
+    self.weapons = weapons
+  }
 }
 
 extension TrackedShift {

@@ -75,3 +75,16 @@ extension Snapshot {
     GameTerms(language: language, refreshed: locales[language]?.content, feed: feedTerms)
   }
 }
+
+// MARK: - FeedCache
+
+extension FeedCache {
+  /// The game's names in a text set, read on the spot for a view that renders with no snapshot
+  /// at hand, such as a Live Activity's: from the cached locale file, else from the shipped
+  /// snapshot. The locale file is decoded on the calling thread. The feeds' English names, the
+  /// last fallback, are left out: they would mean decoding the schedules feed on every render.
+  public func terms(in language: GameLanguage) -> GameTerms {
+    let refreshed = record(for: .locale(language)).flatMap { try? TermTable(localeFile: $0.body) }
+    return GameTerms(language: language, refreshed: refreshed, feed: TermTable())
+  }
+}

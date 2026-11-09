@@ -63,6 +63,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
   |---|---|
   | `--fixture <name>` `--fixture-folder <path>` `--fixture-instant <ISO 8601>` | Runs on the recorded schedules feed `<name>` (a `Fixture` case, such as `normalDay`) with the recorded `festivals.json` and locale files, read from `<path>`, the checkout's absolute `Ikalendar3Kit/Fixtures`. The clock starts at the instant and runs from it, so a screen can cross a boundary while you watch. The shared cache stays untouched. |
   | `--fixture-rebase` | With the fixture options: moves every time in the payloads by now minus the instant, commits them to the shared cache and runs on the system clock, so widgets and the Live Activity show the fixture day too. The cache keeps them until a live refresh replaces them, which the gate allows from an hour after the launch; delete the app to drop them at once. |
+  | `--fixture-short-tracking <Mode>` | iOS app only: after each activation run, Tracks `<Mode>` (`regularBattle`, `anarchySeries`, `anarchyOpen`, `xBattle` or `salmonRun`, the Mode parameter's raw values) with the cached items, each two minutes long from now, so a recording crosses two Live Activity boundaries in four minutes. Opening the app again starts it over, and the activity's Refresh button re-arms it from the cache with the real times. |
   | `--event-cards` | Shows every event card at the app clock's instant, one under the other, instead of the tabs, so a fixture launch can screenshot them before the iPad event strip shows them. |
   | `--data-folder <path>` `--defaults-suite <name>` | Keeps the feed cache and its attempt records in `<path>` and the preferences in the suite `<name>` instead of the App Group. The two go together. |
   | `--scroll-anchor top\|center\|bottom` | Watch app only: starts the Now page scrolled to its top, middle or bottom, so a fixture launch can screenshot every row; the watch simulator takes no scroll input from the command line. |
@@ -73,6 +74,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
     --fixture-folder "$PWD/Ikalendar3Kit/Fixtures" --fixture-instant 2026-10-20T13:59:50Z
   ```
 
+- Tracking's Live Activity renders on the system clock, so fixture launches that show it pass `--fixture-rebase`. The Simulator has no lock button an automation can press; Notification Center, pulled down from the top edge, shows the activity as the Lock Screen does. Each start, update and end is logged at info level in the `tracking` category.
 - The watch app takes the fixture options and `--scroll-anchor` on the worktree's own watch simulator, which needs no iPhone app running:
 
   ```sh
