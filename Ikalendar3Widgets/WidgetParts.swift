@@ -27,18 +27,17 @@ enum WidgetText: String {
 
 // MARK: - ModeHeading
 
-/// A Battle Mode's icon and name over a widget's content or a column of it, with `trailing` at the
-/// far end, such as how fresh the data is. VoiceOver reads it as one element.
+/// A Mode's icon and name over a widget's content or a column of it, with `trailing` at the far
+/// end, such as how fresh the data is. VoiceOver reads it as one element.
 struct ModeHeading<Trailing: View>: View {
-  @Environment(\.gameLanguage) private var language
-
-  let mode: RotationMode
+  let icon: ModeIcon
+  let name: String
   @ViewBuilder var trailing: Trailing
 
   var body: some View {
     HStack(spacing: 6) {
-      ModeIconImage(mode: mode)
-      Text(verbatim: mode.name(in: language))
+      ModeIconImage(icon)
+      Text(verbatim: name)
         .inkFont(.label)
         .scaledLimitedLine()
       Spacer(minLength: 0)
@@ -48,9 +47,21 @@ struct ModeHeading<Trailing: View>: View {
   }
 }
 
+extension ModeHeading {
+  /// The heading of a Rotation's Battle Mode.
+  init(mode: RotationMode, in language: GameLanguage, @ViewBuilder trailing: () -> Trailing) {
+    self.init(icon: ModeIcon(mode), name: mode.name(in: language), trailing: trailing)
+  }
+
+  /// The heading of a Shift's kind: Salmon Run, Big Run or Eggstra Work.
+  init(kind: Shift.Kind, in language: GameLanguage, @ViewBuilder trailing: () -> Trailing) {
+    self.init(icon: ModeIcon(kind), name: ModeLabel(kind).text(in: language), trailing: trailing)
+  }
+}
+
 extension ModeHeading where Trailing == EmptyView {
-  init(mode: RotationMode) {
-    self.init(mode: mode) { EmptyView() }
+  init(mode: RotationMode, in language: GameLanguage) {
+    self.init(mode: mode, in: language) { EmptyView() }
   }
 }
 
@@ -107,15 +118,24 @@ struct EmptyWidgetView: View {
 
 // MARK: - ModeIconImage
 
-/// A Battle Mode's bundled icon, at the size of the text beside it. Decorative: the name beside it
-/// or the sentence around it says the Battle Mode.
+/// A Mode's bundled icon in its own colours, at `side` points scaled with the caption text size,
+/// from the smallest pixel size that covers it. Decorative: the name beside it or the sentence
+/// around it says the Mode.
 struct ModeIconImage: View {
-  @ScaledMetric(relativeTo: .caption) private var side: CGFloat = 16
+  @Environment(\.displayScale) private var displayScale
+  @ScaledMetric private var side: CGFloat
 
-  let mode: RotationMode
+  private let icon: ModeIcon
+
+  init(_ icon: ModeIcon, side: CGFloat = 16) {
+    self.icon = icon
+    _side = ScaledMetric(wrappedValue: side, relativeTo: .caption)
+  }
 
   var body: some View {
-    Image(decorative: BundledImage.name(for: ModeIcon(mode), size: .small), bundle: BundledImage.catalogBundle)
+    // The small icons are 64 pixels wide.
+    let size: BundledImage.Size = side * displayScale > 64 ? .medium : .small
+    Image(decorative: BundledImage.name(for: icon, size: size), bundle: BundledImage.catalogBundle)
       .resizable()
       .scaledToFit()
       .frame(width: side, height: side)
@@ -201,7 +221,7 @@ struct RotationRow: View {
     HStack(spacing: 8) {
       InkTimeTag(Text(verbatim: ScheduleFormat(language: terms.language, timeZone: timeZone).timeRange(of: rotation)))
       if rotation.mode != shownMode {
-        ModeIconImage(mode: rotation.mode)
+        ModeIconImage(ModeIcon(rotation.mode))
       }
       if let setting = rotation.setting {
         VStack(alignment: .leading, spacing: 1) {

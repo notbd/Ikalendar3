@@ -6,6 +6,7 @@
 //
 
 import AppIntents
+import IkaCore
 import IkaDesign
 import IkaIntents
 import IkaResources
@@ -25,9 +26,32 @@ struct Ikalendar3Widgets: WidgetBundle {
   var body: some Widget {
     BattleWidget()
     BattleOverviewWidget()
+    SalmonRunWidget()
     #if os(iOS)
     TrackingLiveActivity()
     #endif
+  }
+}
+
+// MARK: - WidgetKind
+
+/// Each widget's kind, which WidgetKit stores with every placed widget: never rename a raw value.
+enum WidgetKind: String {
+  /// The widget set to one Battle Mode: Home Screen, StandBy, Mac desktop and Lock Screen.
+  case battle
+  /// The extra large widget with every Battle Mode.
+  case battleOverview = "battle-overview"
+  /// The Salmon Run widget.
+  case salmonRun = "salmon-run"
+
+  /// The kind of the widget a player sets to `mode`. Every Mode has a widget: the switch is
+  /// exhaustive, so a new member of the Mode value fails to compile here until one covers it.
+  /// Every Battle Mode shares the battle widget, which a configuration sets to one.
+  init(_ mode: Mode) {
+    switch mode {
+      case .battle: self = .battle
+      case .salmonRun: self = .salmonRun
+    }
   }
 }
 

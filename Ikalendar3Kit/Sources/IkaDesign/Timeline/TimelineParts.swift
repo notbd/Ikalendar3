@@ -157,14 +157,12 @@ private struct TimelineKindTag: View {
     let colors: ColorPair = ModeColor(kind).asFill
 
     HStack(spacing: 4) {
-      if let icon = ModeIcon(kind) {
-        // In the tag's text colour: the icon's own colour is the tag's.
-        Image(decorative: BundledImage.name(for: icon, size: .small), bundle: BundledImage.catalogBundle)
-          .renderingMode(.template)
-          .resizable()
-          .scaledToFit()
-          .frame(width: 16, height: 16)
-      }
+      // In the tag's text colour: the icon's own colour is the tag's.
+      Image(decorative: BundledImage.name(for: ModeIcon(kind), size: .small), bundle: BundledImage.catalogBundle)
+        .renderingMode(.template)
+        .resizable()
+        .scaledToFit()
+        .frame(width: 16, height: 16)
       Text(verbatim: label.text(in: language))
         .ikaFont(.heavy, size: 13, relativeTo: .footnote)
         .lineLimit(1)
@@ -286,19 +284,6 @@ private struct TimelineWeapons: View {
       .scaledToFit()
       .frame(maxWidth: TimelineMetrics.weaponSize, maxHeight: TimelineMetrics.weaponSize)
       .accessibilityLabel(Text(verbatim: label))
-  }
-}
-
-// MARK: - ModeIcon
-
-extension ModeIcon {
-  /// The icon that marks a Shift of `kind`, or `nil` for a regular Shift, which needs none.
-  fileprivate init?(_ kind: Shift.Kind) {
-    switch kind {
-      case .regular: return nil
-      case .bigRun: self = .bigRun
-      case .eggstraWork: self = .eggstraWork
-    }
   }
 }
 #endif

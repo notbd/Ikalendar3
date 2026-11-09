@@ -16,7 +16,7 @@ import WidgetKit
 /// It is set to no Battle Mode, so while a Splatfest runs each shows paused until it returns.
 struct BattleOverviewWidget: Widget {
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: "battle-overview", provider: BattleOverviewTimelineProvider()) { entry in
+    StaticConfiguration(kind: WidgetKind.battleOverview.rawValue, provider: BattleOverviewTimelineProvider()) { entry in
       BattleOverviewView(entry: entry)
     }
     .configurationDisplayName(Text("widget.overview.name", tableName: "Widgets"))

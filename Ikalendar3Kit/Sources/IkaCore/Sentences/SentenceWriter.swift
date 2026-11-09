@@ -71,17 +71,18 @@ public struct SentenceWriter: Sendable {
   ///
   /// A Shift spans days, so its times carry the weekday.
   public func sentence(for shift: Shift, at instant: Date) -> String {
-    let kind: ModeLabel =
-      switch shift.kind {
-        case .regular: .salmonRun
-        case .bigRun: .bigRun
-        case .eggstraWork: .eggstraWork
-      }
-    return sentence(of: kind, on: shift.stage, with: shift.weapons, in: shift, at: instant)
+    sentence(of: shift, at: instant)
+  }
+
+  /// A Shift's sentence with no time left: Salmon Run, Big Run or Eggstra Work, its Stage, four
+  /// weapons and time range. The Salmon Run widget reads it, as the battle widgets read
+  /// `sentence(for:)` of a Rotation.
+  public func sentence(for shift: Shift) -> String {
+    sentence(of: shift, at: nil)
   }
 
   /// A Tracking item's sentence with no time left: the regular Shift or Big Run it stands for,
-  /// read as `sentence(for:at:)` reads it.
+  /// read as `sentence(for:)` reads a Shift.
   public func sentence(for item: TrackedShift) -> String {
     sentence(of: item.isBigRun ? .bigRun : .salmonRun, on: item.stage, with: item.weapons, in: item, at: nil)
   }
@@ -116,6 +117,22 @@ public struct SentenceWriter: Sendable {
     return format("sentence.timeLeft", span)
   }
 
+  /// The time left in a window as a ticking countdown shows it: abbreviated units from the
+  /// largest one that is not zero down to whole seconds, rounded up so a running window never
+  /// reads zero. Hours run past a day, as `timeLeft(_:)` reads them.
+  public func countdown(_ progress: WindowProgress) -> String {
+    let seconds: Int = .init((progress.timeLeft / .seconds(1)).rounded(.up))
+    let (hours, secondsPastHour) = seconds.quotientAndRemainder(dividingBy: 3600)
+    let (minutes, secondsPastMinute) = secondsPastHour.quotientAndRemainder(dividingBy: 60)
+    let parts: [(unit: TimeUnit, amount: Int)] = [(.hours, hours), (.minutes, minutes), (.seconds, secondsPastMinute)]
+    let span = parts
+      .drop { $0.amount == 0 && $0.unit != .seconds }
+      .lazy
+      .map { $0.unit.abbreviated($0.amount, in: language) }
+      .reduce(nil) { span, part in span.map { format("sentence.hoursAndMinutes", $0, part) } ?? part }
+    return format("sentence.timeLeft", span ?? "")
+  }
+
   /// The pause sentence of a Battle Mode named `mode`. `SiriAnswers` reads a lineup's pause
   /// with it.
   func pauseSentence(named mode: String, returningAt returnTime: Date) -> String {
@@ -141,6 +158,11 @@ public struct SentenceWriter: Sendable {
       terms.name(of: setting.rule),
       list(setting.stages.map(terms.name(of:))),
       when(window, at: instant, times: .init().hour().minute()))
+  }
+
+  /// A Shift's sentence. With no `instant`, it reads no time left.
+  private func sentence(of shift: Shift, at instant: Date?) -> String {
+    sentence(of: ModeLabel(shift.kind), on: shift.stage, with: shift.weapons, in: shift, at: instant)
   }
 
   /// The sentence of a Shift of `kind` over `window`. With no `instant`, it reads no time left.
