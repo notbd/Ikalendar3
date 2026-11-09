@@ -38,7 +38,10 @@ public struct ScheduleFeed: Hashable, Sendable {
 
   /// The Rotations of a Battle Mode in time order. A continuous Battle Mode's include the
   /// paused ones while a Splatfest runs; Splatfest Battle's exist only while it runs.
-  public func rotations(for mode: RotationMode) -> [Rotation] {
+  ///
+  /// Internal so a paused Rotation never leaves IkaCore: Surfaces take a Battle Mode's Rotations
+  /// from a lineup or a projection, which hold only Rotations that play.
+  func rotations(for mode: RotationMode) -> [Rotation] {
     rotationsByMode[mode] ?? []
   }
 }

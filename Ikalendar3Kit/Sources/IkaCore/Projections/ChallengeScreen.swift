@@ -14,7 +14,8 @@ import Foundation
 /// description and rules text resolve at display time from the Challenge's id.
 public struct ChallengeScreen: Hashable, Sendable {
   /// The Challenges with a window on or to come, in the order their first windows open. Empty
-  /// once none is announced, or when the Challenges failed to decode.
+  /// once none is announced, or when the Challenges failed to decode: tell the two apart by the
+  /// schedules feed's `failedSections` before saying none is announced.
   public let challenges: [Listing]
   /// When the schedules feed shown was last confirmed.
   public let fetchTime: Date

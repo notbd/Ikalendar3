@@ -452,7 +452,7 @@
       }
     },
     "answer.twoSentences" : {
-      "comment" : "Two sentences of one Siri answer, as the language joins sentences: the Big Run's, then the Splatfest's.",
+      "comment" : "Two sentences of one Siri answer, as the language joins sentences: the Big Run's, then the Splatfest's; or a Battle Mode's Splatfest pause, then its first Rotation after the Splatfest.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -2120,7 +2120,7 @@
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@: in pausa durante lo Splatfest fino a %2$@."
+            "value" : "%1$@: in pausa durante il Festival fino a %2$@."
           }
         },
         "ja" : {

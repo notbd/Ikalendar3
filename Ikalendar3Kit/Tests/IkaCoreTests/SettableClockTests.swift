@@ -34,4 +34,19 @@ struct SettableClockTests {
 
     #expect(!clock.isSleeping)
   }
+
+  /// Previews and the fixture launch may run two `AppClock`s on one fake clock.
+  @Test(.timeLimit(.minutes(1)))
+  func `Setting the clock ends every pending sleep, each reported once`() async throws {
+    let clock: SettableClock = .init(date("2026-10-20T14:00:00Z"))
+
+    async let first: Void = clock.sleep(until: date("2026-10-20T14:00:01Z"))
+    #expect(await clock.pendingSleep() == date("2026-10-20T14:00:01Z"))
+    async let second: Void = clock.sleep(until: date("2026-10-20T14:00:02Z"))
+    #expect(await clock.pendingSleep() == date("2026-10-20T14:00:02Z"))
+    clock.now = date("2026-10-20T14:00:02Z")
+    _ = try await (first, second)
+
+    #expect(!clock.isSleeping)
+  }
 }
