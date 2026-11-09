@@ -58,7 +58,7 @@ extension AppServices {
     #if DEBUG
     let storage = DebugLaunch.worktreeStorage() ?? SharedStorage.appGroup()
     #else
-    let storage: SharedStorage = .appGroup()
+    let storage: SharedStorage? = .appGroup()
     #endif
     guard let storage else { return nil }
 
