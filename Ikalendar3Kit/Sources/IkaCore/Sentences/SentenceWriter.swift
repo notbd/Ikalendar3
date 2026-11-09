@@ -114,6 +114,22 @@ public struct SentenceWriter: Sendable {
     return format("sentence.timeLeft", span)
   }
 
+  /// The time left in a window as a ticking countdown shows it: abbreviated units from the
+  /// largest one that is not zero down to whole seconds, rounded up so a running window never
+  /// reads zero. Hours run past a day, as `timeLeft(_:)` reads them.
+  public func countdown(_ progress: WindowProgress) -> String {
+    let seconds: Int = .init((progress.timeLeft / .seconds(1)).rounded(.up))
+    let (hours, secondsPastHour) = seconds.quotientAndRemainder(dividingBy: 3600)
+    let (minutes, secondsPastMinute) = secondsPastHour.quotientAndRemainder(dividingBy: 60)
+    let parts: [(unit: TimeUnit, amount: Int)] = [(.hours, hours), (.minutes, minutes), (.seconds, secondsPastMinute)]
+    let span = parts
+      .drop { $0.amount == 0 && $0.unit != .seconds }
+      .lazy
+      .map { $0.unit.abbreviated($0.amount, in: language) }
+      .reduce(nil) { span, part in span.map { format("sentence.hoursAndMinutes", $0, part) } ?? part }
+    return format("sentence.timeLeft", span ?? "")
+  }
+
   /// The pause sentence of a Battle Mode named `mode`. `SiriAnswers` reads a lineup's pause
   /// with it.
   func pauseSentence(named mode: String, returningAt returnTime: Date) -> String {

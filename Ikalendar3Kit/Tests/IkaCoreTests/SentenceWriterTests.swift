@@ -180,6 +180,7 @@ struct SentenceWriterTests {
       writer.sentence(forPauseOf: .anarchyOpen, returningAt: instant),
       writer.sentence(for: bigRun, at: instant),
       writer.timeLeft(WindowProgress(timeLeft: .seconds(4800), sharePassed: 0.5)),
+      writer.countdown(WindowProgress(timeLeft: .seconds(4805), sharePassed: 0.5)),
     ] + TrackingReminder.allCases.map { $0.text(in: language) }
 
     for text in texts {
@@ -224,6 +225,29 @@ struct SentenceWriterTests {
     let progress: WindowProgress = .init(timeLeft: .seconds(timeLeft.seconds), sharePassed: 0.5)
 
     #expect(Self.writer(timeLeft.language).timeLeft(progress) == timeLeft.text)
+  }
+
+  /// A time left in seconds and how its countdown reads in a text set.
+  struct CountdownCase: CustomTestStringConvertible {
+    let seconds: Double
+    let language: GameLanguage
+    let text: String
+
+    var testDescription: String { "\(seconds) s in \(language.rawValue)" }
+  }
+
+  @Test(arguments: [
+    CountdownCase(seconds: 4805, language: .enUS, text: "1h 20m 5s left"),
+    CountdownCase(seconds: 3600, language: .enUS, text: "1h 0m 0s left"),
+    CountdownCase(seconds: 59.2, language: .enUS, text: "1m 0s left"),
+    CountdownCase(seconds: 0.4, language: .enUS, text: "1s left"),
+    CountdownCase(seconds: 39 * 3600 + 5, language: .enUS, text: "39h 0m 5s left"),
+    CountdownCase(seconds: 4805, language: .jaJP, text: "残り1時間20分5秒"),
+  ])
+  func `Countdown reads the time left in whole seconds, rounded up, from its largest unit`(_ countdown: CountdownCase) {
+    let progress: WindowProgress = .init(timeLeft: .seconds(countdown.seconds), sharePassed: 0.5)
+
+    #expect(Self.writer(countdown.language).countdown(progress) == countdown.text)
   }
 
   // MARK: Time ranges
