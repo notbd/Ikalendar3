@@ -101,8 +101,7 @@ private struct CurrentItem: View {
           ProgressRing(
             share: look.share,
             color: .white,
-            lineWidth: WatchMetrics.ringLineWidth,
-            timeLeft: look.progress.map(writer.timeLeft))
+            lineWidth: WatchMetrics.ringLineWidth)
           picture
             .padding(WatchMetrics.ringLineWidth + WatchMetrics.iconInset)
         }

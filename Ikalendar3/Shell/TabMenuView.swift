@@ -110,8 +110,7 @@ private struct TabMenuRow: View {
     HStack(spacing: 16) {
       summaryLayout {
         ZStack {
-          // The row's text reads the time left, so VoiceOver skips the ring.
-          ProgressRing(share: option.summary?.progress?.sharePassed ?? 0, color: ringColor, lineWidth: 3, timeLeft: nil)
+          ProgressRing(share: option.summary?.progress?.sharePassed ?? 0, color: ringColor, lineWidth: 3)
           Image(
             decorative: BundledImage.name(for: ModeIcon(option.mode), size: .small),
             bundle: BundledImage.catalogBundle)

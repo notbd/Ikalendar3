@@ -343,8 +343,7 @@ private struct InkWideProgress: View {
       ProgressRing(
         share: progress.sharePassed,
         color: Color(accent.base),
-        lineWidth: side * Self.lineWidthShare,
-        timeLeft: writer.timeLeft(progress))
+        lineWidth: side * Self.lineWidthShare)
         .frame(width: side, height: side)
       Text(verbatim: countdown)
         .inkFont(.caption)

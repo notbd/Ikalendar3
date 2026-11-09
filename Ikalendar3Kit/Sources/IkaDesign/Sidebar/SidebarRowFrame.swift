@@ -39,8 +39,7 @@ struct SidebarRowFrame<Name: View, Summary: View>: View {
         ProgressRing(
           share: content.progress?.sharePassed ?? 0,
           color: ringColor,
-          lineWidth: ringSize * SidebarMetrics.lineWidthShare,
-          timeLeft: nil)
+          lineWidth: ringSize * SidebarMetrics.lineWidthShare)
         Image(decorative: BundledImage.name(for: content.icon, size: .small), bundle: BundledImage.catalogBundle)
           .resizable()
           .scaledToFit()

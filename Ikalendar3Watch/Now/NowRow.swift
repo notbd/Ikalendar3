@@ -45,8 +45,7 @@ struct NowRow: View {
           ProgressRing(
             share: look.share,
             color: Color(look.color.base),
-            lineWidth: WatchMetrics.ringLineWidth,
-            timeLeft: look.progress.map(writer.timeLeft))
+            lineWidth: WatchMetrics.ringLineWidth)
           Image(decorative: BundledImage.name(for: look.icon, size: .small), bundle: BundledImage.catalogBundle)
             .resizable()
             .scaledToFit()
