@@ -23,10 +23,14 @@ let package = Package(
   targets: [
     // Domain, data and every Surface's content. Foundation only (a SwiftLint rule enforces it).
     .target(name: "IkaCore", resources: [.process("Resources")], swiftSettings: swiftSettings),
-    // Design system. Linked by every product target, the watch ones included. It declares no
-    // resources: the build would copy them into every product that links it, so the fonts and the
-    // image catalog ship once per app in the project's IkaResources framework instead.
-    .target(name: "IkaDesign", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
+    // Design system. Linked by every product target, the watch ones included. The build copies its
+    // `Resources` into every product that links it, so they hold only string tables; the fonts and
+    // the image catalog ship once per app in the project's IkaResources framework.
+    .target(
+      name: "IkaDesign",
+      dependencies: ["IkaCore"],
+      resources: [.process("Resources")],
+      swiftSettings: swiftSettings),
     // Siri, App Shortcuts and the effects shell. iOS and macOS; Live Activity parts behind `#if os(iOS)`.
     .target(
       name: "IkaIntents",

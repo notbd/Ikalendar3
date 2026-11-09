@@ -192,6 +192,7 @@ public struct FeedClient: Sendable {
 
       guard let response = try await group.next() else { throw URLError(.timedOut) }
 
+      Logger.network.info("\(url, privacy: .public): status \(response.status)")
       return response
     }
   }

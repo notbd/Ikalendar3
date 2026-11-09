@@ -46,6 +46,9 @@ public enum Fixture: String, CaseIterable, Sendable {
   /// The payload's file.
   public var url: URL { Self.folder.appending(path: rawValue) }
 
-  /// The payload's bytes, as splatoon3.ink sent them.
-  public func data() throws -> Data { try Data(contentsOf: url) }
+  /// The payload's bytes, as splatoon3.ink sent them, read from `folder`: this package's
+  /// `Fixtures` folder unless a launch names where it is.
+  public func data(in folder: URL = Self.folder) throws -> Data {
+    try Data(contentsOf: folder.appending(path: rawValue))
+  }
 }

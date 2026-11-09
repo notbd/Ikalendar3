@@ -6,7 +6,8 @@
 #   3    every string catalog key in all 14 localizations (scripts/check-string-catalogs.sh)
 #   4    package tests on macOS
 #   5-7  unsigned Debug builds: iOS Simulator, macOS, watchOS Simulator
-#   8-9  unsigned Release builds: iOS device (with the watch app), macOS
+#   8-9  unsigned Release builds: iOS device (with the watch app), macOS, with no fixture file
+#        and the resource framework once per app, no font file outside it
 #   10   the iOS Simulator test run
 #
 # Any compiler or build warning fails the step that shows it. Step 10 also fails when a test
@@ -265,6 +266,14 @@ expect_resource_copies() {
   [[ -z $strays ]] || fail "Font files outside the resource framework:"$'\n'"$strays"
 }
 
+# Fails when a built product holds a file named like a recorded payload in the package's
+# Fixtures folder: Debug launches read them by path, and no product may ship one.
+expect_no_fixtures() {
+  local shipped
+  shipped=$(comm -12 <(find "$1" -type f | sed 's|.*/||' | sort -u) <(find "$PACKAGE/Fixtures" -type f | sed 's|.*/||' | sort))
+  [[ -z $shipped ]] || fail "Fixture files in $1:"$'\n'"$shipped"
+}
+
 # MARK: - Run
 
 printf 'Xcode %s%s, SwiftFormat %s, SwiftLint %s\n' "$xcode_version" \
@@ -333,7 +342,8 @@ expect_paths "$ios_app/PlugIns/Ikalendar3Widgets.appex" "$ios_app/Watch/Ikalenda
   "$ios_app/Watch/Ikalendar3Watch.app/PlugIns/Ikalendar3WatchWidgets.appex" \
   "$ios_app/Frameworks/IkaResources.framework" "$ios_app/Watch/Ikalendar3Watch.app/Frameworks/IkaResources.framework"
 expect_resource_copies "$ios_app" 2
-step_done "widget extension and watch app embedded, the resource framework once in each app"
+expect_no_fixtures "$ios_app"
+step_done "widget extension and watch app embedded, one resource framework per app, no fixture"
 
 step "Build, macOS, Release"
 xcodebuild_step build-macos-release build -scheme Ikalendar3 -configuration Release \
@@ -342,7 +352,8 @@ mac_app=$derived_data/Build/Products/Release/Ikalendar3.app
 expect_paths "$mac_app/Contents/PlugIns/Ikalendar3Widgets.appex" "$mac_app/Contents/Frameworks/IkaResources.framework"
 expect_resource_copies "$mac_app" 1
 [[ -z $(find "$mac_app" -name 'Ikalendar3Watch*') ]] || fail "The macOS app embeds the watch app: $mac_app"
-step_done "widget extension and resource framework embedded, no watch app"
+expect_no_fixtures "$mac_app"
+step_done "widget extension and resource framework embedded, no watch app, no fixture"
 
 step "Test, iOS Simulator"
 wait "$boot_pid" || fail "The iOS simulator did not boot." "$VERIFY_DIR/boot-ios-simulator.log"

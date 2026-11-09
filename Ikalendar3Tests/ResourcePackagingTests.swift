@@ -28,8 +28,10 @@ import AppKit
 struct ResourcePackagingTests {
   @Test
   func `The app loads its pictures from the resource framework`() {
+    let picture: String = BundledImage.name(for: ModeIcon.regularBattle, size: .small)
+
     #expect(BundledImage.catalogBundle.bundleURL == IkaResources.bundle.bundleURL)
-    #expect(hasImage(named: BundledImage.name(for: ModeIcon.regular, size: .small), in: BundledImage.catalogBundle))
+    #expect(hasImage(named: picture, in: BundledImage.catalogBundle))
   }
 
   @Test
@@ -49,7 +51,7 @@ struct ResourcePackagingTests {
   /// silently and only cost size. The watch app's own copy is its framework's.
   @Test
   func `No other bundle in the app holds the pictures or a font`() throws {
-    let picture: String = BundledImage.name(for: ModeIcon.regular, size: .small)
+    let picture: String = BundledImage.name(for: ModeIcon.regularBattle, size: .small)
     var bundles: [URL] = []
     var fontsOutsideFrameworks: [String] = []
 
