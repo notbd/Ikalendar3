@@ -25,7 +25,7 @@ public struct NowPage: Hashable, Sendable {
 extension Snapshot {
   /// The Now page at `instant`, or `nil` before the schedules feed's first good response.
   public func nowPage(at instant: Date) -> NowPage? {
-    guard let schedules else { return nil }
+    guard let schedules, let summaries = summaries(at: instant) else { return nil }
 
     let runningSplatfest: Splatfest? = splatfest.flatMap { splatfest in
       switch splatfest.phase(at: instant) {
@@ -37,7 +37,7 @@ extension Snapshot {
     }
     return NowPage(
       splatfest: runningSplatfest,
-      summaries: Mode.allCases.compactMap { summary(of: $0, at: instant) },
+      summaries: summaries,
       fetchTime: schedules.fetchTime)
   }
 }
