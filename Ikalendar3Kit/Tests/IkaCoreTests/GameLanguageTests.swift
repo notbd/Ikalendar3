@@ -36,4 +36,20 @@ struct GameLanguageTests {
   func `Any other localization resolves to en-US`(localization: String) {
     #expect(GameLanguage(localization: localization) == .enUS)
   }
+
+  /// The name the language row shows: the localization's name in itself, as the system's
+  /// language list writes it, starting with a capital.
+  @Test(arguments: [
+    (GameLanguage.enUS, "English"),
+    (.enGB, "English (United Kingdom)"),
+    (.esMX, "Español (Latinoamérica)"),
+    (.frCA, "Français (Canada)"),
+    (.ruRU, "Русский"),
+    (.jaJP, "日本語"),
+    (.zhCN, "简体中文"),
+    (.zhTW, "繁體中文"),
+  ])
+  func `Each text set is named in itself`(language: GameLanguage, name: String) {
+    #expect(language.nativeName == name)
+  }
 }

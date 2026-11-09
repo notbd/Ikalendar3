@@ -33,6 +33,15 @@ public enum ModeIcon: String, CaseIterable, Sendable {
       case .salmonRun: self = .salmonRun
     }
   }
+
+  /// The icon of a Rotation's Battle Mode: a continuous Battle Mode's, or Splatfest Battle's in
+  /// either form, as a widget shows while a Splatfest replaces its Battle Mode.
+  public init(_ mode: RotationMode) {
+    switch mode {
+      case .battle(let battleMode): self.init(Mode.battle(battleMode))
+      case .splatfestBattle: self = .splatfestBattle
+    }
+  }
 }
 
 extension BundledImage {
