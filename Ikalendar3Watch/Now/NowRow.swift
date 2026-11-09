@@ -58,7 +58,7 @@ struct NowRow: View {
             .lineHeight(.tight)
             .lineLimit(2)
             .minimumScaleFactor(0.8)
-          if case .running(let progress) = look.state {
+          if let progress = look.progress {
             Text(verbatim: writer.countdown(progress))
               .ikaFont(.light, size: NowMetrics.countdownSize, relativeTo: .footnote)
               .monospacedDigit()
@@ -103,7 +103,8 @@ extension NowRow {
     let icon: ModeIcon
     let color: ModeColor
     let heading: InkModeHeading
-    let state: State
+    /// The current item's progress, or `nil` while none is on.
+    let progress: WindowProgress?
 
     init(_ summary: ModeSummary) {
       switch summary {
@@ -111,35 +112,29 @@ extension NowRow {
           icon = ModeIcon(summary.mode)
           color = ModeColor(mode)
           heading = InkModeHeading(summary.mode)
-          state = State(current)
+          progress = Self.progress(of: current)
 
         case .salmonRun(.running(let running)):
           icon = ModeIcon(running.item.kind)
           color = ModeColor(running.item.kind)
           heading = InkModeHeading(name: ModeLabel(running.item.kind), form: nil)
-          state = .running(running.progress)
+          progress = running.progress
 
         case .salmonRun(let current):
           icon = ModeIcon(summary.mode)
           color = ModeColor(summary.mode)
           heading = InkModeHeading(summary.mode)
-          state = State(current)
+          progress = Self.progress(of: current)
       }
     }
 
     /// The share of the ring drawn: what the current item has run, or none.
     var share: Double {
-      if case .running(let progress) = state { progress.sharePassed } else { 0 }
+      progress?.sharePassed ?? 0
     }
-  }
 
-  /// Whether an item is on, with its progress.
-  enum State {
-    case running(WindowProgress)
-    case idle
-
-    init(_ current: OnNow<some TimeWindow & Hashable & Sendable>) {
-      self = if case .running(let running) = current { .running(running.progress) } else { .idle }
+    static private func progress(of current: OnNow<some TimeWindow & Hashable & Sendable>) -> WindowProgress? {
+      if case .running(let running) = current { running.progress } else { nil }
     }
   }
 }

@@ -40,7 +40,7 @@ struct SplatfestTeamsPanel: View {
         else {
           Capsule()
             .fill(Color(color))
-            .frame(width: NowMetrics.ringSize, height: NowMetrics.lineSpacing * 3)
+            .frame(width: NowMetrics.teamSwatchSize.width, height: NowMetrics.teamSwatchSize.height)
         }
       }
       Text(verbatim: writer.countdown(splatfest.progress(at: now)))

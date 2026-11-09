@@ -28,4 +28,7 @@ enum NowMetrics {
   static let detailSize: CGFloat = 16
   /// The time left, in the light face.
   static let countdownSize: CGFloat = 13
+
+  /// A Splatfest team's colour where the source lacks its name.
+  static let teamSwatchSize: CGSize = .init(width: 40, height: 12)
 }
