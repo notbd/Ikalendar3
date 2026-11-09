@@ -36,12 +36,12 @@ public struct SentenceWriter: Sendable {
   public func sentence(for rotation: Rotation, at instant: Date) -> String {
     let when = when(rotation, at: instant, times: .init().hour().minute())
     guard let setting = rotation.setting else {
-      return format("sentence.rotation.paused", mode(rotation.mode), when)
+      return format("sentence.rotation.paused", rotation.mode.name(in: language), when)
     }
 
     return format(
       "sentence.rotation",
-      mode(rotation.mode),
+      rotation.mode.name(in: language),
       terms.name(of: setting.rule),
       list(setting.stages.map(terms.name(of:))),
       when)
@@ -121,22 +121,6 @@ public struct SentenceWriter: Sendable {
   /// as rare random.
   private func weaponName(_ id: WeaponID) -> String {
     id == .rareRandom ? format("weapon.rareRandom", terms.name(of: id)) : terms.name(of: id)
-  }
-
-  /// A Rotation's Battle Mode name, with its form for Anarchy Battle and Splatfest Battle.
-  private func mode(_ mode: RotationMode) -> String {
-    switch mode {
-      case .battle(.regular): ModeLabel.regularBattle.text(in: language)
-      case .battle(.anarchySeries): withForm(.anarchyBattle, .series)
-      case .battle(.anarchyOpen): withForm(.anarchyBattle, .open)
-      case .battle(.x): ModeLabel.xBattle.text(in: language)
-      case .splatfestBattle(.open): withForm(.splatfestBattle, .open)
-      case .splatfestBattle(.pro): withForm(.splatfestBattle, .pro)
-    }
-  }
-
-  private func withForm(_ mode: ModeLabel, _ form: ModeLabel) -> String {
-    format("sentence.modeWithForm", mode.text(in: language), form.text(in: language))
   }
 
   /// Names joined as the text set lists them: "A and B", "A、B".
