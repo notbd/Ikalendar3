@@ -111,7 +111,7 @@ struct ScheduleIndependenceTests {
     #expect(feed.challenges == (corruption.failed.contains(.challenges) ? [] : original.challenges))
     #expect(feed.salmonRun == (corruption.failed.contains(.salmonRun) ? [] : original.salmonRun))
     #expect(feed.eggstraWork == (corruption.failed.contains(.eggstraWork) ? [] : original.eggstraWork))
-    #expect(feed.currentSplatfest == (corruption.failed.contains(.splatfest) ? nil : original.currentSplatfest))
+    #expect(splatfest(of: feed) == (corruption.failed.contains(.splatfest) ? nil : splatfest(of: original)))
   }
 
   @Test
@@ -122,6 +122,11 @@ struct ScheduleIndependenceTests {
     await #expect(throws: DecodingError.self) {
       try await ScheduleFeed.decode(from: Data(#"{"errors": []}"#.utf8))
     }
+  }
+
+  /// The feed's Splatfest, read through the snapshot as every consumer reads it.
+  private func splatfest(of feed: ScheduleFeed) -> Splatfest? {
+    Snapshot(schedules: .init(content: feed, fetchTime: .distantPast)).splatfest
   }
 
   /// The fixture's JSON with the value at the corruption's path replaced or removed.
