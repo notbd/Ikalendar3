@@ -33,15 +33,16 @@ enum InkScreenMetrics {
   static let splatSize: CGFloat = 190
   /// The Mode icon on the splat, square.
   static let stampIconSize: CGFloat = 100
+  /// The black outline around the stamp's icon.
+  static let stampOutlineWidth: CGFloat = 2.5
   /// The stamp's turn at rest.
   static let stampAngle: Angle = .degrees(-10)
   /// How far the stamp reaches past the screen's trailing edge.
   static let stampTrailingOverhang: CGFloat = 4
   /// The share of the screen's width the heading leaves to the stamp beside it.
   static let stampReservedShare: CGFloat = 0.42
-  /// The share of the splat's height the stacked heading sits below, from the first
-  /// accessibility text size.
-  static let stackedHeadingTopShare: CGFloat = 0.75
+  /// How far the splat's lower edge may reach over the first panel's tape.
+  static let splatPanelOverlap: CGFloat = 24
   /// The navigation bar badge the stamp docks into, round.
   static let badgeSize: CGFloat = 44
   /// The Mode icon in the badge.

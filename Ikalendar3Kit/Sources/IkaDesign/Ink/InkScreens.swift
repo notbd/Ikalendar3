@@ -194,8 +194,8 @@ private struct InkScheduleList<Panels: View>: View {
       } action: { newWidth in
         width = newWidth
       }
-      .listReflow(value: entryIDs)
     }
+    .listReflow(value: entryIDs)
     .background { InkBackground().ignoresSafeArea() }
     .inkModeStamp(icon: ModeIcon(mode), modeColor: ModeColor(mode), title: title)
   }
@@ -204,8 +204,9 @@ private struct InkScheduleList<Panels: View>: View {
 // MARK: - InkModeHeadingView
 
 /// The Mode's name over the list in the heavy face, with Anarchy Battle's form on a Mode-colour
-/// tag under it. It leaves the trailing side to the stamp, and from the first accessibility text
-/// size sits under the stamp at full width instead, so the name wraps rather than truncates.
+/// tag under it. It leaves the trailing side to the stamp and is at least as tall as the splat, and
+/// from the first accessibility text size sits under the stamp at full width instead, so the name
+/// wraps rather than truncates.
 private struct InkModeHeadingView: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.gameLanguage) private var language
@@ -231,8 +232,13 @@ private struct InkModeHeadingView: View {
     }
     .padding(InkScreenMetrics.headingPadding)
     .padding(.trailing, arrangement == .sideBySide ? stampReserve : 0)
-    .padding(.top, arrangement == .stacked ? InkScreenMetrics.splatSize * InkScreenMetrics.stackedHeadingTopShare : 0)
-    .frame(maxWidth: .infinity, alignment: .leading)
+    .padding(.top, arrangement == .stacked ? InkScreenMetrics.splatSize : 0)
+    // Beside the stamp, the first panel starts under the splat, so the splat never covers its
+    // state tag.
+    .frame(
+      maxWidth: .infinity,
+      minHeight: arrangement == .sideBySide ? InkScreenMetrics.splatSize - InkScreenMetrics.splatPanelOverlap : nil,
+      alignment: .topLeading)
     .accessibilityElement(children: .combine)
     .accessibilityAddTraits(.isHeader)
   }

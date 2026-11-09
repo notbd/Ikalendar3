@@ -106,17 +106,41 @@ private struct InkModeStamp: View {
         .offset(x: 4, y: 6)
       InkSplatPlaceholder()
         .fill(Color(modeColor.base))
-      Image(decorative: BundledImage.name(for: icon, size: .large), bundle: BundledImage.catalogBundle)
-        .resizable()
-        .scaledToFit()
-        .frame(width: InkScreenMetrics.stampIconSize, height: InkScreenMetrics.stampIconSize)
-        .shadow(color: InkDecoration.splatShadow, radius: 4, y: 3)
-        .rotationEffect(InkScreenMetrics.stampAngle * style.parallaxGain)
+      ZStack {
+        // A black outline, so an icon in the splat's own colour (Salmon Run's) still stands out.
+        ForEach(Self.outlineOffsets, id: \.self) { offset in
+          iconImage
+            .renderingMode(.template)
+            .scaledToFit()
+            .foregroundStyle(.black)
+            .offset(offset)
+        }
+        iconImage
+          .scaledToFit()
+      }
+      .frame(width: InkScreenMetrics.stampIconSize, height: InkScreenMetrics.stampIconSize)
+      .shadow(color: InkDecoration.splatShadow, radius: 4, y: 3)
+      .rotationEffect(InkScreenMetrics.stampAngle * style.parallaxGain)
     }
     .frame(width: InkScreenMetrics.splatSize, height: InkScreenMetrics.splatSize)
     .scaleEffect(style.scale, anchor: .topTrailing)
     .opacity(style.opacity)
     .accessibilityHidden(true)
+  }
+}
+
+extension InkModeStamp {
+  /// The icon's eight copies that make its outline, each shifted by the outline's width.
+  static private let outlineOffsets: [CGSize] = (0 ..< 8).map { step in
+    let angle: Double = .init(step) * .pi / 4
+    return CGSize(
+      width: cos(angle) * InkScreenMetrics.stampOutlineWidth,
+      height: sin(angle) * InkScreenMetrics.stampOutlineWidth)
+  }
+
+  private var iconImage: Image {
+    Image(decorative: BundledImage.name(for: icon, size: .large), bundle: BundledImage.catalogBundle)
+      .resizable()
   }
 }
 
