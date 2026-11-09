@@ -245,7 +245,7 @@ struct ClassicProgressBar: View {
 extension ClassicTimeFormat {
   /// A window spanning days, such as a Splatfest's or a Shift's: each end with its day.
   func range(of window: some TimeWindow, now: Date) -> String {
-    "\(shiftTime(window.startTime, now: now)) - \(shiftTime(window.endTime, now: now))"
+    ScreenText.timeRange.text(in: language, shiftTime(window.startTime, now: now), shiftTime(window.endTime, now: now))
   }
 }
 #endif

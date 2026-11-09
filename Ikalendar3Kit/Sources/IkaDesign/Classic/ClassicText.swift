@@ -63,7 +63,7 @@ struct ClassicTimeFormat {
     let endDay: Int = dayOffset(of: end, from: now)
     let startText: String = startDay == 0 ? time(start) : dayed(start, offset: startDay)
     let endText: String = endDay != startDay ? dayed(end, offset: endDay) : time(end)
-    return "\(startText) - \(endText)"
+    return ScreenText.timeRange.text(in: language, startText, endText)
   }
 
   /// One end of a Shift with its day: "Today 16:00" near now, "Thu, 10/22, 08:00" further away.

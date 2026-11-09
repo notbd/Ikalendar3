@@ -29,6 +29,23 @@ struct ClassicTimeFormatTests {
   // MARK: Rotations
 
   @Test
+  func `A range joins its ends as every Style does, with a wave dash in Japanese`() {
+    struct Window: TimeWindow {
+      let startTime: Date = date("2026-10-31T00:00:00Z")
+      let endTime: Date = date("2026-11-02T00:00:00Z")
+    }
+
+    let rotation = format(.jaJP).battleRange(
+      from: date("2026-10-20T14:00:00Z"),
+      to: date("2026-10-20T16:00:00Z"),
+      now: date("2026-10-20T13:00:00Z"))
+    let days = format(.jaJP).range(of: Window(), now: date("2026-10-31T12:00:00Z"))
+
+    #expect(rotation == "14:00 ~ 16:00")
+    #expect(days.components(separatedBy: " ~ ").count == 2, "\(days)")
+  }
+
+  @Test
   func `A Rotation within today shows its times alone`() {
     let range = format().battleRange(
       from: date("2026-10-20T14:00:00Z"),
