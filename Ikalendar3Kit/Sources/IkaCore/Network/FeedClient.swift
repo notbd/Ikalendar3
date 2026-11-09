@@ -12,6 +12,9 @@ import OSLog
 
 /// The one request path to splatoon3.ink. It sends each feed's request politely (naming the app
 /// and revalidating with the stored ETag) and commits each good answer to the cache.
+///
+/// Only the refresh engine sends: its requests are internal, so no entry point can pass the
+/// hourly gate by.
 public struct FeedClient: Sendable {
   /// Where good answers go.
   public let cache: FeedCache
@@ -51,7 +54,7 @@ public struct FeedClient: Sendable {
   /// Callers send one request per feed at a time across processes (the refresh engine's attempt
   /// lock sees to it), so the record a 304 confirms is still the one stored.
   @concurrent
-  public func fetch(_ feed: Feed) async -> FetchOutcome {
+  func fetch(_ feed: Feed) async -> FetchOutcome {
     let stored = await validRecord(for: feed)
 
     let response: HTTPResponse
@@ -95,7 +98,7 @@ public struct FeedClient: Sendable {
   ///
   /// - Parameter splatfest: The Splatfest the feed names, or `nil` when it names none.
   @concurrent
-  public func updateSplatfestArt(for splatfest: Splatfest?) async {
+  func updateSplatfestArt(for splatfest: Splatfest?) async {
     let current = splatfest.flatMap { now() < $0.endTime ? $0 : nil }
     cache.removeSplatfestArt(keeping: current?.id)
     guard let current, let url = current.artURL, cache.splatfestArt(for: current.id) == nil else { return }
