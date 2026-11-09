@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import Foundation
 import IkaCore
 
 // MARK: - BundledImage
@@ -37,6 +38,11 @@ public enum BundledImage {
   static public func name(for kingSalmonid: KingSalmonidID, size: Size) -> String {
     name(of: kingSalmonid.rawValue, in: .kingSalmonid, size: size)
   }
+
+  /// Where the build puts the catalog for now: this module's resource bundle. Where it ships is
+  /// still open (the build copies it into every product that links this module), so callers do
+  /// not rely on this yet.
+  static let catalogBundle: Bundle = .module
 
   /// The image name of a manifest id: `<base name>_<size>`.
   static func name(of id: String, in group: Group, size: Size) -> String {

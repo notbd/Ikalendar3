@@ -94,12 +94,12 @@ struct BundledImageAlignmentTests {
       .filter { $0.lastPathComponent.hasPrefix("schedules-") && $0.pathExtension == "json" }
   }
 
-  /// The pixel size of a catalog image in the bundle that ships IkaDesign's resources.
+  /// The pixel size of a catalog image in the built catalog.
   private func pixelSize(of name: String) -> CGSize? {
     #if canImport(UIKit)
-    let image: CGImage? = UIImage(named: name, in: .module, with: nil)?.cgImage
+    let image: CGImage? = UIImage(named: name, in: BundledImage.catalogBundle, with: nil)?.cgImage
     #else
-    let image: CGImage? = Bundle.module
+    let image: CGImage? = BundledImage.catalogBundle
       .image(forResource: name)?
       .cgImage(forProposedRect: nil, context: nil, hints: nil)
     #endif
