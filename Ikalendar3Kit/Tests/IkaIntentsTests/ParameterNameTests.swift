@@ -37,17 +37,15 @@ struct ParameterNameTests {
     }
   }
 
-  @Test(arguments: GameLanguage.allCases)
-  func `Each parameter type has a name`(language: GameLanguage) {
-    let names = [
-      "Mode": ModeParameter.typeDisplayRepresentation.name,
-      "Battle Mode": BattleModeParameter.typeDisplayRepresentation.name,
-      "Rule": RuleParameter.typeDisplayRepresentation.name,
-    ]
-    for (type, resource) in names {
-      let name = resolve(resource, in: language)
-      #expect(!name.isEmpty && !name.contains("type."), "\(type): [\(name)]")
-    }
+  /// The keys are the English names, so only another language shows that the lookup found the
+  /// catalog.
+  @Test
+  func `Each parameter type is named in the given language`() {
+    #expect([
+      ModeParameter.typeDisplayRepresentation.name,
+      BattleModeParameter.typeDisplayRepresentation.name,
+      RuleParameter.typeDisplayRepresentation.name,
+    ].map { resolve($0, in: .jaJP) } == ["モード", "バトルモード", "ルール"])
   }
 
   // MARK: Helpers

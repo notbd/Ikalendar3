@@ -23,13 +23,13 @@ public enum BattleModeParameter: String, AppEnum {
   case xBattle
 
   static public let typeDisplayRepresentation: TypeDisplayRepresentation = .init(
-    name: LocalizedStringResource("type.battleMode", bundle: #bundle))
+    name: LocalizedStringResource("Battle Mode", bundle: #bundle))
 
   static public let caseDisplayRepresentations: [Self: DisplayRepresentation] = [
-    .regularBattle: DisplayRepresentation(title: LocalizedStringResource("mode.regularBattle", bundle: #bundle)),
-    .anarchySeries: DisplayRepresentation(title: LocalizedStringResource("mode.anarchySeries", bundle: #bundle)),
-    .anarchyOpen: DisplayRepresentation(title: LocalizedStringResource("mode.anarchyOpen", bundle: #bundle)),
-    .xBattle: DisplayRepresentation(title: LocalizedStringResource("mode.xBattle", bundle: #bundle)),
+    .regularBattle: DisplayRepresentation(title: LocalizedStringResource("Regular Battle", bundle: #bundle)),
+    .anarchySeries: DisplayRepresentation(title: LocalizedStringResource("Anarchy Battle (Series)", bundle: #bundle)),
+    .anarchyOpen: DisplayRepresentation(title: LocalizedStringResource("Anarchy Battle (Open)", bundle: #bundle)),
+    .xBattle: DisplayRepresentation(title: LocalizedStringResource("X Battle", bundle: #bundle)),
   ]
 }
 

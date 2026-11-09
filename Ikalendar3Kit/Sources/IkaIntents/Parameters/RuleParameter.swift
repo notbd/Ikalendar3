@@ -23,14 +23,14 @@ public enum RuleParameter: String, AppEnum {
   case clamBlitz
 
   static public let typeDisplayRepresentation: TypeDisplayRepresentation = .init(
-    name: LocalizedStringResource("type.rule", bundle: #bundle))
+    name: LocalizedStringResource("Rule", bundle: #bundle))
 
   static public let caseDisplayRepresentations: [Self: DisplayRepresentation] = [
-    .turfWar: DisplayRepresentation(title: LocalizedStringResource("rule.turfWar", bundle: #bundle)),
-    .splatZones: DisplayRepresentation(title: LocalizedStringResource("rule.splatZones", bundle: #bundle)),
-    .towerControl: DisplayRepresentation(title: LocalizedStringResource("rule.towerControl", bundle: #bundle)),
-    .rainmaker: DisplayRepresentation(title: LocalizedStringResource("rule.rainmaker", bundle: #bundle)),
-    .clamBlitz: DisplayRepresentation(title: LocalizedStringResource("rule.clamBlitz", bundle: #bundle)),
+    .turfWar: DisplayRepresentation(title: LocalizedStringResource("Turf War", bundle: #bundle)),
+    .splatZones: DisplayRepresentation(title: LocalizedStringResource("Splat Zones", bundle: #bundle)),
+    .towerControl: DisplayRepresentation(title: LocalizedStringResource("Tower Control", bundle: #bundle)),
+    .rainmaker: DisplayRepresentation(title: LocalizedStringResource("Rainmaker", bundle: #bundle)),
+    .clamBlitz: DisplayRepresentation(title: LocalizedStringResource("Clam Blitz", bundle: #bundle)),
   ]
 
   /// The Rule chosen, by Nintendo's id (`VsRule-0` is Turf War).

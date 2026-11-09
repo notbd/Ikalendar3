@@ -15,7 +15,9 @@ import IkaCore
 ///
 /// Configurations store the raw value: never rename a case's. The names live in this module's
 /// string catalog, because App Intents read them at build time; `ParameterNameTests` keeps them
-/// equal to `Mode.name(in:)` in all 14 languages.
+/// equal to `Mode.name(in:)` in all 14 languages. The parameter types' keys are their English
+/// names: the build's App Intents metadata records a key but not its bundle, so a lookup that
+/// misses this module's catalog still shows a name, never a key.
 public enum ModeParameter: String, AppEnum {
   case regularBattle
   case anarchySeries
@@ -24,14 +26,14 @@ public enum ModeParameter: String, AppEnum {
   case salmonRun
 
   static public let typeDisplayRepresentation: TypeDisplayRepresentation = .init(
-    name: LocalizedStringResource("type.mode", bundle: #bundle))
+    name: LocalizedStringResource("Mode", bundle: #bundle))
 
   static public let caseDisplayRepresentations: [Self: DisplayRepresentation] = [
-    .regularBattle: DisplayRepresentation(title: LocalizedStringResource("mode.regularBattle", bundle: #bundle)),
-    .anarchySeries: DisplayRepresentation(title: LocalizedStringResource("mode.anarchySeries", bundle: #bundle)),
-    .anarchyOpen: DisplayRepresentation(title: LocalizedStringResource("mode.anarchyOpen", bundle: #bundle)),
-    .xBattle: DisplayRepresentation(title: LocalizedStringResource("mode.xBattle", bundle: #bundle)),
-    .salmonRun: DisplayRepresentation(title: LocalizedStringResource("mode.salmonRun", bundle: #bundle)),
+    .regularBattle: DisplayRepresentation(title: LocalizedStringResource("Regular Battle", bundle: #bundle)),
+    .anarchySeries: DisplayRepresentation(title: LocalizedStringResource("Anarchy Battle (Series)", bundle: #bundle)),
+    .anarchyOpen: DisplayRepresentation(title: LocalizedStringResource("Anarchy Battle (Open)", bundle: #bundle)),
+    .xBattle: DisplayRepresentation(title: LocalizedStringResource("X Battle", bundle: #bundle)),
+    .salmonRun: DisplayRepresentation(title: LocalizedStringResource("Salmon Run", bundle: #bundle)),
   ]
 }
 
