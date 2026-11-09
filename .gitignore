@@ -15,6 +15,9 @@ build/
 *.xcscmblueprint
 *.xccheckout
 
+# Python bytecode (the asset script)
+__pycache__/
+
 # Swift Package Manager
 .build/
 .swiftpm/
