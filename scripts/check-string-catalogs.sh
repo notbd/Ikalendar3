@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #
 # Fails when a string catalog has a key without a non-empty value in each of the 14 app
-# localizations, the source language included. Keys marked "Don't Translate" are exempt.
+# localizations, the source language included. Keys marked "Don't Translate" are exempt. Also
+# fails when an App Shortcuts phrase (a key of an `AppShortcuts.xcstrings`, or any of its values)
+# does not name the app with `${applicationName}`: Siri matches only phrases that do.
 #
 # Usage: scripts/check-string-catalogs.sh [CATALOG ...]
 #
@@ -42,4 +44,25 @@ if [[ -n $problems ]]; then
   printf 'String catalog keys without all 14 localizations:\n%s\n' "$problems" >&2
   exit 1
 fi
-printf '%d catalogs complete\n' "${#catalogs[@]}"
+
+phrase_catalogs=()
+for catalog in "${catalogs[@]}"; do
+  [[ $(basename "$catalog") == AppShortcuts.xcstrings ]] && phrase_catalogs+=("$catalog")
+done
+if ((${#phrase_catalogs[@]} > 0)); then
+  # One line per phrase that does not name the app, in its key or in any localization.
+  phrases=$(jq -r '
+    input_filename as $file
+    | .strings | to_entries[]
+    | .key as $key
+    | [$key, (.value.localizations // {} | .. | .stringUnit? | select(. != null) | .value // "")]
+    | map(select(contains("${applicationName}") | not))
+    | select(length > 0)
+    | "\($file): \($key): \(join(" | "))"' "${phrase_catalogs[@]}")
+  if [[ -n $phrases ]]; then
+    printf 'App Shortcuts phrases without ${applicationName}:\n%s\n' "$phrases" >&2
+    exit 1
+  fi
+fi
+
+printf '%d catalogs complete, %d with App Shortcuts phrases\n' "${#catalogs[@]}" "${#phrase_catalogs[@]}"

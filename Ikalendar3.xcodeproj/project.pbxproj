@@ -29,6 +29,7 @@
 		F1000000000000000000000B /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000B /* IkaFixtures */; };
 		F1000000000000000000000C /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000C /* IkaFixtures */; };
 		F1000000000000000000000D /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000D /* IkaFixtures */; };
+		D30000000000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* Localizable.xcstrings */; platformFilter = ios; };
 		F1000000000000000000000E /* IkaIntents in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000E /* IkaIntents */; };
 		F1000000000000000000000F /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000F /* IkaFixtures */; };
 /* End PBXBuildFile section */
@@ -158,6 +159,7 @@
 		B20000000000000000000004 /* Ikalendar3Watch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ikalendar3Watch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B20000000000000000000005 /* Ikalendar3WatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Ikalendar3WatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B20000000000000000000006 /* IkaResources.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = IkaResources.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA0000000000000000000009 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; name = Localizable.xcstrings; path = Ikalendar3Kit/Sources/IkaIntents/Resources/Localizable.xcstrings; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -166,6 +168,11 @@
 			membershipExceptions = (
 				"Info-iOS.plist",
 			);
+			platformFiltersByRelativePath = {
+				Siri/AppShortcuts.xcstrings = (
+					ios,
+				);
+			};
 			target = B10000000000000000000001 /* Ikalendar3 */;
 		};
 		AC0000000000000000000003 /* Exceptions for "Ikalendar3Widgets" folder in "Ikalendar3Widgets" target */ = {
@@ -262,6 +269,7 @@
 			isa = PBXGroup;
 			children = (
 				AA0000000000000000000008 /* Ikalendar3Kit */,
+				AA0000000000000000000009 /* Localizable.xcstrings */,
 				AB0000000000000000000001 /* Ikalendar3 */,
 				AB0000000000000000000002 /* Ikalendar3Tests */,
 				AB0000000000000000000003 /* Ikalendar3Widgets */,
@@ -520,6 +528,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D30000000000000000000001 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

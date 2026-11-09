@@ -4,7 +4,8 @@
 #
 #   1-2  SwiftFormat and SwiftLint, zero violations
 #   3    no tracked file names how changes are reviewed or written (scripts/check-wording.sh)
-#   4    every string catalog key in all 14 localizations (scripts/check-string-catalogs.sh)
+#   4    every string catalog key in all 14 localizations, every App Shortcuts phrase naming the app
+#        (scripts/check-string-catalogs.sh)
 #   5    package tests on macOS
 #   6-8  unsigned Debug builds: iOS Simulator, macOS, watchOS Simulator
 #   9-10 unsigned Release builds: iOS device (with the watch app), macOS, with no fixture file
