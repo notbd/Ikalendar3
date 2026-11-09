@@ -61,6 +61,17 @@ enum InkScreenMetrics {
   /// A Shift's King Salmonid icon.
   static let kingSalmonidIconSize: CGFloat = 26
 
+  // MARK: Events
+
+  /// An event card's Mode icon, square, before Dynamic Type.
+  static let eventIconSize: CGFloat = 28
+  /// A Challenge's Rule icon, square, before Dynamic Type.
+  static let challengeRuleIconSize: CGFloat = 26
+  /// The swatch of a Splatfest team's colour before its name.
+  static let teamSwatchSize: CGSize = .init(width: 22, height: 12)
+  /// The opacity of a Challenge window that has ended.
+  static let endedWindowOpacity: Double = 0.45
+
   // MARK: Progress
 
   /// The progress bar's height.
