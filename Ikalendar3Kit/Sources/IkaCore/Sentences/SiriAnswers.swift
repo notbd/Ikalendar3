@@ -20,8 +20,10 @@ import Foundation
 ///   is cached yet, so the cache cannot tell.
 ///
 /// While a Splatfest pauses a Battle Mode, the now answer says when the Battle Mode comes back,
-/// as the iPhone tabs do; the next and Rule answers say so too when no Rotation after the
-/// Splatfest is published yet.
+/// as the iPhone tabs do. The next and Rule answers do so from the last Rotation before the
+/// Splatfest on, since the feed publishes the paused windows: a Rotation after the Splatfest
+/// follows that pause sentence, whose weekday tells the Rotation's day; with none published yet,
+/// the pause sentence is the answer.
 public struct SiriAnswers: Sendable {
   private let snapshot: Snapshot
   private let writer: SentenceWriter
@@ -46,28 +48,37 @@ public struct SiriAnswers: Sendable {
   public func next(in mode: Mode, at instant: Date) -> String {
     switch mode {
       case .battle(let battleMode):
-        next(in: mode, battleLineup(battleMode, at: instant)) { writer.sentence(for: $0, at: instant) }
+        let lineup = battleLineup(battleMode, at: instant)
+        guard let returnTime = returnTime(ahead: lineup, of: battleMode) else {
+          return next(in: mode, lineup) { writer.sentence(for: $0, at: instant) }
+        }
+
+        return sentence(forPauseOf: battleMode, returningAt: returnTime, then: lineup.next, at: instant)
+
       case .salmonRun:
-        next(in: mode, feed.salmonRunLineup(at: instant)) { writer.sentence(for: $0, at: instant) }
+        return next(in: mode, feed.salmonRunLineup(at: instant)) { writer.sentence(for: $0, at: instant) }
     }
   }
 
   /// When a Rule next comes up in a Battle Mode: the first published Rotation from the one on
-  /// now on that plays it, with the time left when it is on now.
+  /// now on that plays it, with the time left when it is on now. A Rule no published Rotation
+  /// plays is not published, unless a pause ahead leaves nothing after it published yet.
   public func next(_ rule: RuleID, in battleMode: BattleMode, at instant: Date) -> String {
     let lineup = battleLineup(battleMode, at: instant)
+    let returnTime = returnTime(ahead: lineup, of: battleMode)
     if let rotation = lineup.items.first(where: { $0.setting?.rule == rule }) {
-      return writer.sentence(for: rotation, at: instant)
+      guard let returnTime, returnTime <= rotation.startTime else { return writer.sentence(for: rotation, at: instant) }
+
+      return sentence(forPauseOf: battleMode, returningAt: returnTime, then: rotation, at: instant)
+    }
+    if let returnTime, lineup.next == nil {
+      return writer.sentence(forPauseOf: battleMode, returningAt: returnTime)
     }
 
     let mode = Mode.battle(battleMode).name(in: language)
-    return switch lineup.current {
-      case .paused(let returnTime): writer.pauseSentence(named: mode, returningAt: returnTime)
-      case .ranOut: writer.format("answer.outOfDate", mode)
-      case .item,
-           .gap,
-           .noneAnnounced: writer.format("answer.notPublished.rule", mode, writer.terms.name(of: rule))
-    }
+    return lineup.current == .ranOut
+      ? writer.format("answer.outOfDate", mode)
+      : writer.format("answer.notPublished.rule", mode, writer.terms.name(of: rule))
   }
 
   /// The Shift on now: the regular Shift or Big Run, never an Eggstra Work, which runs beside
@@ -106,6 +117,31 @@ public struct SiriAnswers: Sendable {
            .gap,
            .noneAnnounced: writer.format("answer.notPublished.next", name)
     }
+  }
+
+  /// When the Splatfest pause a Battle Mode is in, or enters as its Rotation on now ends, gives
+  /// it back; `nil` when no pause comes before its next Rotation.
+  private func returnTime(ahead lineup: Lineup<Rotation>, of battleMode: BattleMode) -> Date? {
+    var current = lineup.current
+    if case .item(let rotation) = current {
+      current = battleLineup(battleMode, at: rotation.endTime).current
+    }
+    return if case .paused(let returnTime) = current { returnTime } else { nil }
+  }
+
+  /// The pause sentence, then the sentence of `rotation`, a Rotation after the pause, when there
+  /// is one: the pause's weekday tells the Rotation's day, which its own times leave out.
+  private func sentence(
+    forPauseOf battleMode: BattleMode,
+    returningAt returnTime: Date,
+    then rotation: Rotation?,
+    at instant: Date)
+    -> String
+  {
+    let pause = writer.sentence(forPauseOf: battleMode, returningAt: returnTime)
+    guard let rotation else { return pause }
+
+    return writer.format("answer.twoSentences", pause, writer.sentence(for: rotation, at: instant))
   }
 
   /// The Big Run on now or the next one Salmon Run's Schedule holds.

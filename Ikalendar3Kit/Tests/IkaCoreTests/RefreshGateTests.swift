@@ -134,6 +134,91 @@ final class RefreshGateTests {
     #expect(transport.requests.count == 3)
   }
 
+  /// The gate replaces the attempt file only by an atomic rename, so one that does not decode is
+  /// damage, not a first use. Every key's records are in it, so no gate may reopen.
+  @Test
+  func `An attempt file that does not decode keeps every gate closed and stays as it is`() throws {
+    let gate = makeClient().gate
+    try gate.settle(#require(gate.claim(.feed(.schedules)).granted), isAnswered: true)
+    let records = directory.appending(path: "attempts.plist")
+    try Data("corrupt".utf8).write(to: records)
+
+    let answered = gate.claim(.feed(.schedules))
+    let neverClaimed = gate.claim(.feed(.festivals))
+
+    #expect(answered.isClosed)
+    #expect(neverClaimed.isClosed)
+    #expect(try Data(contentsOf: records) == Data("corrupt".utf8))
+  }
+
+  /// A file nobody may read fails the read with an error other than a missing file, while the
+  /// folder still lets the gate replace it.
+  @Test
+  func `An attempt file that cannot be read keeps the gate closed and stays as it is`() throws {
+    let gate = makeClient().gate
+    try gate.settle(#require(gate.claim(.feed(.schedules)).granted), isAnswered: true)
+    let records = directory.appending(path: "attempts.plist")
+    let answered = try Data(contentsOf: records)
+    try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: records.path(percentEncoded: false))
+
+    let claim = gate.claim(.feed(.schedules))
+    try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: records.path(percentEncoded: false))
+
+    #expect(claim.isClosed)
+    #expect(try Data(contentsOf: records) == answered)
+  }
+
+  /// Sol's case: the clock set back 61 s, past a time sync's step, while the first request is in
+  /// flight.
+  @Test
+  func `A clock set back during a request keeps the feed leased until the request settles`() throws {
+    let gate = makeClient().gate
+    let inFlight = try #require(gate.claim(.feed(.schedules)).granted)
+    clock.now = date("2026-10-20T12:03:59Z")
+
+    let during = gate.claim(.feed(.schedules))
+    gate.settle(inFlight, isAnswered: true)
+    let after = gate.claim(.feed(.schedules))
+
+    #expect(during.isLeased)
+    #expect(after.isClosed)
+  }
+
+  /// With no claim in between, the answer's hour still counts from the set-back clock.
+  @Test
+  func `An answer that comes after the clock was set back closes the gate for the hour`() throws {
+    let gate = makeClient().gate
+    let inFlight = try #require(gate.claim(.feed(.schedules)).granted)
+    clock.now = date("2026-10-20T12:03:59Z")
+
+    gate.settle(inFlight, isAnswered: true)
+    let atOnce = gate.claim(.feed(.schedules))
+    clock.now = date("2026-10-20T13:03:58Z")
+    let lastSecond = gate.claim(.feed(.schedules))
+
+    #expect(atOnce.isClosed)
+    #expect(lastSecond.isClosed)
+  }
+
+  /// A set-back restarts the lease from the new time instead of ending it, so a claim the
+  /// system killed still frees the feed a lease later, not after the time the clock lost.
+  @Test
+  func `A claim abandoned before the clock was set back frees the feed a lease after the set-back`() {
+    let gate = makeClient().gate
+    _ = gate.claim(.feed(.schedules))
+    clock.now = date("2026-10-19T12:05:00Z")
+
+    let setBack = gate.claim(.feed(.schedules))
+    clock.now = date("2026-10-19T12:05:34Z")
+    let held = gate.claim(.feed(.schedules))
+    clock.now = date("2026-10-19T12:05:35Z")
+    let freed = gate.claim(.feed(.schedules))
+
+    #expect(setBack.isLeased)
+    #expect(held.isLeased)
+    #expect(freed.granted != nil)
+  }
+
   // MARK: - Unanswered requests
 
   @Test
@@ -256,5 +341,22 @@ final class RefreshGateTests {
 
     #expect(transport.requests.count == 3)
     #expect(result.outcomes[.schedules] == .fetched(.updated))
+  }
+}
+
+// MARK: - FeedGate.Claim
+
+extension FeedGate.Claim {
+  /// The claimed attempt, or `nil` when the gate did not grant one.
+  fileprivate var granted: Granted? {
+    if case .claimed(let granted) = self { granted } else { nil }
+  }
+
+  fileprivate var isLeased: Bool {
+    if case .leased = self { true } else { false }
+  }
+
+  fileprivate var isClosed: Bool {
+    if case .closed = self { true } else { false }
   }
 }

@@ -79,8 +79,9 @@ public struct FeedCache: Sendable {
 
   // MARK: Splatfest art
 
-  /// A Splatfest's stored art as a local image file, or `nil` when none is stored.
-  public func splatfestArt(for id: SplatfestID) -> URL? {
+  /// A Splatfest's stored art as a local image file, or `nil` when none is stored. Surfaces read
+  /// it from the snapshot (`Snapshot.splatfestArt`).
+  func splatfestArt(for id: SplatfestID) -> URL? {
     let url = artURL(for: id)
     return FileManager.default.fileExists(atPath: url.path(percentEncoded: false)) ? url : nil
   }

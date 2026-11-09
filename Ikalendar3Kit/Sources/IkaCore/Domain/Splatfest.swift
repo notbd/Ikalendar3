@@ -27,7 +27,9 @@ public struct Splatfest: Hashable, Sendable {
   /// The Stages of Tricolor Turf War, which runs in the second half.
   public let tricolorStages: [StageID]
   /// The Splatfest's art on splatoon3.ink's asset host, when `festivals.json` has its record.
-  internal(set) public var artURL: URL?
+  /// Only the refresh engine requests it, through the gate; Surfaces show the stored file
+  /// (`SplatfestScreen.art`).
+  var artURL: URL?
 }
 
 // MARK: - RGBAColor
