@@ -34,9 +34,10 @@ public struct SentenceWriter: Sendable {
   ///
   /// A Rotation lasts hours, so its times carry no day.
   ///
-  /// A lineup's Rotations always play: a paused window is never an item, and a pause reads
-  /// `sentence(forPauseOf:returningAt:)` with the lineup's return time. A paused window taken
-  /// straight from the feed knows only its own end, so it reads as paused until then.
+  /// Only Rotations that play reach it: IkaCore builds every Rotation, hands out only those that
+  /// play, and reads a pause with `sentence(forPauseOf:returningAt:)` and the Battle Mode's
+  /// return time. The fallback for a paused window, paused until the window's end, is therefore
+  /// never read.
   public func sentence(for rotation: Rotation, at instant: Date) -> String {
     sentence(of: rotation.mode.name(in: language), playing: rotation.setting, in: rotation, at: instant)
   }
