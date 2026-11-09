@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - TabMenuView
 
 /// The Series and Open (or Open and Pro) menu: a glass panel above the selected tab, one row per
-/// Battle Mode with its Mode summary, the current Rule and time left.
+/// Battle Mode with its Mode summary.
 ///
 /// OS 26 has no menu on an iPhone tab bar item: a long press on a `Tab` with a `contextMenu` shows
 /// nothing, and a `Tab`'s `popover` stops the app ("UIViewController cannot be shared between
@@ -31,10 +31,30 @@ struct TabMenuView: View {
   let choose: (TabMenuOption) -> Void
 
   var body: some View {
+    // As wide as the widest row while the screen holds it, so both rows share one width and the
+    // panel hugs the tab; else as wide as the screen offers, the texts wrapping, and scrolling once
+    // the rows grow taller than the screen.
+    ViewThatFits {
+      rows
+        .fixedSize(horizontal: true, vertical: false)
+      ViewThatFits(in: .vertical) {
+        rows
+        ScrollView {
+          rows
+        }
+        .scrollBounceBehavior(.basedOnSize)
+      }
+    }
+    // Regular glass in both colour schemes: the clear glass the adaptive effect uses on dark lets
+    // the list show through the text.
+    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 28))
+  }
+
+  private var rows: some View {
     let now = clock.now
     let terms = engine.snapshot.terms(in: language)
 
-    VStack(spacing: 0) {
+    return VStack(spacing: 0) {
       ForEach(engine.snapshot.options(of: menu, at: now), id: \.mode) { option in
         Button { choose(option) } label: {
           TabMenuRow(option: option, isSelected: option.mode == selection, terms: terms, now: now)
@@ -43,20 +63,18 @@ struct TabMenuView: View {
       }
     }
     .padding(.vertical, 6)
-    // As wide as the widest row, so both rows share one width and the panel hugs the tab.
-    .fixedSize(horizontal: true, vertical: false)
-    // Regular glass in both colour schemes: the clear glass the adaptive effect uses on dark lets
-    // the list show through the text.
-    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 28))
   }
 }
 
 // MARK: - TabMenuRow
 
-/// One option: the current Rule's icon (the Mode's while none plays), the Mode's name, its
-/// summary line and a checkmark on the Battle Mode the tab shows.
+/// One option as a Mode summary: the Mode icon in a ring of the share passed, the Mode's name,
+/// the current Rule and time left, and a checkmark on the Battle Mode the tab shows.
 private struct TabMenuRow: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @TimeSettings private var time
+
+  @ScaledMetric(relativeTo: .headline) private var ringSize: CGFloat = 36
 
   let option: TabMenuOption
   let isSelected: Bool
@@ -64,23 +82,39 @@ private struct TabMenuRow: View {
   let now: Date
 
   var body: some View {
-    HStack(spacing: 12) {
-      Image(decorative: iconName, bundle: BundledImage.catalogBundle)
-        .resizable()
-        .scaledToFit()
-        .frame(width: 32, height: 32)
-
-      VStack(alignment: .leading, spacing: 2) {
-        Text(verbatim: option.mode.name(in: terms.language))
-          .font(.headline)
-        if let summary {
-          Text(verbatim: summary)
-            .font(.subheadline)
-            .foregroundStyle(.secondary)
-        }
+    // From the first accessibility size the ring sits above the texts, which then have the row's
+    // width to wrap in.
+    let summaryLayout: AnyLayout =
+      switch CellArrangement(dynamicTypeSize) {
+        case .sideBySide: .init(HStackLayout(spacing: 12))
+        case .stacked: .init(VStackLayout(alignment: .leading, spacing: 8))
       }
 
-      Spacer(minLength: 16)
+    HStack(spacing: 16) {
+      summaryLayout {
+        ZStack {
+          ProgressRing(share: option.summary?.progress?.sharePassed ?? 0, color: ringColor, lineWidth: 3)
+          Image(
+            decorative: BundledImage.name(for: ModeIcon(option.mode), size: .small),
+            bundle: BundledImage.catalogBundle)
+            .resizable()
+            .scaledToFit()
+            .padding(7)
+        }
+        .frame(width: ringSize, height: ringSize)
+
+        VStack(alignment: .leading, spacing: 2) {
+          Text(verbatim: option.mode.name(in: terms.language))
+            .font(.headline)
+          if let summary {
+            Text(verbatim: summary)
+              .font(.subheadline)
+              .foregroundStyle(.secondary)
+          }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+      }
+      .frame(maxWidth: .infinity, alignment: .leading)
 
       Image(systemName: "checkmark")
         .font(.body.weight(.semibold))
@@ -93,14 +127,13 @@ private struct TabMenuRow: View {
     .accessibilityAddTraits(isSelected ? .isSelected : [])
   }
 
-  private var iconName: String {
-    switch option.summary {
-      case .battle(_, .running(let running))?,
-           .splatfestBattle(_, .running(let running))?:
-        if let setting = running.item.setting { return BundledImage.name(for: setting.rule, size: .small) }
-      default: break
+  /// The Mode colour; Splatfest Battle, which has none, takes the neutral tint its progress
+  /// shows in elsewhere.
+  private var ringColor: Color {
+    switch option.mode {
+      case .battle(let mode): Color(ModeColor(mode).base)
+      case .splatfestBattle: .primary
     }
-    return BundledImage.name(for: ModeIcon(option.mode), size: .small)
   }
 
   /// The current Rule and time left, the pause with the return time, or nothing on; none before
