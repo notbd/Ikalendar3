@@ -65,6 +65,7 @@ extension ModeHeading {
 }
 
 extension ModeHeading where Trailing == EmptyView {
+  /// The heading of a Rotation's Battle Mode, with nothing at the far end.
   public init(mode: RotationMode, in language: GameLanguage) {
     self.init(mode: mode, in: language) { EmptyView() }
   }

@@ -76,7 +76,7 @@ public struct WidgetAccessibility: Equatable, Sendable {
   }
 
   /// "Nothing on right now", in `writer`'s text set.
-  private static func nothingCurrent(in writer: SentenceWriter) -> Self {
+  static private func nothingCurrent(in writer: SentenceWriter) -> Self {
     .init(label: ScreenText.nothingCurrent.text(in: writer.terms.language))
   }
 }

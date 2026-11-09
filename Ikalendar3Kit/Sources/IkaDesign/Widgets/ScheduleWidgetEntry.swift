@@ -28,7 +28,7 @@ public struct ScheduleWidgetEntry<Content: Hashable & Sendable>: WidgetKit.Timel
 
   /// The entry with nothing to show yet: the placeholder, and the timeline of an empty cache. By
   /// default in the shipped names of the language this process resolves.
-  public static func empty(
+  static public func empty(
     at date: Date,
     terms: GameTerms = Snapshot().terms(in: GameLanguage(resolvedFor: .main)))
     -> Self
