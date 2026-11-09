@@ -7,6 +7,7 @@
 
 import IkaCore
 import IkaDesign
+import IkaIntents
 import SwiftUI
 
 // MARK: - DebugOptionsView
@@ -14,13 +15,15 @@ import SwiftUI
 /// The maintainer's options, as ikalendar 2's, for testing first-run paths: show the welcome
 /// screen again, and reset the app states, the preferences or both.
 ///
-/// They ship in Release builds, so every reset changes only the preferences store: never the
-/// feed cache or its attempt records, which would let anyone bypass splatoon3.ink's hourly limit.
+/// They ship in Release builds, so every reset changes only the preferences store, and the pending
+/// reminders that follow its switches: never the feed cache or its attempt records, which would
+/// let anyone bypass splatoon3.ink's hourly limit.
 /// Show Onboarding Screen and Reset All close Settings, so the welcome screen shows at once.
 struct DebugOptionsView: View {
   @Environment(PreferenceStore.self) private var preferences
   @Environment(AppStatus.self) private var status
   @Environment(\.gameLanguage) private var language
+  @Environment(\.effects) private var effects
   #if os(macOS)
   @Environment(\.openWindow) private var openWindow
   #endif
@@ -47,10 +50,12 @@ struct DebugOptionsView: View {
         }
         Button(text(.resetAppPreferences)) {
           preferences.resetAppPreferences()
+          rebuildReminders()
           confirm(.preferencesReset)
         }
         Button(text(.resetAll)) {
           preferences.resetAll()
+          rebuildReminders()
           showWelcomeScreen()
         }
       }
@@ -88,6 +93,12 @@ struct DebugOptionsView: View {
   }
 
   // MARK: Actions
+
+  /// Replaces the pending reminders after a reset turned their switches off, so none is left
+  /// scheduled for a switch that is now off.
+  private func rebuildReminders() {
+    Task { await effects?.rebuildReminders() }
+  }
 
   private func confirm(_ text: AboutText) {
     steps += 1
