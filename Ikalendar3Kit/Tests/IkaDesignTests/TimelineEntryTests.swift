@@ -127,6 +127,59 @@ struct TimelineEntryTests {
     #expect(entries.prefix(2) == [.nothingCurrent, .item(first, progress: nil)])
   }
 
+  // MARK: Challenge
+
+  @Test
+  func `A Challenge's axis holds all six windows, the current one with its progress`() async throws {
+    let snapshot = try await snapshot(.normalDay)
+    let screen = try #require(snapshot.challengeScreen(at: date("2026-10-23T07:00:00Z")))
+    let listing = try #require(screen.challenges.first)
+
+    let entries: [TimelineEntry<ChallengeWindow>] = TimelineEntry.entries(of: listing)
+
+    #expect(entries.compactMap(\.item?.startTime) == [
+      date("2026-10-23T02:00:00Z"), date("2026-10-23T06:00:00Z"), date("2026-10-23T10:00:00Z"),
+      date("2026-10-23T14:00:00Z"), date("2026-10-23T18:00:00Z"), date("2026-10-23T22:00:00Z"),
+    ])
+    #expect(entries.allSatisfy { $0.item?.challenge == listing.challenge })
+    #expect(entries.map { $0.progress?.sharePassed } == [nil, 0.5, nil, nil, nil, nil])
+  }
+
+  // MARK: Splatfest
+
+  @Test
+  func `In the second half Tricolor Turf War sits on top of the form's current Rotation`() async throws {
+    let snapshot = try await snapshot(.splatfestSecondHalf)
+    let screen = try #require(snapshot.splatfestScreen(of: .open, at: date("2026-11-01T06:00:00Z")))
+    let tricolor = try #require(screen.tricolorTurfWar)
+    guard case .running(let current) = screen.current else {
+      Issue.record("No Splatfest Battle Rotation runs in the second half")
+      return
+    }
+
+    let entries: [TimelineEntry<TimelineSplatfestItem>] = TimelineEntry.entries(of: screen)
+
+    #expect(entries.prefix(2) == [
+      .item(.tricolorTurfWar(tricolor.item), progress: tricolor.progress),
+      .item(.rotation(current.item), progress: current.progress),
+    ])
+    #expect(entries.count == 2 + [screen.next].compactMap(\.self).count + screen.later.count + screen.afterwards.count)
+  }
+
+  @Test
+  func `Regular Battle's Rotations follow the form's last Rotation once the Splatfest ends`() async throws {
+    let snapshot = try await snapshot(.splatfestEnd)
+    let screen = try #require(snapshot.splatfestScreen(of: .pro, at: date("2026-08-23T21:00:00Z")))
+
+    let rotations = TimelineEntry.entries(of: screen).compactMap { entry -> Rotation? in
+      if case .rotation(let rotation) = entry.item { rotation } else { nil }
+    }
+
+    #expect(rotations.map(\.mode) == [.splatfestBattle(.pro), .splatfestBattle(.pro)]
+      + Array(repeating: .battle(.regular), count: 10))
+    #expect(rotations.map(\.startTime) == rotations.map(\.startTime).sorted())
+  }
+
   // MARK: Helpers
 
   private func snapshot(_ fixture: Fixture) async throws -> Snapshot {

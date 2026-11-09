@@ -52,8 +52,14 @@ enum TimelineMetrics {
   static let badgeImageSize: CGFloat = 28
   /// The Series and Open strip's height.
   static let stripHeight: CGFloat = 40
-  /// The thickness of the line under the shown Anarchy form.
+  /// The thickness of the line under the shown form.
   static let stripUnderline: CGFloat = 3
+  /// The space inside a card's edge.
+  static let cardPadding: CGFloat = 12
+  /// A Splatfest team's colour swatch.
+  static let teamSwatchSize: CGFloat = 14
+  /// The band of team colours a Splatfest card shows while its art is not downloaded.
+  static let teamBandHeight: CGFloat = 8
 }
 
 // MARK: - TimelinePalette
@@ -73,7 +79,43 @@ enum TimelinePalette {
   static let idlePin: ColorPair = .init(foreground: .black, background: SRGBColor(hex: 0xEAEAEA))
   /// Light text beside white text, such as the countdown.
   static let secondaryText: Color = .init(SRGBColor(hex: 0xD8DDE3))
+  /// The text of a Challenge window that has ended.
+  static let pastText: Color = .init(SRGBColor(hex: 0x8D949C))
   /// The axis track's opacity before and after the current item's progress.
   static let trackOpacity: Double = 0.35
+}
+
+// MARK: - TimelineTint
+
+/// The colour of a stretch of the axis, its pin while its item runs, and its "Now": the item's
+/// Mode colour, or neutral where none stands for it. Splatfest Battle and Tricolor Turf War have
+/// no Mode colour, and no one team's colour stands for them.
+struct TimelineTint: Hashable {
+  /// The colour at full strength.
+  let base: SRGBColor
+
+  /// A Mode's or an event's colour.
+  init(_ color: ModeColor) {
+    base = color.base
+  }
+
+  private init(base: SRGBColor) {
+    self.base = base
+  }
+
+  /// White, for what no Mode colour stands for.
+  static let neutral: Self = .init(base: .white)
+
+  /// The colour as a fill, such as a pin, with black or white text on it.
+  var asFill: ColorPair {
+    ColorPair(foreground: base.labelColor, background: base)
+  }
+
+  /// The colour as text on Timeline's panel in `colorScheme`: the base colour, or its nearest
+  /// tint that reads there.
+  func onPanel(in colorScheme: ColorScheme) -> ColorPair {
+    let panel: SRGBColor = Style.timeline.panel(in: colorScheme)
+    return ColorPair(foreground: base.readableTint(on: panel, for: .text), background: panel)
+  }
 }
 #endif

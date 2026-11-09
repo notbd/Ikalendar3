@@ -21,13 +21,13 @@ struct TimelineAxis<Item: TimeWindow & Hashable & Sendable, SlotContent: View>: 
   /// What an entry's slot shows right of the line.
   @ViewBuilder let content: (TimelineEntry<Item>) -> SlotContent
   /// The colour of an entry's stretch of the line and of its pin while it runs.
-  let color: (TimelineEntry<Item>) -> ModeColor
+  let color: (TimelineEntry<Item>) -> TimelineTint
   /// The sentence VoiceOver reads for an entry.
   let sentence: (TimelineEntry<Item>) -> String
 
   var body: some View {
     VStack(spacing: 0) {
-      TimelineTrack(color: entries.first.map(color) ?? .regularBattle, progress: nil)
+      TimelineTrack(color: entries.first.map(color) ?? .neutral, progress: nil)
         .frame(maxWidth: .infinity, minHeight: TimelineMetrics.axisTop, alignment: .leading)
       ForEach(Array(zip(entries, dayMarks)), id: \.0.id) { entry, dayMark in
         VStack(spacing: 0) {
@@ -67,7 +67,7 @@ struct TimelineAxis<Item: TimeWindow & Hashable & Sendable, SlotContent: View>: 
 /// when stacked, where a large pin would cover the content), and its stretch of the line, which
 /// spans the space below it so the line runs on unbroken.
 private struct TimelineSlot<Content: View>: View {
-  let color: ModeColor
+  let color: TimelineTint
   let pin: String?
   /// The share of the item passed while it runs, or `nil`.
   let progress: Double?
@@ -108,7 +108,7 @@ private struct TimelineSlot<Content: View>: View {
 /// A stretch of the axis line: the Mode colour, dimmed, with the passed share of a running item
 /// filled in from the top.
 private struct TimelineTrack: View {
-  let color: ModeColor
+  let color: TimelineTint
   /// The share filled in, or `nil` for none.
   let progress: Double?
 
@@ -133,9 +133,9 @@ private struct TimelineTrack: View {
 // MARK: - TimelinePin
 
 /// A start time on the axis: in the Mode colour while its item runs, light grey otherwise.
-private struct TimelinePin: View {
+struct TimelinePin: View {
   let text: String
-  let color: ModeColor
+  let color: TimelineTint
   let isCurrent: Bool
 
   var body: some View {
@@ -158,7 +158,7 @@ private struct TimelinePin: View {
 /// a Rotation's sentence carries no day.
 private struct TimelineDayMark: View {
   let text: String
-  let color: ModeColor
+  let color: TimelineTint
   let arrangement: CellArrangement
 
   var body: some View {

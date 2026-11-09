@@ -15,7 +15,6 @@ import SwiftUI
 /// Salmonid, and, while it runs, the tape and the progress. A Big Run or an Eggstra Work wears
 /// its name on a tag in its colour, which also colours its "Now!".
 struct InkShiftPanel: View {
-  @Environment(\.colorScheme) private var colorScheme
   @Environment(\.gameLanguage) private var language
 
   let entry: InkPanelEntry<Shift>
@@ -38,7 +37,7 @@ struct InkShiftPanel: View {
       }
       InkStageAndWeapons(shift: shift, terms: terms, metrics: metrics)
       if let kingSalmonid = shift.kingSalmonid {
-        kingSalmonidRow(kingSalmonid)
+        InkKingSalmonidRow(kingSalmonid: kingSalmonid, terms: terms, arrangement: metrics.arrangement)
       }
       if let progress = entry.place.progress {
         InkProgressBar(
@@ -51,9 +50,19 @@ struct InkShiftPanel: View {
     .frame(maxWidth: .infinity, alignment: .leading)
     .inkPanel(isTaped: entry.place.progress != nil)
   }
+}
 
-  /// The King Salmonid that can appear at the end of the Shift.
-  private func kingSalmonidRow(_ kingSalmonid: KingSalmonidID) -> some View {
+// MARK: - InkKingSalmonidRow
+
+/// The King Salmonid that can appear at the end of a Shift: its icon and name.
+struct InkKingSalmonidRow: View {
+  @Environment(\.colorScheme) private var colorScheme
+
+  let kingSalmonid: KingSalmonidID
+  let terms: GameTerms
+  let arrangement: CellArrangement
+
+  var body: some View {
     HStack(spacing: InkScreenMetrics.cardSpacing) {
       Image(decorative: BundledImage.name(for: kingSalmonid, size: .small), bundle: BundledImage.catalogBundle)
         .resizable()
@@ -62,7 +71,7 @@ struct InkShiftPanel: View {
       Text(verbatim: terms.name(of: kingSalmonid))
         .inkFont(.caption)
         .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
-        .scaledLimitedLine(for: metrics.arrangement)
+        .scaledLimitedLine(for: arrangement)
     }
   }
 }
