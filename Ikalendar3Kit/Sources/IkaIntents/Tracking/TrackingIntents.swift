@@ -67,8 +67,7 @@ extension EffectsShell {
     let client: FeedClient = .init(
       transport: URLSessionTransport(),
       cache: FeedCache(directory: AppGroup.feedDirectory(in: container)))
-    let language: GameLanguage = .init(localization: Bundle.main.preferredLocalizations.first ?? "en")
-    return EffectsShell(engine: RefreshEngine(client: client, language: language))
+    return EffectsShell(engine: RefreshEngine(client: client, language: GameLanguage(resolvedFor: .main)))
   }
 }
 

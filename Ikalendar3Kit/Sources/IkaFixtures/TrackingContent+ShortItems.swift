@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if DEBUG
 import Foundation
 import IkaCore
 
@@ -37,3 +38,4 @@ extension TrackingContent {
   /// How long each item of the short-item fixture lasts.
   static private let shortItemLength: TimeInterval = 2 * 60
 }
+#endif

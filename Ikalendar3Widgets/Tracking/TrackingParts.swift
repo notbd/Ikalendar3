@@ -113,7 +113,7 @@ struct TrackingCurrentView: View {
     case title
   }
 
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
   /// How far a card's name tag hangs below its picture: half the tag's height.
   @ScaledMetric(relativeTo: .footnote) private var nameOverhang: CGFloat = 10
 
@@ -247,8 +247,8 @@ struct TrackingCurrentView: View {
   }
 
   private var terms: GameTerms { render.terms }
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var format: ScheduleFormat { time.format(terms.language) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - Stage card row
@@ -287,7 +287,7 @@ private struct TrackingWeapons: View {
 /// What follows the item on: the reminder while one shows, else the next item after its tag, or
 /// that nothing later is published yet.
 struct TrackingNextLine: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let render: TrackingRender
 
@@ -347,10 +347,7 @@ struct TrackingNextLine: View {
   }
 
   private var language: GameLanguage { render.terms.language }
-  private var writer: SentenceWriter { .init(
-    terms: render.terms,
-    timeZone: timeZone,
-    hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(render.terms) }
 }
 
 // MARK: - TrackingReminderLabel
@@ -378,13 +375,13 @@ struct TrackingReminderLabel: View {
 /// When the schedules feed shown was last confirmed (ticket 19's decision for the Live Activity:
 /// no three-hour mark, since the stale date already marks a passed boundary).
 struct TrackingFetchTime: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let render: TrackingRender
 
   var body: some View {
     let language = render.terms.language
-    let format: ScheduleFormat = .init(language: language, timeZone: timeZone)
+    let format = time.format(language)
     Text(verbatim: ScreenText.fetchTime.text(
       in: language,
       format.time(render.fetchTime, relativeTo: render.renderTime)))
