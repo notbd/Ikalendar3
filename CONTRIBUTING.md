@@ -55,6 +55,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
     --predicate 'subsystem == "io.tianwei.ikalendar3" AND category == "network"'
   ```
 
+- The background refresh task (`BackgroundRefresh` in `IkaIntents`) never runs in the Simulator: the system refuses every request there, which the app logs in the `background` category each time it moves to the background. How often it runs is checked on a device.
 - Debug builds read these launch options; Release builds ignore them. Pass them after `xcrun simctl launch <UDID> io.tianwei.ikalendar3`, after `--args` of `open` on the Mac, or in the scheme's arguments. A launch with a missing or malformed option stops with its reason instead of falling back to the network.
 
   | Option | Effect |

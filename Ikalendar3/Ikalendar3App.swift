@@ -63,8 +63,8 @@ private struct TestHostPlaceholder: View {
 
 extension Scene {
   /// On iOS, runs the effects shell from the background refresh task and asks for the next run
-  /// each time every scene moves to the background. Without a shell, as when the App Group
-  /// container is missing, there is nothing to refresh. The Mac has no background refresh task.
+  /// each time the app moves to the background. Without a shell, as when the App Group container
+  /// is missing, there is nothing to refresh. The Mac has no background refresh task.
   fileprivate func refreshingInBackground(_ effects: EffectsShell?, scenePhase: ScenePhase) -> some Scene {
     #if os(iOS)
     onChange(of: scenePhase) { _, phase in
