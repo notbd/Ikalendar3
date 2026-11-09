@@ -28,7 +28,7 @@ public struct CellMetrics: Equatable, Sendable {
   /// The metrics of a cell `width` points wide at `dynamicTypeSize`.
   public init(width: CGFloat, dynamicTypeSize: DynamicTypeSize) {
     referenceWidth = min(max(width, Self.floorWidth), Self.ceilingWidth)
-    arrangement = dynamicTypeSize.isAccessibilitySize ? .stacked : .sideBySide
+    arrangement = CellArrangement(dynamicTypeSize)
   }
 
   /// The length in points that `share` of the reference width gives.
@@ -73,6 +73,11 @@ public enum CellArrangement: Sendable {
   case sideBySide
   /// Stage cards under the Rule, with text wrapping instead of shrinking.
   case stacked
+
+  /// Side by side, or stacked from the first accessibility text size.
+  public init(_ dynamicTypeSize: DynamicTypeSize) {
+    self = dynamicTypeSize.isAccessibilitySize ? .stacked : .sideBySide
+  }
 
   /// The most lines a text takes: one side by side, unlimited when stacked.
   public var lineLimit: Int? {

@@ -86,6 +86,40 @@ enum ClassicMetrics {
     static let weaponCornerRadius: CGFloat = 12
   }
 
+  /// A Challenge's cell and its windows' rows.
+  enum Challenge {
+    static let cellSpacingV: CGFloat = 8
+    static let cellPaddingV: CGFloat = 6
+    static let nameFontSize: CGFloat = 28
+    static let descriptionFontSize: CGFloat = 16
+    static let rulesTextFontSize: CGFloat = 13
+    static let windowSpacingV: CGFloat = 6
+  }
+
+  /// The Splatfest card and Tricolor Turf War's cell.
+  enum Splatfest {
+    static let cellSpacingV: CGFloat = 10
+    static let cellPaddingV: CGFloat = 6
+    static let artCornerRadius: CGFloat = 12
+    static let iconSize: CGFloat = 32
+    static let titleFontSize: CGFloat = 24
+    static let teamSpacingV: CGFloat = 6
+    static let teamSwatchSize: CGFloat = 16
+    static let teamFontSize: CGFloat = 18
+    static let timeFontSize: CGFloat = 15
+  }
+
+  /// A compact event card of the iPad event strip and the event sheets.
+  enum EventCard {
+    static let spacing: CGFloat = 8
+    static let padding: CGFloat = 12
+    static let cornerRadius: CGFloat = 16
+    static let iconSize: CGFloat = 28
+    static let titleFontSize: CGFloat = 20
+    static let detailFontSize: CGFloat = 15
+    static let ruleIconSize: CGFloat = 24
+  }
+
   /// The Mode stamp and the navigation bar badge it docks into.
   enum Stamp {
     static let size: CGFloat = 128

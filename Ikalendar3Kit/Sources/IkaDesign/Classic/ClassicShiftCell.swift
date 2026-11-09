@@ -40,10 +40,10 @@ struct ClassicShiftSection: View {
   private var header: some View {
     HStack {
       if let tag {
-        ClassicTag(text: tag.text)
+        ClassicTag(text: tag.text.text(in: terms.language))
       }
       if let label = shift.kind.label {
-        ClassicKindTag(label: label, color: ModeColor(shift.kind))
+        ClassicKindTag(text: label.text(in: terms.language), color: ModeColor(shift.kind))
       }
 
       Spacer()
@@ -297,7 +297,7 @@ struct ClassicWeaponsCard: View {
 
 extension ModeIcon {
   /// The icon of a Shift of `kind`.
-  fileprivate init(_ kind: Shift.Kind) {
+  init(_ kind: Shift.Kind) {
     switch kind {
       case .regular: self = .salmonRun
       case .bigRun: self = .bigRun

@@ -40,7 +40,7 @@ enum ClassicBattleRow: Hashable, Identifiable {
     screen.afterwards.map { .upcoming($0, isNext: false) }
   }
 
-  private static func rows(current: OnNow<Rotation>, next: Rotation?, later: [Rotation]) -> [ClassicBattleRow] {
+  static private func rows(current: OnNow<Rotation>, next: Rotation?, later: [Rotation]) -> [ClassicBattleRow] {
     let upcoming: [ClassicBattleRow] = ([next].compactMap(\.self) + later)
       .enumerated()
       .map { .upcoming($1, isNext: $0 == 0) }

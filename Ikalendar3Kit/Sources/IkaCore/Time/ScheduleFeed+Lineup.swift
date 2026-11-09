@@ -80,6 +80,13 @@ public struct ChallengeWindow: TimeWindow, Hashable, Sendable {
   /// The window.
   public let window: Challenge.Window
 
+  /// `challenge` in `window`, one of its windows: how a screen that lists a Challenge's windows
+  /// reads one of them.
+  public init(challenge: Challenge, window: Challenge.Window) {
+    self.challenge = challenge
+    self.window = window
+  }
+
   /// When the window opens.
   public var startTime: Date { window.startTime }
   /// When the window closes.
