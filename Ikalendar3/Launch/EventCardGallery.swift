@@ -36,9 +36,18 @@ struct EventCardGallery: View {
       }
       .padding(16)
     }
-    .background(Color(.systemGroupedBackground))
+    .background(background)
     .appColorScheme(preferences.colorScheme)
     .task { await effects?.run() }
+  }
+
+  /// What a Classic list's cells sit on.
+  private var background: Color {
+    #if os(iOS)
+    Color(uiColor: .systemGroupedBackground)
+    #else
+    Color(nsColor: .windowBackgroundColor)
+    #endif
   }
 }
 #endif
