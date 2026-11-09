@@ -18,6 +18,7 @@ let package = Package(
     .library(name: "IkaCore", targets: ["IkaCore"]),
     .library(name: "IkaDesign", targets: ["IkaDesign"]),
     .library(name: "IkaIntents", targets: ["IkaIntents"]),
+    .library(name: "IkaFixtures", targets: ["IkaFixtures"]),
   ],
   targets: [
     // Domain, data and every Surface's content. Foundation only (a SwiftLint rule enforces it).
@@ -30,7 +31,11 @@ let package = Package(
       dependencies: ["IkaCore"],
       resources: [.process("Resources")],
       swiftSettings: swiftSettings),
-    .testTarget(name: "IkaCoreTests", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
+    // Test support, not a product module: the scripted transport, the settable clock and the fixture
+    // loader for package tests, Debug fixture launches and previews. Release code never calls it,
+    // and it holds no fixture file.
+    .target(name: "IkaFixtures", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
+    .testTarget(name: "IkaCoreTests", dependencies: ["IkaCore", "IkaFixtures"], swiftSettings: swiftSettings),
     .testTarget(name: "IkaDesignTests", dependencies: ["IkaDesign"], swiftSettings: swiftSettings),
     .testTarget(name: "IkaIntentsTests", dependencies: ["IkaIntents"], swiftSettings: swiftSettings),
   ])
