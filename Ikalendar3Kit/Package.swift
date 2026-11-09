@@ -31,7 +31,11 @@ let package = Package(
       resources: [.process("Resources")],
       swiftSettings: swiftSettings),
     // Siri, App Shortcuts and the effects shell. iOS and macOS; Live Activity parts behind `#if os(iOS)`.
-    .target(name: "IkaIntents", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
+    .target(
+      name: "IkaIntents",
+      dependencies: ["IkaCore"],
+      resources: [.process("Resources")],
+      swiftSettings: swiftSettings),
     // Test support, not a product module: the scripted transport, the settable clock and the fixture
     // loader for package tests, Debug fixture launches and previews. Release code never calls it,
     // and it holds no fixture file.
