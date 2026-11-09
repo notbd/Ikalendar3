@@ -57,6 +57,25 @@ struct PreferenceStoreTests {
     #expect(second.hasDiscoveredRating)
   }
 
+  @Test
+  func `Assigning a value the store already has writes nothing`() {
+    let store: PreferenceStore = .init(defaults: defaults)
+
+    store.defaultMode = store.defaultMode
+    store.colorScheme = store.colorScheme
+    store.style = store.style
+    store.shouldMinimizeTabBar = store.shouldMinimizeTabBar
+    store.isBigRunReminderOn = store.isBigRunReminderOn
+    store.isEggstraWorkReminderOn = store.isEggstraWorkReminderOn
+    store.isSplatfestReminderOn = store.isSplatfestReminderOn
+    store.isChallengeReminderOn = store.isChallengeReminderOn
+    store.macLayout = store.macLayout
+    store.shouldShowOnboarding = store.shouldShowOnboarding
+    store.hasDiscoveredRating = store.hasDiscoveredRating
+
+    #expect(defaults.persistentDomain(forName: testDefaults.name)?.isEmpty ?? true)
+  }
+
   // MARK: - Resets
 
   @Test
