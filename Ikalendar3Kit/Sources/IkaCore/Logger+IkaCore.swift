@@ -16,9 +16,10 @@ extension Logger {
   /// Decoding: the feed parts that failed, with the underlying `DecodingError`.
   static let decode: Logger = .init(subsystem: subsystem, category: "decode")
 
-  /// Network: requests with no answer and answers the client cannot use.
+  /// Network: each request's status (at info level), requests with no answer and answers the
+  /// client cannot use.
   static let network: Logger = .init(subsystem: subsystem, category: "network")
 
-  /// Store: cache writes and removals that failed.
+  /// Store: cache writes and removals that failed, and a missing App Group container.
   static let store: Logger = .init(subsystem: subsystem, category: "store")
 }
