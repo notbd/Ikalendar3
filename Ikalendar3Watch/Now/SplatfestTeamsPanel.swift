@@ -29,9 +29,9 @@ struct SplatfestTeamsPanel: View {
     let teamNames = terms.splatfest(splatfest.id).teamNames ?? []
     let writer: SentenceWriter = time.writer(terms)
 
-    VStack(alignment: .leading, spacing: NowMetrics.lineSpacing) {
+    VStack(alignment: .leading, spacing: WatchMetrics.lineSpacing) {
       Text(verbatim: ModeLabel.splatfest.text(in: terms.language))
-        .ikaFont(.heavy, size: NowMetrics.modeNameSize, relativeTo: .footnote)
+        .ikaFont(.heavy, size: WatchMetrics.modeNameSize, relativeTo: .footnote)
       ForEach(splatfest.teamColors.indices, id: \.self) { index in
         let color: SRGBColor = .init(splatfest.teamColors[index])
         if teamNames.indices.contains(index) {
@@ -40,11 +40,11 @@ struct SplatfestTeamsPanel: View {
         else {
           Capsule()
             .fill(Color(color))
-            .frame(width: NowMetrics.teamSwatchSize.width, height: NowMetrics.teamSwatchSize.height)
+            .frame(width: WatchMetrics.teamSwatchSize.width, height: WatchMetrics.teamSwatchSize.height)
         }
       }
       Text(verbatim: writer.countdown(splatfest.progress(at: now)))
-        .ikaFont(.light, size: NowMetrics.countdownSize, relativeTo: .footnote)
+        .ikaFont(.light, size: WatchMetrics.countdownSize, relativeTo: .footnote)
         .monospacedDigit()
         .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
     }
