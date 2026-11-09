@@ -45,11 +45,16 @@ public enum GameLanguage: String, CaseIterable, Codable, Hashable, Sendable {
 // MARK: - App localizations
 
 extension GameLanguage {
-  /// The text set of an app localization: the one the system resolved for a process's own
-  /// bundle (`Bundle.main.preferredLocalizations[0]`). Any other name resolves to en-US.
+  /// A process's app language: the text set of the localization the system resolved for its own
+  /// bundle (`.main`), en-US when it resolved none. Every process resolves it here.
   ///
   /// Every target declares the same 14 localizations, so the app, the widget extension and the
   /// watch targets resolve the same text set from the same system languages.
+  public init(resolvedFor bundle: Bundle) {
+    self.init(localization: bundle.preferredLocalizations.first ?? Self.enUS.localization)
+  }
+
+  /// The text set of an app localization's name. Any other name resolves to en-US.
   public init(localization: String) {
     self = Self.allCases.first { $0.localization == localization } ?? .enUS
   }

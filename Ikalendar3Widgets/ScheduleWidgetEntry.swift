@@ -49,9 +49,9 @@ extension Timeline {
 
 /// Where the widgets' data and language come from.
 enum WidgetData {
-  /// The app language: the text set of the localization the system resolved for this
-  /// extension's bundle. The extension declares the app's 14, so it resolves the app's.
-  static let language: GameLanguage = .init(localization: Bundle.main.preferredLocalizations.first ?? "en")
+  /// The app language, resolved for this extension's bundle. The extension declares the app's 14
+  /// localizations, so it resolves the app's.
+  static let language: GameLanguage = .init(resolvedFor: .main)
 
   /// The App Group cache as the app and the intents last wrote it, read afresh for every timeline.
   /// The extension never fetches. With no App Group container (an unsigned build; logged), the
