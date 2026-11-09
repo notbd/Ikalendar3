@@ -61,8 +61,8 @@ enum ClassicBattleRow: Hashable, Identifiable {
 
 // MARK: - ClassicSalmonRunRow
 
-/// One section of Classic's Salmon Run list, in ikalendar 2's order: a running Eggstra Work on
-/// top, then the Shifts in time order with a Big Run where it falls. The running Shift is open;
+/// One section of Classic's Salmon Run list, in ikalendar 2's order: a running or next Eggstra
+/// Work on top, then the Shifts in time order with a Big Run where it falls. The running Shift is open;
 /// with none open, the first to come opens soon.
 enum ClassicSalmonRunRow: Hashable, Identifiable {
   /// A Shift, with its progress while it runs and its tag.
@@ -91,8 +91,11 @@ enum ClassicSalmonRunRow: Hashable, Identifiable {
 
   /// The rows of `screen`.
   static func rows(of screen: SalmonRunScreen) -> [ClassicSalmonRunRow] {
-    let eggstraWork: [ClassicSalmonRunRow] = screen.eggstraWork
-      .map { [.shift($0.item, progress: $0.progress, tag: .open)] } ?? []
+    // A next Eggstra Work goes untagged: its time range says when it starts.
+    let eggstraWork: [ClassicSalmonRunRow] =
+      if let running = screen.eggstraWork { [.shift(running.item, progress: running.progress, tag: .open)] }
+      else if let next = screen.nextEggstraWork { [.shift(next, progress: nil, tag: nil)] }
+      else { [] }
     let upcoming: [Shift] = [screen.next].compactMap(\.self) + screen.later
 
     switch screen.current {

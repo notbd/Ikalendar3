@@ -12,7 +12,8 @@ import SwiftUI
 // MARK: - InkBattleScreenView
 
 /// Ink's Battle Mode screen: ikalendar 2's primary and secondary layout on the game's materials.
-/// The Mode's heading and stamp over the dotted background, the current Rotation's taped panel,
+/// The Mode's heading and stamp over the dotted background, an announced Splatfest's card on
+/// Regular Battle's screen, the current Rotation's taped panel,
 /// then a panel per later Rotation. A finished Rotation leaves and the next glides into the
 /// featured panel.
 ///
@@ -53,6 +54,10 @@ public struct InkBattleScreenView: View {
       now: now,
       isStale: isStale)
     { metrics in
+      if let card = screen.announcedSplatfest {
+        SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .ink, now: now)
+          .inkPanel()
+      }
       switch screen.current {
         case .running:
           EmptyView()
@@ -85,7 +90,7 @@ public struct InkBattleScreenView: View {
 
 // MARK: - InkSalmonRunScreenView
 
-/// Ink's Salmon Run screen: a running Eggstra Work on top, then a panel per Shift, the current
+/// Ink's Salmon Run screen: a running or announced Eggstra Work on top, then a panel per Shift, the current
 /// one taped, with a Big Run inline where it falls and marked. A finished Shift leaves and the
 /// next takes the featured place. It receives `IkaCore` values only and reads no store.
 public struct InkSalmonRunScreenView: View {
@@ -109,8 +114,10 @@ public struct InkSalmonRunScreenView: View {
   }
 
   public var body: some View {
-    let eggstraWork: [InkPanelEntry<Shift>] = screen.eggstraWork
-      .map { [InkPanelEntry(item: $0.item, place: .now($0.progress))] } ?? []
+    let eggstraWork: [InkPanelEntry<Shift>] =
+      if let running = screen.eggstraWork { [InkPanelEntry(item: running.item, place: .now(running.progress))] }
+      else if let next = screen.nextEggstraWork { [InkPanelEntry(item: next, place: .next)] }
+      else { [] }
     let shifts: [InkPanelEntry<Shift>] = InkPanelEntry.entries(
       current: screen.current,
       next: screen.next,

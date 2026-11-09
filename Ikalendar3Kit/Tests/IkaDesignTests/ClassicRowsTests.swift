@@ -98,6 +98,18 @@ struct ClassicRowsTests {
   }
 
   @Test
+  func `An Eggstra Work not yet started sits untagged on top of the Shifts`() async throws {
+    let snapshot = try await snapshot(.eggstraWork)
+    let screen = try #require(snapshot.salmonRunScreen(at: date("2026-08-28T12:00:00Z")))
+    let eggstraWork = try #require(screen.nextEggstraWork)
+
+    let rows: [ClassicSalmonRunRow] = ClassicSalmonRunRow.rows(of: screen)
+
+    #expect(rows.first == .shift(eggstraWork, progress: nil, tag: nil))
+    #expect(rows.dropFirst().first?.tag == .open)
+  }
+
+  @Test
   func `A Big Run sits inline where it falls`() async throws {
     let snapshot = try await snapshot(.bigRun)
     let screen = try #require(snapshot.salmonRunScreen(at: date("2026-09-07T12:00:00Z")))

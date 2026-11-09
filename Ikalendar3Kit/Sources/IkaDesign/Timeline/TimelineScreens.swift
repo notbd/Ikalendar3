@@ -38,6 +38,9 @@ public struct TimelineBattleScreenView: View {
 
   public var body: some View {
     List {
+      if let card = screen.announcedSplatfest {
+        SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .timeline, now: now)
+      }
       switch screen.current {
         case .running(let running):
           row(running.item, progress: running.progress)
@@ -107,6 +110,9 @@ public struct TimelineSalmonRunScreenView: View {
     List {
       if let eggstraWork = screen.eggstraWork {
         row(eggstraWork.item, progress: eggstraWork.progress)
+      }
+      else if let nextEggstraWork = screen.nextEggstraWork {
+        row(nextEggstraWork, progress: nil)
       }
       switch screen.current {
         case .running(let running):
