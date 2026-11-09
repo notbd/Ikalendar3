@@ -153,6 +153,14 @@ final public class PreferenceStore {
     isChallengeReminderOn = Default.isReminderOn
     macLayout = Default.macLayout
   }
+
+  /// Both resets above (Debug Options' Reset All), and nothing else: the store holds neither the
+  /// feed cache nor its attempt records, which Debug Options must never clear, because they ship
+  /// in Release builds and a cleared record would bypass splatoon3.ink's hourly limit.
+  public func resetAll() {
+    resetAppStates()
+    resetAppPreferences()
+  }
 }
 
 // MARK: PreferenceStore.Key
