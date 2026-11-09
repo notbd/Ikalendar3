@@ -14,7 +14,8 @@ extension View {
   /// glass badge in the navigation bar as the list scrolls, with ticket 12's stamp math: the
   /// stamp shrinks toward its corner and fades while the badge fades in, or only cross-fades under
   /// Reduce Motion. The bar's title, `title` in Ink's heavy face, fades in with the badge, since
-  /// the heading in the list names the Mode at rest.
+  /// the heading in the list names the Mode at rest. A Mac window's toolbar is the window's, not a
+  /// screen's, so there the stamp only shrinks and fades, as Classic's and Timeline's do.
   func inkModeStamp(icon: ModeIcon, accent: InkAccent, title: String) -> some View {
     modifier(InkModeStampDock(icon: icon, accent: accent, title: title))
   }
@@ -42,8 +43,6 @@ private struct InkModeStampDock: ViewModifier {
   @State private var refreshTopInset: CGFloat = 0
 
   func body(content: Content) -> some View {
-    let badgeOpacity: Double = ModeStampMath.badgeOpacity(progress: dockProgress)
-
     content
       .onScrollGeometryChange(for: CGFloat.self) { geometry in
         geometry.contentInsets.top
@@ -70,7 +69,6 @@ private struct InkModeStampDock: ViewModifier {
       }
       #if os(iOS)
       .toolbarTitleDisplayMode(.inline)
-      #endif
       .toolbar {
         ToolbarItem(placement: .principal) {
           Text(verbatim: title)
@@ -87,6 +85,12 @@ private struct InkModeStampDock: ViewModifier {
         // The badge draws its own glass, so the glass fades in with the badge.
         .sharedBackgroundVisibility(.hidden)
       }
+      #endif
+  }
+
+  /// How far the badge and the bar's title have faded in.
+  private var badgeOpacity: Double {
+    ModeStampMath.badgeOpacity(progress: dockProgress)
   }
 }
 

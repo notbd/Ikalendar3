@@ -11,7 +11,7 @@ import SwiftUI
 
 /// A summary row's mark: the icon inside a progress ring of the share its current item has run,
 /// an empty ring while none is on. The sidebar, the Series and Open menu, the Mac menu bar window
-/// and the watch's Now rows draw it inside the frame they offer. The row reads its sentence, so
+/// and Overview cards and the watch's Now rows draw it inside the frame they offer. The row reads its sentence, so
 /// VoiceOver skips the mark.
 public struct SummaryRing: View {
   private let icon: ModeIcon

@@ -186,12 +186,13 @@ public struct ClassicEventCard: View {
 
   private var writer: SentenceWriter { time.writer(terms) }
 
-  /// A Classic list cell's colour, so a card reads as one of its cells.
-  static private var background: Color {
+  /// A Classic list cell's colour, so a card reads as one of its cells. A Mac window's background
+  /// is the colour of a control's, so a Mac card takes the system's fill over it instead.
+  static var background: Color {
     #if os(iOS)
     Color(uiColor: .secondarySystemGroupedBackground)
     #else
-    Color(nsColor: .controlBackgroundColor)
+    Color(nsColor: .quaternarySystemFill)
     #endif
   }
 }

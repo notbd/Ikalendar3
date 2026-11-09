@@ -11,8 +11,8 @@ import IkaCore
 // MARK: - SummaryRowContent
 
 /// What a summary row shows, the same in every Style and on every Surface that lists Modes at a
-/// glance (the iPad sidebar, the Series and Open menu, the Mac menu bar window, the watch's Now
-/// rows and Mode pages): the icon in a ring of the share passed, the name, the current item with
+/// glance (the iPad sidebar, the Series and Open menu, the Mac menu bar window and Overview cards,
+/// the watch's Now rows and Mode pages): the icon in a ring of the share passed, the name, the current item with
 /// the time left (or when it starts, or why none is on), and the sentence VoiceOver reads for the
 /// row as one element. Each Surface only draws it.
 public struct SummaryRowContent: Equatable, Sendable {

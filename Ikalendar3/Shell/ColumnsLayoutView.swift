@@ -11,14 +11,16 @@ import SwiftUI
 
 // MARK: - ColumnsLayoutView
 
-/// The iPad's layout in a landscape window wide enough (`WindowLayout.columns`): the event strip
-/// over one column per Mode (`Snapshot.columns(at:)`), so everything shows at once.
+/// The iPad's layout in a landscape window wide enough (`WindowLayout.columns`), and the Mac's
+/// Columns view: the event strip over one column per Mode (`Snapshot.columns(at:)`), so
+/// everything shows at once.
 ///
 /// Each column is its Mode's screen under a navigation bar of its own, so it shows its Style's
 /// iPhone list as on iPhone, with its stamp, title and track button; the screens pick the list by
-/// their width (`DetailLayout`). The Anarchy column's header opens the Series and Open menu. The
-/// refresh and Settings buttons sit beside the strip, and an event card opens its Schedule in a
-/// sheet, which `AppRootView` presents.
+/// their width (`DetailLayout`). The Anarchy column's header opens the Series and Open menu. On
+/// iPad the refresh and Settings buttons sit beside the strip; the Mac's window keeps them in its
+/// toolbar and app menu, and scrolls its columns sideways in a narrow window. An event card opens
+/// its Schedule in a sheet, which `AppRootView` presents.
 struct ColumnsLayoutView: View {
   @Environment(RefreshEngine.self) private var engine
   @Environment(AppClock.self) private var clock
@@ -28,17 +30,33 @@ struct ColumnsLayoutView: View {
     VStack(spacing: 0) {
       EventStrip()
 
-      HStack(spacing: 0) {
-        ForEach(engine.snapshot.columns(at: clock.now), id: \.self) { column in
-          NavigationStack {
-            screen(for: column)
-              .columnMenu(column.menu)
-          }
-        }
-      }
+      #if os(macOS)
+      ScrollView(.horizontal) { columns }
+      #else
+      columns
+      #endif
     }
+    #if os(macOS)
+    // Each column's screen names its Mode; none names the window.
+    .toolbar(removing: .title)
+    #endif
     .refreshFailureToast()
     .sensoryFeedback(Haptic.modeSwitch, trigger: status.mode(of: .anarchy))
+  }
+
+  /// One column per Mode, side by side.
+  private var columns: some View {
+    let columns = engine.snapshot.columns(at: clock.now)
+
+    return HStack(spacing: 0) {
+      ForEach(columns, id: \.self) { column in
+        NavigationStack {
+          screen(for: column)
+            .columnHeader(column)
+        }
+        .macColumnWidth(count: columns.count)
+      }
+    }
   }
 
   /// `column`'s screen. A Mode picked from the Anarchy menu opens at the top, on its current
@@ -55,68 +73,93 @@ struct ColumnsLayoutView: View {
   }
 }
 
-// MARK: - EventStrip
+// MARK: - Column width
 
-/// The band over the columns: the card of each event the snapshot lists, in the strip's fixed
-/// order, each opening its Schedule in a sheet, then the refresh and Settings buttons the sidebar
-/// keeps in its toolbar. Four cards share the band's width; while none is listed, only the
-/// buttons show.
-private struct EventStrip: View {
-  @Environment(RefreshEngine.self) private var engine
-  @Environment(AppClock.self) private var clock
-  @Environment(AppStatus.self) private var status
-  @Environment(\.gameLanguage) private var language
-
-  static private let spacing: CGFloat = 12
-
-  var body: some View {
-    @Bindable var status = status
-
-    HStack(alignment: .top, spacing: Self.spacing) {
-      ScrollView(.horizontal) {
-        HStack(alignment: .top, spacing: Self.spacing) {
-          ForEach(engine.snapshot.eventItems(at: clock.now) ?? [], id: \.self) { item in
-            Button { status.presentedEvent = EventSheet(item) } label: {
-              EventCardView(item: item)
-            }
-            .buttonStyle(.plain)
-            .containerRelativeFrame(.horizontal, count: 4, spacing: Self.spacing)
-          }
-        }
-      }
-      .scrollIndicators(.hidden)
-      // As tall as the tallest card, so the columns take the rest.
-      .fixedSize(horizontal: false, vertical: true)
-
-      GlassEffectContainer {
-        HStack(spacing: Self.spacing) {
-          RefreshButton()
-          SettingsButton(isPresented: $status.isSettingsPresented, language: language)
-        }
-      }
-      .buttonStyle(.glass)
-      .labelStyle(.iconOnly)
+extension View {
+  /// Sets a Mac column's width: an equal share of the window, at least `ColumnWidth.minimum`, so a
+  /// narrow window scrolls the columns sideways. iPad columns share the window equally.
+  fileprivate func macColumnWidth(count: Int) -> some View {
+    #if os(macOS)
+    containerRelativeFrame(.horizontal) { length, _ in
+      ColumnWidth.width(sharing: length, count: count)
     }
-    .padding(16)
-    .background { StyleBackground().ignoresSafeArea() }
+    #else
+    self
+    #endif
   }
 }
 
-// MARK: - Column menu
+// MARK: - Column header
 
 extension View {
-  /// Puts the button that opens `menu` at the leading end of a column's navigation bar, when the
-  /// column has one.
-  fileprivate func columnMenu(_ menu: TabMenu?) -> some View {
+  /// Puts the button that opens `column`'s menu, when it has one, at the leading end of the
+  /// column's navigation bar. A Mac window has one toolbar for every column, so each Mac column
+  /// shows a bar of its own over its screen instead (`MacColumnBar`).
+  fileprivate func columnHeader(_ column: ModeColumn) -> some View {
+    #if os(macOS)
+    safeAreaInset(edge: .top, spacing: 0) {
+      MacColumnBar(column: column)
+    }
+    #else
     toolbar {
-      if let menu {
+      if let menu = column.menu {
         ToolbarItem(placement: .navigation) {
           ColumnMenuButton(menu: menu)
         }
       }
     }
+    #endif
   }
 }
+
+#if os(macOS)
+
+// MARK: - MacColumnBar
+
+/// What a Mac column shows of the iPad column's navigation bar, on the Style's background: the
+/// title where the Style sets it in that bar, Classic's large title, since Ink and Timeline name
+/// the Mode in the screen's own heading; and the menu button, when the column has a menu.
+private struct MacColumnBar: View {
+  @Environment(AppStatus.self) private var status
+  @Environment(PreferenceStore.self) private var preferences
+  @Environment(\.gameLanguage) private var language
+
+  let column: ModeColumn
+
+  var body: some View {
+    HStack(spacing: 8) {
+      if preferences.style == .classic {
+        Text(verbatim: column.title(anarchyMode: status.anarchyMode, in: language))
+          .font(.title2.bold())
+          .lineLimit(1)
+          .accessibilityAddTraits(.isHeader)
+      }
+      Spacer(minLength: 0)
+      if let menu = column.menu {
+        ColumnMenuButton(menu: menu)
+      }
+    }
+    .padding(.horizontal, 16)
+    .frame(height: 44)
+    .background { StyleBackground() }
+  }
+}
+
+// MARK: - ModeColumn
+
+extension ModeColumn {
+  /// The title of the column's screen, the Anarchy column's showing `anarchyMode`.
+  fileprivate func title(anarchyMode: BattleMode, in language: GameLanguage) -> String {
+    switch self {
+      case .regularBattle: BattleMode.regular.name(in: language)
+      case .anarchy: anarchyMode.name(in: language)
+      case .xBattle: BattleMode.x.name(in: language)
+      case .splatfestBattle(let form): RotationMode.splatfestBattle(form).name(in: language)
+      case .salmonRun: Mode.salmonRun.name(in: language)
+    }
+  }
+}
+#endif
 
 // MARK: - ColumnMenuButton
 
