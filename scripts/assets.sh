@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 #
-# Builds the bundled images from scripts/assets/manifest.json: downloads every source, checks its
-# hash, renders three pixel sizes and replaces the asset catalog in IkaDesign and the Swift index
-# of bundled ids. The built images are committed; CI never runs this.
+# Builds the bundled images and SplatNet 3's fonts from scripts/assets/manifest.json: downloads
+# every source and checks its hash, then renders three pixel sizes of each image into IkaDesign's
+# asset catalog and the Swift index of bundled ids (committed), and merges each font's web-font
+# subsets into one file in build/Fonts (git-ignored). CI never runs this; a release build runs it
+# first.
 #
 # The tools are pinned so a second run writes the same bytes: Python from scripts/versions.env,
 # its packages with hashes from scripts/assets/requirements.txt, installed into a virtual
 # environment in build/Assets/Tools that is rebuilt whenever the pins change.
 #
-# Usage: scripts/assets.sh [--manifest PATH]
+# Usage: scripts/assets.sh [--only images|fonts] [--manifest PATH]
 
 set -Eeuo pipefail
 

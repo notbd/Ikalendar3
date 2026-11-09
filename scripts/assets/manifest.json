@@ -175,5 +175,49 @@
         {"id": "eggstra-work", "note": "Eggstra Work", "source": "repo:src/assets/img/modes/coop.eggstra.svg", "sha256": "c041eb77ca16638e34df4aee964a428558dcc62143c8d1634bd21c1ee09c5cf2"}
       ]
     }
+  ],
+  "fonts": [
+    {"name": "Splatoon1", "note": "Nintendo's heavy face: Latin, Cyrillic, symbols, CJK punctuation and kana", "subsets": [
+      {"source": "repo:src/assets/fonts/Splatoon1-common.woff", "sha256": "4808937ba409cab067aad0bd690fa0d850fb9c7275882124fd3ae6fb26bef5e1"},
+      {"source": "repo:src/assets/fonts/Splatoon1-symbol-common.woff", "sha256": "44f6599afccc3236c7b2e2ad13d1c2ea175eedeebf73000463f7ebc729366a86"},
+      {"source": "repo:src/assets/fonts/Splatoon1-cjk-common.woff", "sha256": "8cd1b4029676454c31310a4f6e679f9ccf1a3ac1c506fa3e281f263dbc5298c4"},
+      {"source": "repo:src/assets/fonts/Splatoon1JP-hiragana-katakana.woff", "sha256": "5bd827782d0be15ba62fa56d5168cde41e7feee061993d57a3ac62159c38d9d7"}
+    ]},
+    {"name": "Splatoon1KRko", "note": "Heavy Hangul: AsiaSoft AsiaKCUBE-R, the KS X 1001 syllables (KRko-level2 is left out: its outlines are empty)", "subsets": [
+      {"source": "repo:src/assets/fonts/Splatoon1KRko-level1.woff", "sha256": "0b436d33dab72b4f66623b078a40cff074d43e45dd4abaea87596daa10471c01"}
+    ]},
+    {"name": "Splatoon1JP", "note": "Heavy kanji: Fontworks FOT-Rowdy Std EB, JIS X 0208 levels 1 and 2", "subsets": [
+      {"source": "repo:src/assets/fonts/Splatoon1JP-level1.woff", "sha256": "8ea6dddb32a8149c5d52bc63da9773b6dfecff807a1f3762db93c7a7ad75395a"},
+      {"source": "repo:src/assets/fonts/Splatoon1JP-level2.woff", "sha256": "0b87de2a63d5294f34616b4e46daa343651b567b7b7c1835a68c6d5a2f50c918"}
+    ]},
+    {"name": "Splatoon1CHzh", "note": "Heavy Simplified hanzi: DynaComware DFPZongYiW9-GB, GB2312 levels 1 and 2", "subsets": [
+      {"source": "repo:src/assets/fonts/Splatoon1CHzh-level1.woff", "sha256": "7bf8a44aaa72dfc07669b6ad9c483d036c5b57f6ffd6b6f738467d3489c84c20"},
+      {"source": "repo:src/assets/fonts/Splatoon1CHzh-level2.woff", "sha256": "87fc5929d3daff68e3b31221bfb94554eb3f572e173b5f8f911002816febceff"}
+    ]},
+    {"name": "Splatoon1TWzh", "note": "Heavy Traditional hanzi: DynaComware DFPZongYiW9-B5, Big5 common and less common", "subsets": [
+      {"source": "repo:src/assets/fonts/Splatoon1TWzh-level1.woff", "sha256": "23f65658b920ca0b414e7067405e852a17f4597478b55da2c07eafbb5c98f614"},
+      {"source": "repo:src/assets/fonts/Splatoon1TWzh-level2.woff", "sha256": "dab6452f4c219b3595679f54c85f81adf4e15ff9ae7e23a500a1924c6e4c8b52"}
+    ]},
+    {"name": "Splatoon2", "note": "Nintendo's light face: Latin, Cyrillic, symbols, CJK punctuation and kana", "subsets": [
+      {"source": "repo:src/assets/fonts/Splatoon2-common.woff", "sha256": "e352e2e076b7ad61a1e7613b8bd63f3779d85f3129f6405b8d5c257a55219519"},
+      {"source": "repo:src/assets/fonts/Splatoon2-symbol-common.woff", "sha256": "616a86f2e7f484498a1d9fe3715acab682503b034466c6eb9ba6a1a2519f3250"},
+      {"source": "repo:src/assets/fonts/Splatoon2-cjk-common.woff", "sha256": "94e9789fd351c06893ce922d9d7437c4609e1be960d54c39b0e1e7f29ea0f562"},
+      {"source": "repo:src/assets/fonts/Splatoon2JP-hiragana-katakana.woff", "sha256": "972791b59f242fbe5ee93e0a42b4f7a5a39065cc5e8473c61325ea312809099d"}
+    ]},
+    {"name": "Splatoon2KRko", "note": "Light Hangul: AsiaSoft AsiaKERIN-M, the KS X 1001 syllables (KRko-level2 is left out: its outlines are empty)", "subsets": [
+      {"source": "repo:src/assets/fonts/Splatoon2KRko-level1.woff", "sha256": "4dc3fa3db94db5930bf1484c2ca77af02873e5be132313c91442eb00f8ffea74"}
+    ]},
+    {"name": "Splatoon2JP", "note": "Light kanji: Fontworks FOT-Kurokane Std EB, JIS X 0208 levels 1 and 2", "subsets": [
+      {"source": "repo:src/assets/fonts/Splatoon2JP-level1.woff", "sha256": "0f85d6bd051b0b5c8c3a324a7f202d486cb837f71ef02a04cb429cc309b22709"},
+      {"source": "repo:src/assets/fonts/Splatoon2JP-level2.woff", "sha256": "f93c46102ff1c488b6b6ceee8836d013b43d5a7c514fba09d6271984287502ee"}
+    ]},
+    {"name": "Splatoon2CHzh", "note": "Light Simplified hanzi: DynaComware DFPZongYiW7-GB, GB2312 levels 1 and 2", "subsets": [
+      {"source": "repo:src/assets/fonts/Splatoon2CHzh-level1.woff", "sha256": "b285d699e9ca25146a50ced0604596433627e01d1c125eb81895bf32c44055b0"},
+      {"source": "repo:src/assets/fonts/Splatoon2CHzh-level2.woff", "sha256": "78f6084929823fc3cd5d16d394d69594ad62224c4ff27d198966d436dc436ea2"}
+    ]},
+    {"name": "Splatoon2TWzh", "note": "Light Traditional hanzi: DynaComware DFPHuaZongW5-B5, Big5 common and less common", "subsets": [
+      {"source": "repo:src/assets/fonts/Splatoon2TWzh-level1.woff", "sha256": "42393176854f243e0406e71861d3752ae7ee39e1a1ce5931806c6751160f99a6"},
+      {"source": "repo:src/assets/fonts/Splatoon2TWzh-level2.woff", "sha256": "ddd209039caa90e547e8ab3724d7e872c2b19e925391bfb4fd62510c9847a819"}
+    ]}
   ]
 }

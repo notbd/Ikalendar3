@@ -122,6 +122,10 @@ struct Manifest: Decodable {
     let id: String
   }
 
+  struct FontFile: Decodable {
+    let name: String
+  }
+
   /// `Ikalendar3Kit`, found from this file's place in the package.
   static let packageFolder: URL = .init(filePath: #filePath)
     .deletingLastPathComponent() // IkaDesignTests
@@ -129,6 +133,8 @@ struct Manifest: Decodable {
     .deletingLastPathComponent() // Ikalendar3Kit
 
   let groups: [Group]
+  /// The font files the script builds, one per face.
+  let fonts: [FontFile]
 
   static func load() throws -> Manifest {
     let url: URL = packageFolder.deletingLastPathComponent().appending(path: "scripts/assets/manifest.json")
