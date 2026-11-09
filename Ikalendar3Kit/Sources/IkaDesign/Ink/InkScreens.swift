@@ -13,9 +13,8 @@ import SwiftUI
 
 /// Ink's Battle Mode screen: ikalendar 2's primary and secondary layout on the game's materials.
 /// The Mode's heading and stamp over the dotted background, an announced Splatfest's card on
-/// Regular Battle's screen, the current Rotation's taped panel,
-/// then a panel per later Rotation. A finished Rotation leaves and the next glides into the
-/// featured panel.
+/// Regular Battle's screen, the current Rotation's taped panel, then a panel per later Rotation.
+/// A finished Rotation leaves and the next glides into the featured panel.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store. Pull to
 /// refresh reaches its scroll view through the `refreshable` action the shared screen sets.
@@ -90,9 +89,10 @@ public struct InkBattleScreenView: View {
 
 // MARK: - InkSalmonRunScreenView
 
-/// Ink's Salmon Run screen: a running or announced Eggstra Work on top, then a panel per Shift, the current
-/// one taped, with a Big Run inline where it falls and marked. A finished Shift leaves and the
-/// next takes the featured place. It receives `IkaCore` values only and reads no store.
+/// Ink's Salmon Run screen: a running or announced Eggstra Work on top, then a panel per Shift,
+/// the current one taped, with a Big Run inline where it falls and marked. A finished Shift
+/// leaves and the next takes the featured place. It receives `IkaCore` values only and reads no
+/// store.
 public struct InkSalmonRunScreenView: View {
   @Environment(\.timeZone) private var timeZone
 
