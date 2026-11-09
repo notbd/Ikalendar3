@@ -17,7 +17,7 @@
 | `--watch-simulator UDID` | `VERIFY_WATCH_SIMULATOR` | this checkout's own Apple Watch simulator |
 
 - Logs, xUnit reports and result bundles of the last run are in `<derived data>/Verify`.
-- On this project's skeleton a run takes about 3 minutes from scratch and 40 seconds after that.
+- On the skeleton, a run from scratch took 1.5 to 3 minutes on an Apple silicon Mac, and about 40 seconds after that.
 - Any compiler or build warning fails the run. Swift warnings are errors in verify runs; any other warning also removes `<derived data>/Build`, so the next run builds from scratch and shows it again until it is fixed.
 - The test step fails when a test bundle of `Ikalendar3.xctestplan` is missing or ran no tests, or when a package test bundle ran fewer tests in the simulator than on macOS. `xcodebuild` can skip a package's tests and still report success, so the exit code alone proves nothing.
 
