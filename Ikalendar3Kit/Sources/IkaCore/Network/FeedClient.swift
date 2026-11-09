@@ -49,9 +49,10 @@ public struct FeedClient: Sendable {
     self.now = now
   }
 
-  /// The gate every request of this client's cache directory passes. Its lease is the timeout.
+  /// The gate every request of this client's cache directory passes. Its lease outlasts the
+  /// timeout by the time an answer takes to decode and commit.
   var gate: FeedGate {
-    FeedGate(directory: cache.directory, lease: timeout, now: now)
+    FeedGate(directory: cache.directory, lease: timeout + .seconds(5), now: now)
   }
 
   /// Requests a feed and commits a good answer to the cache. Runs off the main actor.

@@ -21,13 +21,14 @@ import OSLog
 /// - Each feed's attempt record lives in the directory, apart from the cache, and is checked and
 ///   written under one file lock before the request goes out. Claiming an attempt is therefore
 ///   atomic across processes and within one.
-/// - A claim holds the feed for the lease, the client's timeout, while its request is in flight;
-///   its outcome then sets the next eligible time. A claim whose process was killed mid-request
+/// - A claim holds the feed for the lease, a little longer than the client's timeout, while its
+///   request is in flight and its answer is committed; its outcome then sets the next eligible
+///   time. A claim whose process was killed mid-request
 ///   frees the feed once its lease passes.
 struct FeedGate {
   /// The directory the attempt records share with the cache.
   let directory: URL
-  /// How long a claim holds the feed while its request is in flight: the client's timeout.
+  /// How long a claim holds the feed while its request is in flight and its answer is committed.
   let lease: Duration
   /// The wall clock.
   let now: @Sendable () -> Date
@@ -72,8 +73,12 @@ struct FeedGate {
     let now = now()
     let name = key.recordName
     return withRecords { records in
-      // An attempt after `now` means the clock was set back: its wait no longer measures time.
-      if let record = records[name], now < record.nextEligibleTime, record.attemptTime <= now {
+      // An attempt well after `now` means the clock was set back: its wait no longer measures
+      // time. A small step back, as a time sync makes, keeps the gate as it was.
+      if
+        let record = records[name], now < record.nextEligibleTime,
+        record.attemptTime <= now.addingTimeInterval(Self.clockStepTolerance / .seconds(1))
+      {
         guard record.lease == nil else { return .leased }
 
         Logger.network.debug("\(name, privacy: .public): gate closed until \(record.nextEligibleTime)")
@@ -89,6 +94,9 @@ struct FeedGate {
       return .claimed(claim)
     } ?? .closed
   }
+
+  /// How far the clock may step back after an attempt before the attempt's wait stops counting.
+  static let clockStepTolerance: Duration = .seconds(60)
 
   /// Writes a claimed request's outcome: the next attempt an hour after an answer, or after the
   /// next back-off step when no answer came.

@@ -33,6 +33,11 @@ final class RefreshGateTests {
     RefreshEngine(directory: directory, transport: transport, clock: clock)
   }
 
+  /// A client on the test's directory, whose gate the engines share.
+  private func makeClient() -> FeedClient {
+    FeedClient(transport: transport, cache: FeedCache(directory: directory), now: { [clock] in clock.now })
+  }
+
   // MARK: - Answered requests
 
   /// Every entry point calls `refresh()`; a second engine stands in for another process.
@@ -115,6 +120,20 @@ final class RefreshGateTests {
     #expect(transport.requests.count == 6)
   }
 
+  /// A time sync steps the clock back by seconds, which must not let a second request out.
+  @Test
+  func `A clock stepped back less than a minute keeps the gate closed`() async throws {
+    try transport.scriptFeeds()
+    let engine = makeEngine()
+    await engine.refresh()
+    clock.now = date("2026-10-20T12:04:01Z")
+
+    let result = await engine.refresh()
+
+    #expect(result.outcomes[.schedules] == .gateClosed)
+    #expect(transport.requests.count == 3)
+  }
+
   // MARK: - Unanswered requests
 
   @Test
@@ -183,10 +202,12 @@ final class RefreshGateTests {
     await waitUntil { transport.requests.count == 3 }
     let waiting = Task { await waiter.refresh() }
     try await Task.sleep(for: .milliseconds(300))
+    let isLeased = if case .leased = makeClient().gate.claim(.feed(.schedules)) { true } else { false }
 
     transport.release()
     let (sent, waited) = await (sending.value, waiting.value)
 
+    #expect(isLeased)
     #expect(transport.requests.count == 3)
     #expect(sent.outcomes[.schedules] == .fetched(.updated))
     #expect(waited.outcomes == [.schedules: .gateClosed, .festivals: .gateClosed, .locale(.enUS): .gateClosed])
@@ -215,24 +236,22 @@ final class RefreshGateTests {
   }
 
   /// A claim written straight through the gate stands in for an engine the system killed
-  /// mid-request: it never writes an outcome.
+  /// mid-request: it never writes an outcome. The lease outlasts the request's timeout by the time
+  /// its answer takes to commit.
   @Test
   func `A claim left by a stopped engine holds each feed until its lease passes, then frees it`() async throws {
     try transport.scriptFeeds()
-    let stopped: FeedGate = .init(
-      directory: directory,
-      lease: FeedClient.resourceTimeout,
-      now: { [clock] in clock.now })
+    let stopped = makeClient().gate
     for feed in [Feed.schedules, .festivals, .locale(.enUS)] {
       _ = stopped.claim(.feed(feed))
     }
-    clock.now = date("2026-10-20T12:05:29Z")
+    clock.now = date("2026-10-20T12:05:34Z")
     let engine = makeEngine()
 
     let refresh = Task { await engine.refresh() }
     try await Task.sleep(for: .milliseconds(300))
     #expect(transport.requests.isEmpty)
-    clock.now = date("2026-10-20T12:05:30Z")
+    clock.now = date("2026-10-20T12:05:35Z")
     let result = await refresh.value
 
     #expect(transport.requests.count == 3)
