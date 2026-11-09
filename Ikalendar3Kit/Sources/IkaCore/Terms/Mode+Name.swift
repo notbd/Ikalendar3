@@ -30,7 +30,7 @@ extension BattleMode {
     }
   }
 
-  private static func anarchyBattle(_ form: ModeLabel, in language: GameLanguage) -> String {
+  static private func anarchyBattle(_ form: ModeLabel, in language: GameLanguage) -> String {
     String(
       format: Bundle.module.localizedString(forKey: "mode.withForm", in: language),
       ModeLabel.anarchyBattle.text(in: language),

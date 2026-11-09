@@ -25,7 +25,11 @@ let package = Package(
     // Design system. Linked by every product target, the watch ones included.
     .target(name: "IkaDesign", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
     // Siri, App Shortcuts and the effects shell. iOS and macOS; Live Activity parts behind `#if os(iOS)`.
-    .target(name: "IkaIntents", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
+    .target(
+      name: "IkaIntents",
+      dependencies: ["IkaCore"],
+      resources: [.process("Resources")],
+      swiftSettings: swiftSettings),
     .testTarget(name: "IkaCoreTests", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
     .testTarget(name: "IkaDesignTests", dependencies: ["IkaDesign"], swiftSettings: swiftSettings),
     .testTarget(name: "IkaIntentsTests", dependencies: ["IkaIntents"], swiftSettings: swiftSettings),

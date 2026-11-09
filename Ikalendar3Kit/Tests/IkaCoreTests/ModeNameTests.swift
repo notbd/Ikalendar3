@@ -35,7 +35,9 @@ struct ModeNameTests {
   func `Every Mode name resolves`(language: GameLanguage) {
     for mode in Mode.allCases {
       let name = mode.name(in: language)
-      #expect(!name.isEmpty && !name.contains("mode.") && !name.contains("%"), "\(mode) in \(language.rawValue): [\(name)]")
+      #expect(
+        !name.isEmpty && !name.contains("mode.") && !name.contains("%"),
+        "\(mode) in \(language.rawValue): [\(name)]")
     }
   }
 }
