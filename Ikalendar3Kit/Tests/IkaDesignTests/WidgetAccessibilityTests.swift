@@ -11,7 +11,7 @@ import Testing
 @testable import IkaCore
 @testable import IkaDesign
 
-/// Council round 5, M2: a widget's item on now reads its time left to VoiceOver, as the value
+/// A widget's item on now reads its time left to VoiceOver, as the value
 /// beside its sentence.
 struct WidgetAccessibilityTests {
   static let rotation: Rotation = .init(

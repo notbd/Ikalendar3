@@ -4,7 +4,7 @@
 # Planning map, research notes and Nintendo reference material: never public
 /.scratch/
 
-# Claude Code
+# Local tool settings
 .claude/worktrees/
 .claude/settings.local.json
 

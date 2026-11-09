@@ -106,7 +106,7 @@ final class FixtureLaunchTests {
       "the shared cache is untouched")
   }
 
-  /// Council round 5, M10: launches leave no folder behind.
+  /// Launches leave no folder behind.
   @Test
   func `An unrebased fixture launch keeps its cache in one temporary folder, wiped at start`() async throws {
     let folder: URL = FixtureLaunch.unrebasedCacheDirectory
