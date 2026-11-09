@@ -20,6 +20,9 @@ build/
 .swiftpm/
 SourcePackages/
 
+# Python
+__pycache__/
+
 # Font files are never committed; the asset script writes them to a git-ignored folder
 *.ttf
 *.otf
