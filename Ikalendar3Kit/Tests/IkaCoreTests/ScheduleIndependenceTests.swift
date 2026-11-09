@@ -26,6 +26,8 @@ struct ScheduleIndependenceTests {
     case wrongType
     /// An empty list.
     case emptyList
+    /// The value removed: a key from its object, an element from its list.
+    case removed
   }
 
   @Test(arguments: [
@@ -39,6 +41,11 @@ struct ScheduleIndependenceTests {
       path: "data.bankaraSchedules",
       replacement: .wrongType,
       failed: [.rotations(.battle(.anarchySeries)), .rotations(.battle(.anarchyOpen))]),
+    Corruption(
+      fixture: .normalDay,
+      path: "data.bankaraSchedules.nodes.5.bankaraMatchSettings.1",
+      replacement: .removed,
+      failed: [.rotations(.battle(.anarchyOpen))]),
     Corruption(
       fixture: .normalDay,
       path: "data.xSchedules.nodes",
@@ -76,11 +83,16 @@ struct ScheduleIndependenceTests {
       failed: [.rotations(.splatfestBattle(.open)), .rotations(.splatfestBattle(.pro))]),
     Corruption(
       fixture: .splatfestSecondHalf,
+      path: "data.festSchedules.nodes.0.festMatchSettings.0",
+      replacement: .removed,
+      failed: [.rotations(.splatfestBattle(.pro))]),
+    Corruption(
+      fixture: .splatfestSecondHalf,
       path: "data.currentFest.midtermTime",
       replacement: .wrongType,
       failed: [.splatfest]),
   ])
-  func `One corrupted Schedule is reported and leaves every other Schedule intact`(
+  func `A corrupted part fails only the Schedules it holds and leaves every other Schedule intact`(
     _ corruption: Corruption)
     async throws
   {
@@ -112,27 +124,35 @@ struct ScheduleIndependenceTests {
     }
   }
 
-  /// The fixture's JSON with the value at the corruption's path replaced.
+  /// The fixture's JSON with the value at the corruption's path replaced or removed.
   private func corrupted(_ corruption: Corruption) throws -> Data {
     let json = try JSONSerialization.jsonObject(with: corruption.fixture.data())
-    let replacement: Any =
+    let replacement: Any? =
       switch corruption.replacement {
         case .wrongType: 42
         case .emptyList: [Any]()
+        case .removed: nil
       }
     let path = corruption.path.split(separator: ".").map(String.init)
     return try JSONSerialization.data(withJSONObject: replacing(in: json, at: path[...], with: replacement))
   }
 
-  private func replacing(in json: Any, at path: ArraySlice<String>, with replacement: Any) -> Any {
-    guard let key = path.first else { return replacement }
+  /// `json` with the value at `path` replaced, or removed when `replacement` is `nil`.
+  private func replacing(in json: Any, at path: ArraySlice<String>, with replacement: Any?) -> Any {
+    guard let key = path.first else { return replacement as Any }
 
+    let isLast = path.count == 1
     if var object = json as? [String: Any], let child = object[key] {
-      object[key] = replacing(in: child, at: path.dropFirst(), with: replacement)
+      object[key] = isLast ? replacement : replacing(in: child, at: path.dropFirst(), with: replacement)
       return object
     }
     if var array = json as? [Any], let index = Int(key), array.indices.contains(index) {
-      array[index] = replacing(in: array[index], at: path.dropFirst(), with: replacement)
+      if isLast, replacement == nil {
+        array.remove(at: index)
+      }
+      else {
+        array[index] = replacing(in: array[index], at: path.dropFirst(), with: replacement)
+      }
       return array
     }
     Issue.record("No value at \(path.joined(separator: "."))")
