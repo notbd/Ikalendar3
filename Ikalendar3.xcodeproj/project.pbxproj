@@ -28,6 +28,7 @@
 		F1000000000000000000000A /* IkaDesign in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000A /* IkaDesign */; };
 		F1000000000000000000000B /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000B /* IkaFixtures */; };
 		F1000000000000000000000C /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000C /* IkaFixtures */; };
+		F1000000000000000000000D /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000D /* IkaFixtures */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -229,6 +230,7 @@
 				D20000000000000000000003 /* IkaResources.framework in Frameworks */,
 				F10000000000000000000007 /* IkaCore in Frameworks */,
 				F10000000000000000000008 /* IkaDesign in Frameworks */,
+				F1000000000000000000000D /* IkaFixtures in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -385,6 +387,7 @@
 			packageProductDependencies = (
 				E10000000000000000000007 /* IkaCore */,
 				E10000000000000000000008 /* IkaDesign */,
+				E1000000000000000000000D /* IkaFixtures */,
 			);
 			productName = Ikalendar3Watch;
 			productReference = B20000000000000000000004 /* Ikalendar3Watch.app */;
@@ -1052,6 +1055,7 @@
 		E1000000000000000000000A /* IkaDesign */ = {isa = XCSwiftPackageProductDependency; productName = IkaDesign; };
 		E1000000000000000000000B /* IkaFixtures */ = {isa = XCSwiftPackageProductDependency; productName = IkaFixtures; };
 		E1000000000000000000000C /* IkaFixtures */ = {isa = XCSwiftPackageProductDependency; productName = IkaFixtures; };
+		E1000000000000000000000D /* IkaFixtures */ = {isa = XCSwiftPackageProductDependency; productName = IkaFixtures; };
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AA0000000000000000000001 /* Project object */;
