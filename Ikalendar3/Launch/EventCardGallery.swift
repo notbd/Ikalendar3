@@ -33,9 +33,9 @@ struct EventCardGallery: View {
       VStack(spacing: 16) {
         ForEach(snapshot.eventItems(at: now) ?? [], id: \.self) { item in
           switch preferences.style {
-            case .ink: InkEventCard(item: item, art: snapshot.splatfestArt, terms: terms, now: now)
+            case .ink: InkEventCard(item: item, terms: terms, now: now)
             case .classic,
-                 .timeline: ClassicEventCard(item: item, art: snapshot.splatfestArt, terms: terms, now: now)
+                 .timeline: ClassicEventCard(item: item, terms: terms, now: now)
           }
         }
       }

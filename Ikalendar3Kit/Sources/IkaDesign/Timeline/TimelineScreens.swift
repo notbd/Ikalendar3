@@ -54,7 +54,7 @@ public struct TimelineBattleScreenView: View {
         TimelineFormStrip(shown: screen.mode, language: terms.language)
       }
       if let card = screen.announcedSplatfest {
-        SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .timeline, now: now)
+        SplatfestCardView(card: card, terms: terms, style: .timeline, now: now)
           .padding(.horizontal, TimelineMetrics.contentTrailing)
           .padding(.top, TimelineMetrics.axisTop)
       }

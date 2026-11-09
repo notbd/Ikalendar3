@@ -83,7 +83,7 @@ struct SplatfestScreenTests {
 
     let screen = try #require(snapshot.splatfestScreen(of: form, at: instant))
 
-    #expect(screen.splatfest == splatfest)
+    #expect(screen.card.splatfest == splatfest)
     #expect(screen.phase == phaseCase.phase)
     #expect(screen.form == form)
     if let expected = phaseCase.current {
@@ -117,9 +117,9 @@ struct SplatfestScreenTests {
 
     let stored = try #require(snapshot.splatfestScreen(of: .open, at: instant))
 
-    #expect(unstored.art == nil)
-    #expect(stored.art == snapshot.splatfestArt)
-    #expect(stored.splatfest.teamColors.count == 3)
+    #expect(unstored.card.art == nil)
+    #expect(stored.card.art == snapshot.splatfestArt)
+    #expect(stored.card.splatfest.teamColors.count == 3)
   }
 
   @Test

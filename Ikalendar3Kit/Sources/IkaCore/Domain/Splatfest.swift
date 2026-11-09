@@ -28,7 +28,7 @@ public struct Splatfest: Hashable, Sendable {
   public let tricolorStages: [StageID]
   /// The Splatfest's art on splatoon3.ink's asset host, when `festivals.json` has its record.
   /// Only the refresh engine requests it, through the gate; Surfaces show the stored file
-  /// (`SplatfestScreen.art`).
+  /// (`SplatfestCard.art`).
   var artURL: URL?
 }
 

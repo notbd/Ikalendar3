@@ -29,19 +29,15 @@ public struct ClassicEventCard: View {
   @ScaledMetric(relativeTo: .body) private var ruleIconSize: CGFloat = Scoped.ruleIconSize
 
   private let item: EventItem
-  private let art: URL?
   private let terms: GameTerms
   private let now: Date
 
   /// - Parameters:
-  ///   - item: The event.
-  ///   - art: A Splatfest's stored art (`Snapshot.splatfestArt`), or `nil` while none is
-  ///     downloaded. Other events have none.
+  ///   - item: The event, a Splatfest with its stored art.
   ///   - terms: The game's names in the app language.
   ///   - now: The app clock's instant.
-  public init(item: EventItem, art: URL?, terms: GameTerms, now: Date) {
+  public init(item: EventItem, terms: GameTerms, now: Date) {
     self.item = item
-    self.art = art
     self.terms = terms
     self.now = now
   }
@@ -102,12 +98,12 @@ public struct ClassicEventCard: View {
         }
         stages(window.challenge.stages)
 
-      case .splatfest(let splatfest):
-        ClassicSplatfestArt(art: art)
-        Text(verbatim: terms.splatfest(splatfest.id).title)
+      case .splatfest(let card):
+        ClassicSplatfestArt(art: card.art)
+        Text(verbatim: terms.splatfest(card.splatfest.id).title)
           .fixedSize(horizontal: false, vertical: true)
           .ikaFont(.heavy, size: Scoped.titleFontSize, relativeTo: .title3)
-        ClassicTeamList(splatfest: splatfest, terms: terms, arrangement: arrangement)
+        ClassicTeamList(splatfest: card.splatfest, terms: terms, arrangement: arrangement)
 
       case .bigRun(let shift),
            .eggstraWork(let shift):
@@ -189,7 +185,7 @@ public struct ClassicEventCard: View {
   private var sentence: String {
     switch item {
       case .challenge(let window): writer.sentence(for: window, at: now)
-      case .splatfest(let splatfest): writer.sentence(for: splatfest, at: now)
+      case .splatfest(let card): writer.sentence(for: card.splatfest, at: now)
       case .bigRun(let shift),
            .eggstraWork(let shift): writer.sentence(for: shift, at: now)
     }
@@ -197,7 +193,7 @@ public struct ClassicEventCard: View {
 
   /// A Splatfest's team names; the other events' sentences say all.
   private var value: String {
-    if case .splatfest(let splatfest) = item { ClassicTeamList.names(of: splatfest, terms: terms) } else { "" }
+    if case .splatfest(let card) = item { ClassicTeamList.names(of: card.splatfest, terms: terms) } else { "" }
   }
 
   // MARK: Parts

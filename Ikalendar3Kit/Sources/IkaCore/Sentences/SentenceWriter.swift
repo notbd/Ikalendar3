@@ -133,7 +133,7 @@ public struct SentenceWriter: Sendable {
   public func sentence(for event: EventItem, at instant: Date) -> String {
     switch event {
       case .challenge(let window): sentence(for: window, at: instant)
-      case .splatfest(let splatfest): sentence(for: splatfest, at: instant)
+      case .splatfest(let card): sentence(for: card.splatfest, at: instant)
       case .bigRun(let shift),
            .eggstraWork(let shift): sentence(for: shift, at: instant)
     }

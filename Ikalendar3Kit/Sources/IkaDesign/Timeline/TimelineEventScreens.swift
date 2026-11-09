@@ -122,7 +122,7 @@ public struct TimelineSplatfestScreenView: View {
 
   public var body: some View {
     List {
-      SplatfestCardView(splatfest: screen.splatfest, art: screen.art, terms: terms, style: .timeline, now: now)
+      SplatfestCardView(card: screen.card, terms: terms, style: .timeline, now: now)
       switch screen.current {
         case .running(let running):
           row(running.item, progress: running.progress)

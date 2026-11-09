@@ -21,16 +21,17 @@ struct ClassicSplatfestCard: View {
 
   @ScaledMetric(relativeTo: .title2) private var iconSize: CGFloat = Scoped.iconSize
 
-  let splatfest: Splatfest
-  /// Its stored art, or `nil` while none is downloaded: the team colours stand alone then.
-  let art: URL?
+  /// The Splatfest with its stored art; the team colours stand alone while none is downloaded.
+  let card: SplatfestCard
   let terms: GameTerms
   let now: Date
   let metrics: CellMetrics
 
   var body: some View {
+    let splatfest: Splatfest = card.splatfest
+
     VStack(alignment: .leading, spacing: Scoped.cellSpacingV) {
-      ClassicSplatfestArt(art: art)
+      ClassicSplatfestArt(art: card.art)
 
       HStack(spacing: ClassicMetrics.Header.tagPaddingH) {
         ClassicSplatfestIcon()

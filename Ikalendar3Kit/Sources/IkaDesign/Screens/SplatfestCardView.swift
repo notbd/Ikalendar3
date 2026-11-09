@@ -18,8 +18,7 @@ public struct SplatfestCardView: View {
   @Environment(\.colorScheme) private var colorScheme
   @TimeSettings private var time
 
-  private let splatfest: Splatfest
-  private let art: URL?
+  private let card: SplatfestCard
   private let terms: GameTerms
   private let style: Style
   private let now: Date
@@ -28,21 +27,20 @@ public struct SplatfestCardView: View {
   @State private var artImage: Image?
 
   /// - Parameters:
-  ///   - splatfest: The Splatfest.
-  ///   - art: Its stored art file from the screen value, or `nil` while none is downloaded:
-  ///     the team colours stand alone then.
+  ///   - card: The Splatfest with its stored art; the team colours stand alone while none is
+  ///     downloaded.
   ///   - terms: The game's names in the app language.
   ///   - style: The Style whose panel the team names must read on.
   ///   - now: The app clock's instant.
-  public init(splatfest: Splatfest, art: URL?, terms: GameTerms, style: Style, now: Date) {
-    self.splatfest = splatfest
-    self.art = art
+  public init(card: SplatfestCard, terms: GameTerms, style: Style, now: Date) {
+    self.card = card
     self.terms = terms
     self.style = style
     self.now = now
   }
 
   public var body: some View {
+    let splatfest: Splatfest = card.splatfest
     let texts = terms.splatfest(splatfest.id)
     // Looked up one by one: the source may lack them.
     let teamNames = texts.teamNames ?? []
@@ -74,8 +72,8 @@ public struct SplatfestCardView: View {
         .foregroundStyle(.secondary)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
-    .task(id: art) {
-      artImage = art.flatMap(Image.init(contentsOf:))
+    .task(id: card.art) {
+      artImage = card.art.flatMap(Image.init(contentsOf:))
     }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(time.writer(terms).sentence(for: splatfest, at: now))
