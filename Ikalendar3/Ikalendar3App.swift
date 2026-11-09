@@ -31,9 +31,9 @@ struct Ikalendar3App: App {
       else if let services {
         Group {
           #if DEBUG
-          if DebugLaunch.showsEventCards() { EventCardGallery() } else { ModeTabsView() }
+          if DebugLaunch.showsEventCards() { EventCardGallery() } else { AppRootView() }
           #else
-          ModeTabsView()
+          AppRootView()
           #endif
         }
         .environment(services)
