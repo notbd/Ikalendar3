@@ -135,6 +135,20 @@ struct SiriAnswersTests {
     #expect(answers.next(Self.turfWar, in: .x, at: instant) == "X Battle: Turf War is not in the published Schedule.")
   }
 
+  /// The feed publishes the paused windows that follow, so the Schedule does reach that far.
+  @Test
+  func `In the last Rotation before a Splatfest, what comes next is the pause`() async throws {
+    let answers = try await Self.answers(.splatfestAnnounced)
+    let instant: Date = date("2026-10-30T23:00:00Z")
+
+    #expect(answers.next(in: .battle(.regular), at: instant) ==
+      "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM.")
+    #expect(answers.next(Self.rainmaker, in: .x, at: instant) ==
+      "X Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM.")
+    #expect(answers.next(Self.clamBlitz, in: .x, at: instant) ==
+      "X Battle: Clam Blitz on Um'ami Ruins and Sturgeon Shipyard, from 3:00\u{202F}PM to 5:00\u{202F}PM, 1 hour left.")
+  }
+
   // MARK: Big Run and Splatfest
 
   @Test
