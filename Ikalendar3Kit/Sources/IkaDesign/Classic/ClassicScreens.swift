@@ -38,6 +38,12 @@ public struct ClassicBattleScreenView: View {
 
   public var body: some View {
     List {
+      if let splatfest = screen.announcedSplatfest {
+        Section {
+          // Team colours only: the screen value carries no art for an announced Splatfest yet.
+          SplatfestCardView(splatfest: splatfest, art: nil, terms: terms, style: .classic, now: now)
+        }
+      }
       Section {
         switch screen.current {
           case .running(let running):
@@ -108,8 +114,8 @@ public struct ClassicSalmonRunScreenView: View {
 
   public var body: some View {
     List {
-      if let eggstraWork = screen.eggstraWork {
-        Section { row(eggstraWork.item) }
+      if let eggstraWork = screen.eggstraWork?.item ?? screen.nextEggstraWork {
+        Section { row(eggstraWork) }
       }
       Section {
         switch screen.current {
@@ -164,7 +170,7 @@ public struct ClassicSalmonRunScreenView: View {
 
 extension View {
   /// Classic's list: inset grouped on iPhone and iPad, inset on the Mac.
-  fileprivate func classicListStyle() -> some View {
+  func classicListStyle() -> some View {
     #if os(iOS)
     listStyle(.insetGrouped)
     #else
