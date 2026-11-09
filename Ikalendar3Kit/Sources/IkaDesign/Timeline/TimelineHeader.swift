@@ -92,21 +92,20 @@ struct TimelineFormStrip: View {
   /// Each form's label in the strip's order, and whether the screen shows it.
   let forms: [(label: ModeLabel, isShown: Bool)]
   /// The colour of the line under the shown form.
-  let color: ModeColor
+  let color: TimelineTint
   let language: GameLanguage
 
   /// Anarchy Battle's strip, `shown` being the form the screen shows.
   init(shown: BattleMode, language: GameLanguage) {
     forms = [(.series, shown == .anarchySeries), (.open, shown == .anarchyOpen)]
-    color = .init(shown)
+    color = .init(ModeColor(shown))
     self.language = language
   }
 
-  /// Splatfest Battle's strip, `shown` being the form the screen shows. Splatfest Battle is Turf
-  /// War, so it takes Regular Battle's colour.
+  /// Splatfest Battle's strip, `shown` being the form the screen shows, underlined in neutral.
   init(shown: SplatfestBattleForm, language: GameLanguage) {
     forms = [(.open, shown == .open), (.pro, shown == .pro)]
-    color = .regularBattle
+    color = .neutral
     self.language = language
   }
 

@@ -62,6 +62,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
   |---|---|
   | `--fixture <name>` `--fixture-folder <path>` `--fixture-instant <ISO 8601>` | Runs on the recorded schedules feed `<name>` (a `Fixture` case, such as `normalDay`) with the recorded `festivals.json` and locale files, read from `<path>`, the checkout's absolute `Ikalendar3Kit/Fixtures`. The clock starts at the instant and runs from it, so a screen can cross a boundary while you watch. The shared cache stays untouched. |
   | `--fixture-rebase` | With the fixture options: moves every time in the payloads by now minus the instant, commits them to the shared cache and runs on the system clock, so widgets and the Live Activity show the fixture day too. The cache keeps them until a live refresh replaces them, which the gate allows from an hour after the launch; delete the app to drop them at once. |
+  | `--event-cards` | Shows every event card at the app clock's instant, one under the other, instead of the tabs, so a fixture launch can screenshot them before the iPad event strip shows them. |
   | `--data-folder <path>` `--defaults-suite <name>` | Keeps the feed cache and its attempt records in `<path>` and the preferences in the suite `<name>` instead of the App Group. The two go together. |
 
   ```sh

@@ -19,30 +19,30 @@ public struct TimelineEventCard: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @Environment(\.timeZone) private var timeZone
 
-  private let event: EventItem
+  private let item: EventItem
   private let art: URL?
   private let terms: GameTerms
   private let now: Date
 
   /// - Parameters:
-  ///   - event: The event.
+  ///   - item: The event.
   ///   - art: A Splatfest's stored art file from the screen value, or `nil` while none is
   ///     downloaded: the team colours stand alone then. Other events ignore it.
   ///   - terms: The game's names in the app language.
   ///   - now: The app clock's instant.
-  public init(event: EventItem, art: URL?, terms: GameTerms, now: Date) {
-    self.event = event
+  public init(item: EventItem, art: URL?, terms: GameTerms, now: Date) {
+    self.item = item
     self.art = art
     self.terms = terms
     self.now = now
   }
 
   public var body: some View {
-    let arrangement: CellArrangement = .init(dynamicTypeSize: dynamicTypeSize)
+    let arrangement: CellArrangement = .init(dynamicTypeSize)
     let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
-    let progress: WindowProgress? = event.isRunning(at: now) ? event.progress(at: now) : nil
+    let progress: WindowProgress? = item.isRunning(at: now) ? item.progress(at: now) : nil
 
-    switch event {
+    switch item {
       case .challenge(let window):
         TimelineCardPanel {
           VStack(alignment: .leading, spacing: 8) {
@@ -53,7 +53,11 @@ public struct TimelineEventCard: View {
                 colors: ModeColor.challenge.asFill)
             } trailing: {
               if let progress {
-                TimelineNowTag(timeLeft: progress.timeLeft, color: .challenge, language: terms.language, now: now)
+                TimelineNowTag(
+                  timeLeft: progress.timeLeft,
+                  color: TimelineTint(.challenge),
+                  language: terms.language,
+                  now: now)
               }
             }
             TimelineChallengeTitle(challenge: window.challenge, terms: terms)
@@ -66,7 +70,7 @@ public struct TimelineEventCard: View {
           }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(writer.sentence(for: event, at: now))
+        .accessibilityLabel(writer.sentence(for: item, at: now))
 
       case .splatfest(let splatfest):
         TimelineSplatfestCard(splatfest: splatfest, art: art, terms: terms, now: now)
@@ -83,7 +87,7 @@ public struct TimelineEventCard: View {
             arrangement: arrangement)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(writer.sentence(for: event, at: now))
+        .accessibilityLabel(writer.sentence(for: item, at: now))
     }
   }
 
@@ -121,7 +125,7 @@ struct TimelineSplatfestCard: View {
       VStack(alignment: .leading, spacing: 0) {
         artOrTeamBand
         VStack(alignment: .leading, spacing: 8) {
-          TimelineHeadline(arrangement: CellArrangement(dynamicTypeSize: dynamicTypeSize)) {
+          TimelineHeadline(arrangement: CellArrangement(dynamicTypeSize)) {
             TimelineModeTag(
               icon: .splatfestBattle,
               label: ModeLabel.splatfest.text(in: terms.language),
@@ -130,7 +134,7 @@ struct TimelineSplatfestCard: View {
             if splatfest.isRunning(at: now) {
               TimelineNowTag(
                 timeLeft: splatfest.progress(at: now).timeLeft,
-                color: .regularBattle,
+                color: .neutral,
                 language: terms.language,
                 now: now)
             }

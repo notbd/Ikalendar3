@@ -41,7 +41,7 @@ public struct TimelineBattleScreenView: View {
 
   public var body: some View {
     let entries: [TimelineEntry<Rotation>] = TimelineEntry.entries(of: screen)
-    let color: ModeColor = .init(screen.mode)
+    let color: TimelineTint = .init(ModeColor(screen.mode))
     let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
 
     TimelineScheduleList(
@@ -176,7 +176,7 @@ public struct TimelineSalmonRunScreenView: View {
           TimelineStatusContent(text: ScreenText.nothingCurrent.text(in: terms.language))
         }
       } color: { entry in
-        entry.item.map { ModeColor($0.kind) } ?? .salmonRun
+        TimelineTint(entry.item.map { ModeColor($0.kind) } ?? .salmonRun)
       } sentence: { entry in
         entry.item.map { writer.sentence(for: $0, at: now) } ?? ScreenText.nothingCurrent.text(in: terms.language)
       }

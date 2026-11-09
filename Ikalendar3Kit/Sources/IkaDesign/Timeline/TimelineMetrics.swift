@@ -84,4 +84,38 @@ enum TimelinePalette {
   /// The axis track's opacity before and after the current item's progress.
   static let trackOpacity: Double = 0.35
 }
+
+// MARK: - TimelineTint
+
+/// The colour of a stretch of the axis, its pin while its item runs, and its "Now": the item's
+/// Mode colour, or neutral where none stands for it. Splatfest Battle and Tricolor Turf War have
+/// no Mode colour, and no one team's colour stands for them.
+struct TimelineTint: Hashable {
+  /// The colour at full strength.
+  let base: SRGBColor
+
+  /// A Mode's or an event's colour.
+  init(_ color: ModeColor) {
+    base = color.base
+  }
+
+  private init(base: SRGBColor) {
+    self.base = base
+  }
+
+  /// White, for what no Mode colour stands for.
+  static let neutral: Self = .init(base: .white)
+
+  /// The colour as a fill, such as a pin, with black or white text on it.
+  var asFill: ColorPair {
+    ColorPair(foreground: base.labelColor, background: base)
+  }
+
+  /// The colour as text on Timeline's panel in `colorScheme`: the base colour, or its nearest
+  /// tint that reads there.
+  func onPanel(in colorScheme: ColorScheme) -> ColorPair {
+    let panel: SRGBColor = Style.timeline.panel(in: colorScheme)
+    return ColorPair(foreground: base.readableTint(on: panel, for: .text), background: panel)
+  }
+}
 #endif

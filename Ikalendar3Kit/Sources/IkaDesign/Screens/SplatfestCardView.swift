@@ -11,9 +11,9 @@ import SwiftUI
 
 // MARK: - SplatfestCardView
 
-/// The plain Splatfest card every Style's stand-in screens share until tickets 29 to 31 draw
-/// their own: the art once downloaded, the title, the three teams in their colours with their
-/// names, and the times. It receives `IkaCore` values only and reads no store.
+/// The plain Splatfest card Ink's and Timeline's stand-in screens share until tickets 30 and 31
+/// draw their own: the art once downloaded, the title, the three teams in their colours with
+/// their names, and the times. It receives `IkaCore` values only and reads no store.
 public struct SplatfestCardView: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.timeZone) private var timeZone
@@ -81,23 +81,6 @@ public struct SplatfestCardView: View {
     .accessibilityLabel(SentenceWriter(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
       .sentence(for: splatfest, at: now))
     .accessibilityValue(teamNames.formatted(.list(type: .and).locale(Locale(identifier: terms.language.rawValue))))
-  }
-}
-
-// MARK: - Image
-
-extension Image {
-  /// A stored image file, or `nil` when it does not decode.
-  init?(contentsOf file: URL) {
-    #if os(iOS)
-    guard let image = UIImage(contentsOfFile: file.path(percentEncoded: false)) else { return nil }
-
-    self.init(uiImage: image)
-    #else
-    guard let image = NSImage(contentsOf: file) else { return nil }
-
-    self.init(nsImage: image)
-    #endif
   }
 }
 #endif

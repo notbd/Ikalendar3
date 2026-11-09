@@ -74,7 +74,7 @@ public struct TimelineChallengeScreenView: View {
               arrangement: arrangement)
           }
         } color: { _ in
-          .challenge
+          TimelineTint(.challenge)
         } sentence: { entry in
           entry.item.map { writer.sentence(for: $0, at: now) } ?? ""
         }
@@ -92,7 +92,9 @@ public struct TimelineChallengeScreenView: View {
 /// second half, the form's Rotations and Regular Battle's Rotations from the Splatfest's end,
 /// each of those marked.
 ///
-/// Splatfest Battle is Turf War, so the axis takes Regular Battle's colour throughout; the
+/// Tricolor Turf War sits on top at its start, the midterm, which no Rotation on the axis
+/// precedes, so it shows right under the card and the axis still reads in time order. The
+/// Splatfest's own items take the neutral tint, since no one team's colour stands for them; the
 /// teams' colours stay on the card beside their names. It receives `IkaCore` values only and
 /// reads no store.
 public struct TimelineSplatfestScreenView: View {
@@ -149,7 +151,7 @@ public struct TimelineSplatfestScreenView: View {
                 TimelineRotationContent(
                   setting: setting,
                   progress: progress,
-                  color: .regularBattle,
+                  color: Self.tint(of: rotation),
                   terms: terms,
                   now: now,
                   arrangement: arrangement)
@@ -169,8 +171,8 @@ public struct TimelineSplatfestScreenView: View {
             // A form of Splatfest Battle is never paused: any status is nothing current.
             TimelineStatusContent(text: ScreenText.nothingCurrent.text(in: terms.language))
         }
-      } color: { _ in
-        .regularBattle
+      } color: { entry in
+        if case .rotation(let rotation) = entry.item { Self.tint(of: rotation) } else { .neutral }
       } sentence: { entry in
         switch entry {
           case .item(.rotation(let rotation), _): writer.sentence(for: rotation, at: now)
@@ -182,6 +184,14 @@ public struct TimelineSplatfestScreenView: View {
     } footer: {
       FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
     }
+  }
+}
+
+extension TimelineSplatfestScreenView {
+  /// The tint of a Rotation on the axis: Regular Battle's colour after the Splatfest, neutral for
+  /// the form's own.
+  static private func tint(of rotation: Rotation) -> TimelineTint {
+    if case .battle(let battleMode) = rotation.mode { TimelineTint(ModeColor(battleMode)) } else { .neutral }
   }
 }
 
@@ -240,7 +250,7 @@ private struct TimelineChallengeWindowContent: View {
         .foregroundStyle(isOver ? TimelinePalette.pastText : .white)
     } trailing: {
       if let progress {
-        TimelineNowTag(timeLeft: progress.timeLeft, color: .challenge, language: terms.language, now: now)
+        TimelineNowTag(timeLeft: progress.timeLeft, color: TimelineTint(.challenge), language: terms.language, now: now)
       }
     }
   }
@@ -266,7 +276,7 @@ private struct TimelineTricolorContent: View {
           colors: TimelinePalette.idlePin)
       } trailing: {
         if let progress {
-          TimelineNowTag(timeLeft: progress.timeLeft, color: .regularBattle, language: terms.language, now: now)
+          TimelineNowTag(timeLeft: progress.timeLeft, color: .neutral, language: terms.language, now: now)
         }
       }
       TimelineStageStrip(stages: tricolorTurfWar.stages, terms: terms, arrangement: arrangement)

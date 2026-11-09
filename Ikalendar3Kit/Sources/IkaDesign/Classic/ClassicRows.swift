@@ -26,11 +26,26 @@ enum ClassicBattleRow: Hashable, Identifiable {
 
   /// The rows of `screen`.
   static func rows(of screen: BattleScreen) -> [ClassicBattleRow] {
-    let upcoming: [ClassicBattleRow] = ([screen.next].compactMap(\.self) + screen.later)
+    rows(current: screen.current, next: screen.next, later: screen.later)
+  }
+
+  /// The rows of the Splatfest Battle form `screen` shows. A form is never paused.
+  static func rows(of screen: SplatfestScreen) -> [ClassicBattleRow] {
+    rows(current: screen.current, next: screen.next, later: screen.later)
+  }
+
+  /// The rows of Regular Battle's Rotations after the Splatfest ends, in secondary cells under
+  /// their time ranges alone: the form's own Rotations hold the "Next:" tag.
+  static func afterwardsRows(of screen: SplatfestScreen) -> [ClassicBattleRow] {
+    screen.afterwards.map { .upcoming($0, isNext: false) }
+  }
+
+  static private func rows(current: OnNow<Rotation>, next: Rotation?, later: [Rotation]) -> [ClassicBattleRow] {
+    let upcoming: [ClassicBattleRow] = ([next].compactMap(\.self) + later)
       .enumerated()
       .map { .upcoming($1, isNext: $0 == 0) }
 
-    switch screen.current {
+    switch current {
       case .running(let running): return [.current(running)] + upcoming
       case .paused(let returnTime): return [.paused(returnTime: returnTime)] + upcoming
       case .nothingCurrent: return [.nothingCurrent] + upcoming
@@ -130,6 +145,21 @@ enum ClassicSalmonRunRow: Hashable, Identifiable {
   /// The Shift's tag, or `nil` for an untagged Shift and the status row.
   var tag: Tag? {
     if case .shift(_, _, let tag) = self { tag } else { nil }
+  }
+}
+
+// MARK: - ChallengeScreen.WindowMark
+
+extension ChallengeScreen.WindowMark {
+  /// The tag before a Challenge window's time range: "Now:" on the current window, "Next:" on
+  /// the next one.
+  var classicTag: ClassicText? {
+    switch self {
+      case .current: .now
+      case .next: .next
+      case .over,
+           .later: nil
+    }
   }
 }
 

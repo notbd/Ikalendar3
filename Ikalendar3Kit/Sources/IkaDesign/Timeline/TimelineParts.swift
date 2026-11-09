@@ -16,7 +16,7 @@ import SwiftUI
 struct TimelineRotationContent: View {
   let setting: Rotation.Setting
   let progress: WindowProgress?
-  let color: ModeColor
+  let color: TimelineTint
   let terms: GameTerms
   let now: Date
   let arrangement: CellArrangement
@@ -62,7 +62,11 @@ struct TimelineShiftContent: View {
           .foregroundStyle(.white)
       } trailing: {
         if let progress {
-          TimelineNowTag(timeLeft: progress.timeLeft, color: ModeColor(shift.kind), language: terms.language, now: now)
+          TimelineNowTag(
+            timeLeft: progress.timeLeft,
+            color: TimelineTint(ModeColor(shift.kind)),
+            language: terms.language,
+            now: now)
         }
       }
       TimelineStageStrip(stages: [shift.stage], terms: terms, arrangement: arrangement)
@@ -141,7 +145,7 @@ struct TimelineNowTag: View {
   @Environment(\.colorScheme) private var colorScheme
 
   let timeLeft: Duration
-  let color: ModeColor
+  let color: TimelineTint
   let language: GameLanguage
   let now: Date
 
@@ -149,7 +153,7 @@ struct TimelineNowTag: View {
     HStack(alignment: .firstTextBaseline, spacing: 6) {
       Text(verbatim: TimelineText.now.text(in: language))
         .ikaFont(.heavy, size: 13, relativeTo: .footnote)
-        .foregroundStyle(Color(color.onPanel(of: .timeline, in: colorScheme, for: .text).foreground))
+        .foregroundStyle(Color(color.onPanel(in: colorScheme).foreground))
       Text(verbatim: TimelineText.timeLeft.text(in: language, TimelineFormat.countdown(timeLeft)))
         .ikaFont(.light, size: 12, relativeTo: .caption)
         .monospacedDigit()
@@ -301,19 +305,6 @@ private struct TimelineWeapons: View {
       .scaledToFit()
       .frame(maxWidth: TimelineMetrics.weaponSize, maxHeight: TimelineMetrics.weaponSize)
       .accessibilityLabel(Text(verbatim: label))
-  }
-}
-
-// MARK: - ModeIcon
-
-extension ModeIcon {
-  /// The icon that marks a Shift of `kind`, or `nil` for a regular Shift, which needs none.
-  fileprivate init?(_ kind: Shift.Kind) {
-    switch kind {
-      case .regular: return nil
-      case .bigRun: self = .bigRun
-      case .eggstraWork: self = .eggstraWork
-    }
   }
 }
 #endif
