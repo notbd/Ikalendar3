@@ -16,11 +16,12 @@ import WidgetKit
 
 /// The battle widget set to one Battle Mode, in three sizes on iPhone, iPad and Mac, the small one
 /// in StandBy too: the current Rotation with its countdown, plus the next one (medium), plus the
-/// three after that (large). While a Splatfest replaces the Battle Mode it shows Splatfest Battle.
+/// three after that (large). On the Lock Screen of iPhone and iPad it comes in the three
+/// accessory families. While a Splatfest replaces the Battle Mode it shows Splatfest Battle.
 struct BattleWidget: Widget {
   var body: some WidgetConfiguration {
     AppIntentConfiguration(
-      kind: "battle",
+      kind: WidgetKind.battle.rawValue,
       intent: BattleWidgetIntent.self,
       provider: BattleTimelineProvider())
     { entry in
@@ -28,8 +29,21 @@ struct BattleWidget: Widget {
     }
     .configurationDisplayName(Text("widget.battle.name", tableName: "Widgets"))
     .description(Text("widget.battle.description", tableName: "Widgets"))
-    .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+    .supportedFamilies(Self.families)
   }
+
+  #if os(iOS)
+  static private let families: [WidgetFamily] = [
+    .systemSmall,
+    .systemMedium,
+    .systemLarge,
+    .accessoryCircular,
+    .accessoryRectangular,
+    .accessoryInline,
+  ]
+  #else
+  static private let families: [WidgetFamily] = [.systemSmall, .systemMedium, .systemLarge]
+  #endif
 }
 
 // MARK: - BattleWidgetIntent
@@ -82,11 +96,16 @@ struct BattleTimelineProvider: AppIntentTimelineProvider {
 }
 
 extension BattleWidgetFamily {
-  /// The battle family of a Home Screen size. The battle widget offers only those three.
+  /// The battle family of a system family. The battle widget offers only those six.
   init(_ family: WidgetFamily) {
     switch family {
       case .systemMedium: self = .medium
       case .systemLarge: self = .large
+      #if os(iOS)
+      case .accessoryCircular: self = .circular
+      case .accessoryRectangular: self = .rectangular
+      case .accessoryInline: self = .inline
+      #endif
       default: self = .small
     }
   }
@@ -124,4 +143,30 @@ extension BattleWidgetFamily {
 } timelineProvider: {
   BattleTimelineProvider { Snapshot() }
 }
+
+#if os(iOS)
+#Preview("Lock Screen, circular", as: .accessoryCircular, using: BattleWidgetIntent(battleMode: .xBattle)) {
+  BattleWidget()
+} timelineProvider: {
+  BattleTimelineProvider(load: WidgetData.fixture(.normalDay))
+}
+
+#Preview("Lock Screen, rectangular", as: .accessoryRectangular, using: BattleWidgetIntent(battleMode: .anarchySeries)) {
+  BattleWidget()
+} timelineProvider: {
+  BattleTimelineProvider(load: WidgetData.fixture(.normalDay))
+}
+
+#Preview("Lock Screen, inline", as: .accessoryInline, using: BattleWidgetIntent(battleMode: .regularBattle)) {
+  BattleWidget()
+} timelineProvider: {
+  BattleTimelineProvider(load: WidgetData.fixture(.normalDay))
+}
+
+#Preview("Lock Screen, rectangular, Splatfest", as: .accessoryRectangular, using: BattleWidgetIntent()) {
+  BattleWidget()
+} timelineProvider: {
+  BattleTimelineProvider(load: WidgetData.fixture(.splatfestSecondHalf))
+}
+#endif
 #endif

@@ -24,7 +24,7 @@ struct BattleOverviewView: View {
           HStack(alignment: .top, spacing: 14) {
             ForEach(schedule.content, id: \.mode) { content in
               VStack(alignment: .leading, spacing: 8) {
-                ModeHeading(mode: content.shownMode)
+                ModeHeading(mode: content.shownMode, in: entry.terms.language)
                 CurrentView(
                   current: content.current,
                   mode: content.mode,

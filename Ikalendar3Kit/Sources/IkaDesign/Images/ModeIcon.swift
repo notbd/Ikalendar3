@@ -34,21 +34,21 @@ public enum ModeIcon: String, CaseIterable, Sendable {
     }
   }
 
-  /// The icon of a Rotation's Battle Mode: a continuous Battle Mode's, or Splatfest Battle's in
-  /// either form, as a widget shows while a Splatfest replaces its Battle Mode.
-  public init(_ mode: RotationMode) {
-    switch mode {
-      case .battle(let battleMode): self.init(Mode.battle(battleMode))
-      case .splatfestBattle: self = .splatfestBattle
-    }
-  }
-
   /// The icon of a Shift of `kind`: Salmon Run's for a regular Shift.
   public init(_ kind: Shift.Kind) {
     switch kind {
       case .regular: self = .salmonRun
       case .bigRun: self = .bigRun
       case .eggstraWork: self = .eggstraWork
+    }
+  }
+
+  /// The icon of a Rotation's Battle Mode: a continuous Battle Mode's, or Splatfest Battle's in
+  /// either form, as a widget shows while a Splatfest replaces its Battle Mode.
+  public init(_ mode: RotationMode) {
+    switch mode {
+      case .battle(let battleMode): self.init(Mode.battle(battleMode))
+      case .splatfestBattle: self = .splatfestBattle
     }
   }
 }
