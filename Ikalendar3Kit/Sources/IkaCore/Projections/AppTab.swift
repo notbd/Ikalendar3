@@ -64,6 +64,42 @@ public enum TabMenu: Hashable, Sendable {
   case anarchy
   /// Splatfest Battle (Open) or (Pro), on the Splatfest tab.
   case splatfestBattle
+
+  /// The two Battle Modes the menu offers, in menu order. The first is the tab's Mode until the
+  /// player picks the other.
+  public var modes: [RotationMode] {
+    switch self {
+      case .anarchy: [.battle(.anarchySeries), .battle(.anarchyOpen)]
+      case .splatfestBattle: SplatfestBattleForm.allCases.map(RotationMode.splatfestBattle)
+    }
+  }
+}
+
+// MARK: - TabMenuOption
+
+/// One option of a tab's menu: a Battle Mode and its Mode summary, the current Rule with the time
+/// left, its pause by a Splatfest, or nothing current.
+public struct TabMenuOption: Hashable, Sendable {
+  /// The Battle Mode the option switches the tab to.
+  public let mode: RotationMode
+  /// The current item of the Mode's screen, or `nil` when it has no screen: before the schedules
+  /// feed's first good response, or for a form of Splatfest Battle outside a Splatfest.
+  public let current: OnNow<Rotation>?
+}
+
+extension Snapshot {
+  /// `menu`'s options at `instant`, in menu order. Each one's summary is the current item of its
+  /// Mode's screen, so the menu and the screen behind it always agree.
+  public func options(of menu: TabMenu, at instant: Date) -> [TabMenuOption] {
+    menu.modes.map { mode in
+      let current: OnNow<Rotation>? =
+        switch mode {
+          case .battle(let battleMode): battleScreen(of: battleMode, at: instant)?.current
+          case .splatfestBattle(let form): splatfestBattleSummary(of: form, at: instant)?.current
+        }
+      return TabMenuOption(mode: mode, current: current)
+    }
+  }
 }
 
 // MARK: - Tab set
