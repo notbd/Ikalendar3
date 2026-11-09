@@ -57,8 +57,8 @@ extension AppServices {
   /// The services this launch asks for.
   ///
   /// - A unit-test host gets an inert transport and storage of its own, wiped on every launch.
-  /// - A Debug launch may run on recorded payloads (`FixtureLaunch`) or keep its data in a
-  ///   worktree's folder and suite (`DebugLaunch`).
+  /// - A Debug launch may run on recorded payloads (`FixtureLaunch`), with no network
+  ///   (`DebugLaunch.isOffline`), or keep its data in a worktree's folder and suite (`DebugLaunch`).
   /// - Any other launch keeps its data in the App Group, shared with the widget extension. With no
   ///   App Group container it has no services: the error is logged, and no other folder is used.
   static func forThisLaunch() -> AppServices? {
@@ -74,6 +74,12 @@ extension AppServices {
     #if DEBUG
     if let run = FixtureLaunch.run(sharedCache: FeedCache(directory: storage.feedDirectory)) {
       return AppServices(client: run.client, timeSource: run.timeSource, defaults: storage.defaults)
+    }
+    if DebugLaunch.isOffline() {
+      return AppServices(
+        client: FeedClient(transport: ScriptedTransport(), cache: FeedCache(directory: storage.feedDirectory)),
+        timeSource: SystemTimeSource(),
+        defaults: storage.defaults)
     }
     #endif
 
