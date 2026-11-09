@@ -33,6 +33,14 @@ struct ModeColorTests {
     #expect(ModeColor(.salmonRun) == .salmonRun)
   }
 
+  /// A view draws the colour with the icon, so one kind reads alike in both.
+  @Test
+  func `Every colour's kind has an icon of the same case name`() {
+    let iconNames = Set(ModeIcon.allCases.map { String(describing: $0) })
+
+    #expect(ModeColor.allCases.allSatisfy { iconNames.contains(String(describing: $0)) })
+  }
+
   @Test
   func `Big Run and Eggstra Work take their own colours, regular Shifts Salmon Run's`() {
     #expect(ModeColor(Shift.Kind.regular) == .salmonRun)
