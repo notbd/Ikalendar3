@@ -60,17 +60,12 @@ final class AppStatus {
     }
   }
 
-  /// Switches the tab whose menu offers `mode` to it, and closes the menu.
-  ///
-  /// - Precondition: `mode` is one of a menu's modes.
-  func choose(_ mode: RotationMode) {
-    switch mode {
-      case .battle(let battleMode):
-        precondition(TabMenu.anarchy.modes.contains(mode), "No menu offers \(battleMode)")
-        anarchyMode = battleMode
-
-      case .splatfestBattle(let form):
-        splatfestForm = form
+  /// Switches the tab whose menu offers `option` to its Battle Mode, and closes the menu.
+  func choose(_ option: TabMenuOption) {
+    switch option.mode {
+      // Only the Anarchy menu offers continuous Battle Modes.
+      case .battle(let mode): anarchyMode = mode
+      case .splatfestBattle(let form): splatfestForm = form
     }
     presentedMenu = nil
   }

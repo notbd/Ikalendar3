@@ -27,8 +27,8 @@ struct TabMenuView: View {
   let menu: TabMenu
   /// The Battle Mode its tab shows now, which carries a checkmark.
   let selection: RotationMode
-  /// Switches the tab to a Battle Mode.
-  let choose: (RotationMode) -> Void
+  /// Switches the tab to an option's Battle Mode.
+  let choose: (TabMenuOption) -> Void
 
   var body: some View {
     let now = clock.now
@@ -36,7 +36,7 @@ struct TabMenuView: View {
 
     VStack(spacing: 0) {
       ForEach(engine.snapshot.options(of: menu, at: now), id: \.mode) { option in
-        Button { choose(option.mode) } label: {
+        Button { choose(option) } label: {
           TabMenuRow(option: option, isSelected: option.mode == selection, terms: terms, now: now)
         }
         .buttonStyle(.plain)
@@ -94,8 +94,11 @@ private struct TabMenuRow: View {
   }
 
   private var iconName: String {
-    if case .running(let running) = option.current, let setting = running.item.setting {
-      return BundledImage.name(for: setting.rule, size: .small)
+    switch option.summary {
+      case .battle(_, .running(let running))?,
+           .splatfestBattle(_, .running(let running))?:
+        if let setting = running.item.setting { return BundledImage.name(for: setting.rule, size: .small) }
+      default: break
     }
     return BundledImage.name(for: ModeIcon(option.mode), size: .small)
   }
@@ -103,22 +106,29 @@ private struct TabMenuRow: View {
   /// The current Rule and time left, the pause with the return time, or nothing on; none before
   /// the Mode has a screen.
   private var summary: String? {
+    guard let summary = option.summary else { return nil }
+
     let writer: SentenceWriter = time.writer(terms)
-    switch option.current {
-      case .running(let running):
-        guard let setting = running.item.setting else { return writer.timeLeft(running.progress) }
+    switch summary {
+      case .battle(_, .running(let running)),
+           .splatfestBattle(_, .running(let running)):
+        // A summary's Rotation always plays: a paused window reads as the pause instead.
+        let rule: String = running.item.setting.map { terms.name(of: $0.rule) } ?? ""
+        return "\(rule) · \(writer.timeLeft(running.progress))"
 
-        return "\(terms.name(of: setting.rule)) · \(writer.timeLeft(running.progress))"
+      case .salmonRun(.running(let running)):
+        return "\(terms.name(of: running.item.stage)) · \(writer.timeLeft(running.progress))"
 
-      case .paused(let returnTime):
+      case .battle(_, .paused(let returnTime)),
+           .splatfestBattle(_, .paused(let returnTime)),
+           .salmonRun(.paused(let returnTime)):
         let format = time.format(terms.language)
         return ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now))
 
-      case .nothingCurrent:
+      case .battle(_, .nothingCurrent),
+           .splatfestBattle(_, .nothingCurrent),
+           .salmonRun(.nothingCurrent):
         return ScreenText.nothingCurrent.text(in: terms.language)
-
-      case nil:
-        return nil
     }
   }
 }
