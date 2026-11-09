@@ -168,6 +168,57 @@ final class RefreshGateTests {
     #expect(try Data(contentsOf: records) == answered)
   }
 
+  /// Sol's case: the clock set back 61 s, past a time sync's step, while the first request is in
+  /// flight.
+  @Test
+  func `A clock set back during a request keeps the feed leased until the request settles`() throws {
+    let gate = makeClient().gate
+    let inFlight = try #require(gate.claim(.feed(.schedules)).granted)
+    clock.now = date("2026-10-20T12:03:59Z")
+
+    let during = gate.claim(.feed(.schedules))
+    gate.settle(inFlight, isAnswered: true)
+    let after = gate.claim(.feed(.schedules))
+
+    #expect(during.isLeased)
+    #expect(after.isClosed)
+  }
+
+  /// With no claim in between, the answer's hour still counts from the set-back clock.
+  @Test
+  func `An answer that comes after the clock was set back closes the gate for the hour`() throws {
+    let gate = makeClient().gate
+    let inFlight = try #require(gate.claim(.feed(.schedules)).granted)
+    clock.now = date("2026-10-20T12:03:59Z")
+
+    gate.settle(inFlight, isAnswered: true)
+    let atOnce = gate.claim(.feed(.schedules))
+    clock.now = date("2026-10-20T13:03:58Z")
+    let lastSecond = gate.claim(.feed(.schedules))
+
+    #expect(atOnce.isClosed)
+    #expect(lastSecond.isClosed)
+  }
+
+  /// A set-back restarts the lease from the new time instead of ending it, so a claim the
+  /// system killed still frees the feed a lease later, not after the time the clock lost.
+  @Test
+  func `A claim abandoned before the clock was set back frees the feed a lease after the set-back`() {
+    let gate = makeClient().gate
+    _ = gate.claim(.feed(.schedules))
+    clock.now = date("2026-10-19T12:05:00Z")
+
+    let setBack = gate.claim(.feed(.schedules))
+    clock.now = date("2026-10-19T12:05:34Z")
+    let held = gate.claim(.feed(.schedules))
+    clock.now = date("2026-10-19T12:05:35Z")
+    let freed = gate.claim(.feed(.schedules))
+
+    #expect(setBack.isLeased)
+    #expect(held.isLeased)
+    #expect(freed.granted != nil)
+  }
+
   // MARK: - Unanswered requests
 
   @Test
@@ -299,6 +350,10 @@ extension FeedGate.Claim {
   /// The claimed attempt, or `nil` when the gate did not grant one.
   fileprivate var granted: Granted? {
     if case .claimed(let granted) = self { granted } else { nil }
+  }
+
+  fileprivate var isLeased: Bool {
+    if case .leased = self { true } else { false }
   }
 
   fileprivate var isClosed: Bool {

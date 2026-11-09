@@ -71,20 +71,33 @@ struct FeedGate {
 
   /// Claims the next attempt at a feed if its gate is open. A gate whose records cannot be read
   /// and written stays closed, so no request goes out unrecorded.
+  ///
+  /// A claim in flight holds the feed until its outcome is written or its lease passes; setting
+  /// the clock back never ends it.
   func claim(_ key: Key) -> Claim {
     let now = now()
     let name = key.recordName
     return withRecords { records in
-      // An attempt well after `now` means the clock was set back: its wait no longer measures
-      // time. A small step back, as a time sync makes, keeps the gate as it was.
-      if
-        let record = records[name], now < record.nextEligibleTime,
-        record.attemptTime <= now.addingTimeInterval(Self.clockStepTolerance / .seconds(1))
-      {
-        guard record.lease == nil else { return .leased }
-
-        Logger.network.debug("\(name, privacy: .public): gate closed until \(record.nextEligibleTime)")
-        return .closed
+      if var record = records[name] {
+        if record.lease != nil {
+          // A clock set back restarts the lease from its new time, so a claim left by a killed
+          // process still frees the feed a lease later.
+          if now < record.attemptTime {
+            record.attemptTime = now
+            record.nextEligibleTime = now.addingTimeInterval(lease / .seconds(1))
+            records[name] = record
+          }
+          if now < record.nextEligibleTime { return .leased }
+        }
+        // An attempt well after `now` means the clock was set back: its wait no longer measures
+        // time. A small step back, as a time sync makes, keeps the gate as it was.
+        else if
+          now < record.nextEligibleTime,
+          record.attemptTime <= now.addingTimeInterval(Self.clockStepTolerance / .seconds(1))
+        {
+          Logger.network.debug("\(name, privacy: .public): gate closed until \(record.nextEligibleTime)")
+          return .closed
+        }
       }
 
       let claim: Claim.Granted = .init(key: name)
@@ -107,6 +120,8 @@ struct FeedGate {
     withRecords { records in
       guard var record = records[claim.key], record.lease == claim.id else { return }
 
+      // The clock set back while the request was in flight: the wait set here counts from now.
+      record.attemptTime = min(record.attemptTime, now)
       record.backOff = isAnswered ? nil : record.backOff.map { min($0 * 2, Self.interval) } ?? Self.firstBackOff
       record.nextEligibleTime = now.addingTimeInterval((record.backOff ?? Self.interval) / .seconds(1))
       record.lease = nil
