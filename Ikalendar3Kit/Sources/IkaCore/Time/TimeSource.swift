@@ -15,8 +15,12 @@ public protocol TimeSource: Sendable {
   /// The current instant.
   var now: Date { get }
 
-  /// Returns at `deadline` or a little after, or throws `CancellationError` once the calling
-  /// task is cancelled.
+  /// Returns at `deadline` or a little after by the clock that measures the wait, or throws
+  /// `CancellationError` once the calling task is cancelled.
+  ///
+  /// It may also return before `deadline` as `now` reads it: when the wall clock is set during
+  /// the wait, or a fake clock's `now` is set. So the caller rereads `now` when it returns and
+  /// never assumes the deadline has passed.
   func sleep(until deadline: Date) async throws
 }
 
@@ -30,7 +34,8 @@ public struct SystemTimeSource: TimeSource {
   /// The current instant.
   public var now: Date { Date() }
 
-  /// Returns at `deadline` or up to 0.1 s after it.
+  /// Waits the time from now to `deadline`, plus up to 0.1 s. It measures a duration, so a wall
+  /// clock set back during the wait ends it before `deadline` as `now` then reads it.
   public func sleep(until deadline: Date) async throws {
     try await Task.sleep(for: .seconds(deadline.timeIntervalSinceNow), tolerance: .milliseconds(100))
   }

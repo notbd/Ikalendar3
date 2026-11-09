@@ -2522,7 +2522,7 @@
       }
     },
     "sentence.timeRange" : {
-      "comment" : "A window's time range. %1$@: the start time. %2$@: the end time.",
+      "comment" : "A window's time range. %1$@: the start time, with its weekday when a Rotation or Challenge window starts on another day (\"Tuesday 3:00 AM\"). %2$@: the end time.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {

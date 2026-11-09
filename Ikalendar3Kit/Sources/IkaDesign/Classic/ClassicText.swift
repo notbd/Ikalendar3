@@ -46,7 +46,8 @@ enum ClassicText: String, CaseIterable {
 
 /// How Classic writes times, as ikalendar 2 did: a Rotation's range with a day word only where it
 /// leaves today, each end of a Shift with its day, and countdowns down to the second. Times are in
-/// the app language's locale on the device's hour cycle and in the player's time zone.
+/// the app language's locale on the device's hour cycle and in the player's time zone; views take
+/// it from `TimeSettings`.
 struct ClassicTimeFormat {
   /// The app language.
   let language: GameLanguage
@@ -144,6 +145,13 @@ struct ClassicTimeFormat {
     var calendar: Calendar = .init(identifier: .gregorian)
     calendar.timeZone = timeZone
     return calendar
+  }
+}
+
+extension TimeSettings {
+  /// How Classic writes times in `language`.
+  func classicFormat(_ language: GameLanguage) -> ClassicTimeFormat {
+    ClassicTimeFormat(language: language, timeZone: timeZone, hourCycle: hourCycle)
   }
 }
 #endif

@@ -67,19 +67,17 @@ enum DebugLaunch {
   #if os(iOS)
   /// Restarts the short-item Tracking the fixture launch asks for (`--fixture-short-tracking`),
   /// right after an activation run, which re-armed every activity from the cache: the content of
-  /// the Mode at the app clock's `instant`, its items two minutes long from now on the wall clock
-  /// the system renders by. So a recording that starts after the app opens crosses two
-  /// boundaries in four minutes; opening the app again starts it over.
+  /// the Mode in the snapshot that run published, at the app clock's instant, its items two
+  /// minutes long from now on the wall clock the system renders by. So a recording that starts
+  /// after the app opens crosses two boundaries in four minutes; opening the app again starts it
+  /// over.
   static func restartShortTracking(
-    after result: RefreshResult,
-    with effects: EffectsShell,
-    at instant: Date,
-    _ arguments: [String] = ProcessInfo.processInfo.arguments)
-    async
+    with services: AppServices,
+    _ arguments: [String] = ProcessInfo.processInfo.arguments) async
   {
     guard
       let mode = (try? FixtureLaunch(arguments: arguments))?.shortTracking,
-      let state = result.snapshot.trackingState(of: mode, at: instant)
+      let state = services.engine.snapshot.trackingState(of: mode, at: services.clock.now)
     else { return }
 
     let now: Date = .init()
@@ -87,7 +85,7 @@ enum DebugLaunch {
       let short: TrackingState = .init(
         content: state.content.withShortItems(startingAt: now),
         fetchTime: state.fetchTime)
-      try await effects.startTracking(short, at: now)
+      try await services.effects.startTracking(short, at: now)
     }
     catch {
       fatalError("Short-item Tracking: \(error)")

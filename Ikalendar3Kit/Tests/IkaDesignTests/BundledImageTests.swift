@@ -47,6 +47,13 @@ struct BundledImageTests {
     }
   }
 
+  @Test
+  func `A Shift shows its kind's icon, Salmon Run's for a regular one`() {
+    #expect(ModeIcon(Shift.Kind.regular) == .salmonRun)
+    #expect(ModeIcon(Shift.Kind.bigRun) == .bigRun)
+    #expect(ModeIcon(Shift.Kind.eggstraWork) == .eggstraWork)
+  }
+
   @Test(arguments: ModeIcon.allCases)
   func `Every Mode icon is bundled`(icon: ModeIcon) {
     #expect(BundledImage.baseNames[.mode]?[icon.rawValue] != nil)
