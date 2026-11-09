@@ -51,16 +51,20 @@ struct TabMenuView: View {
           rows
         }
         .scrollBounceBehavior(.basedOnSize)
+        // Next to the status bar, a scroll view draws its rows on under it, past the panel.
+        .clipShape(Self.panelShape)
       }
     }
     // Regular glass in both colour schemes: the clear glass the adaptive effect uses on dark lets
     // the list show through the text.
-    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 28))
+    .glassEffect(.regular.interactive(), in: Self.panelShape)
     .accessibilityElement(children: .contain)
     .accessibilityAddTraits(.isModal)
     .accessibilityAction(.escape, dismiss)
     .onAppear { focusedMode = selection }
   }
+
+  static private let panelShape: RoundedRectangle = .rect(cornerRadius: 28)
 
   private var rows: some View {
     let now = clock.now
