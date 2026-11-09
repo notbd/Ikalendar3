@@ -49,18 +49,27 @@ struct SentenceWriterTests {
       "X Battle: Splat Zones on Scorch Gorge and Eeltail Alley, from 8:00\u{202F}AM to 10:00\u{202F}AM.")
   }
 
+  /// The recorded decision (ticket 08): a paused Battle Mode reads when it comes back, as the
+  /// iPhone tabs do, never a paused window's own times.
   @Test
-  func `A paused Rotation reads its Battle Mode with its form and the Splatfest`() {
-    let paused: Rotation = .init(
-      mode: .battle(.anarchySeries),
-      startTime: TestData.instant(hours: 16),
-      endTime: TestData.instant(hours: 18),
-      setting: nil)
+  func `A Battle Mode a Splatfest pauses reads when it comes back`() {
+    let sentence = Self.writer().sentence(forPauseOf: .anarchySeries, returningAt: TestData.instant(hours: 4 * 24 + 17))
 
-    let sentence = Self.writer().sentence(for: paused, at: TestData.instant(hours: 17.5))
+    #expect(sentence == "Anarchy Battle (Series): paused during the Splatfest until Monday 9:00\u{202F}AM.")
+  }
 
-    #expect(sentence ==
-      "Anarchy Battle (Series): paused during the Splatfest, from 8:00\u{202F}AM to 10:00\u{202F}AM, 30 minutes left.")
+  @Test
+  func `A summary's pause gives the pause sentence its Battle Mode and return time`() async throws {
+    let snapshot: Snapshot = try await .schedules(.splatfestSecondHalf)
+
+    let summary = snapshot.summary(of: .battle(.regular), at: date("2026-11-01T06:00:00Z"))
+
+    guard case .battle(let mode, .paused(let returnTime)) = summary else {
+      Issue.record("\(String(describing: summary))")
+      return
+    }
+    #expect(Self.writer().sentence(forPauseOf: mode, returningAt: returnTime) ==
+      "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM.")
   }
 
   @Test
@@ -90,11 +99,6 @@ struct SentenceWriterTests {
       startTime: Self.rotation.startTime,
       endTime: Self.rotation.endTime,
       setting: Self.rotation.setting)
-    let paused: Rotation = .init(
-      mode: .splatfestBattle(.pro),
-      startTime: series.startTime,
-      endTime: series.endTime,
-      setting: nil)
     let bigRun: Shift = .init(
       kind: .bigRun,
       startTime: TestData.instant(hours: 16),
@@ -116,7 +120,7 @@ struct SentenceWriterTests {
     ]
     let texts = [
       writer.sentence(for: series, at: instant),
-      writer.sentence(for: paused, at: instant),
+      writer.sentence(forPauseOf: .anarchyOpen, returningAt: instant),
       writer.sentence(for: bigRun, at: instant),
       writer.timeLeft(WindowProgress(timeLeft: .seconds(4800), sharePassed: 0.5)),
     ] + TrackingReminder.allCases.map { $0.text(in: language) }

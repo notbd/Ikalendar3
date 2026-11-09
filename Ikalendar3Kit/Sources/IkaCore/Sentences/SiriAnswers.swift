@@ -62,7 +62,7 @@ public struct SiriAnswers: Sendable {
 
     let mode = Mode.battle(battleMode).name(in: language)
     return switch lineup.current {
-      case .paused(let returnTime): paused(mode, until: returnTime)
+      case .paused(let returnTime): writer.pauseSentence(named: mode, returningAt: returnTime)
       case .ranOut: writer.format("answer.outOfDate", mode)
       case .item,
            .gap,
@@ -88,7 +88,7 @@ public struct SiriAnswers: Sendable {
     let name = mode.name(in: language)
     return switch lineup.current {
       case .item(let item): sentence(item)
-      case .paused(let returnTime): paused(name, until: returnTime)
+      case .paused(let returnTime): writer.pauseSentence(named: name, returningAt: returnTime)
       case .ranOut: writer.format("answer.outOfDate", name)
       case .gap,
            .noneAnnounced: writer.format("answer.notPublished.now", name)
@@ -100,17 +100,12 @@ public struct SiriAnswers: Sendable {
 
     let name = mode.name(in: language)
     return switch lineup.current {
-      case .paused(let returnTime): paused(name, until: returnTime)
+      case .paused(let returnTime): writer.pauseSentence(named: name, returningAt: returnTime)
       case .ranOut: writer.format("answer.outOfDate", name)
       case .item,
            .gap,
            .noneAnnounced: writer.format("answer.notPublished.next", name)
     }
-  }
-
-  /// A Battle Mode paused by a Splatfest, with when it comes back.
-  private func paused(_ mode: String, until returnTime: Date) -> String {
-    writer.format("answer.paused", mode, writer.weekdayAndTime(returnTime))
   }
 
   /// The Big Run on now or the next one Salmon Run's Schedule holds.

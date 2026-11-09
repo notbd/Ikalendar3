@@ -451,96 +451,6 @@
         }
       }
     },
-    "answer.paused" : {
-      "comment" : "Siri's answer for a Battle Mode a running Splatfest pauses. %1$@: the Battle Mode. %2$@: when it comes back, a weekday and a time.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: pausiert während des Splatfests bis %2$@."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: paused during the Splatfest until %2$@."
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: paused during the Splatfest until %2$@."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: en pausa durante el Festival hasta el %2$@."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: en pausa durante el Festival hasta el %2$@."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@ : en pause pendant le Festival jusqu’à %2$@."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@ : en pause pendant le Festival jusqu’à %2$@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: in pausa durante lo Splatfest fino a %2$@."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：フェス開催中のため休止、%2$@に再開。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: 페스티벌 기간 중 일시 중지, %2$@에 재개."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: gepauzeerd tijdens de Splatfest tot %2$@."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: приостановлен на время Сплатфеста, возобновится: %2$@."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：祭典期间暂停，%2$@恢复。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：祭典期間暫停，%2$@恢復。"
-          }
-        }
-      }
-    },
     "answer.twoSentences" : {
       "comment" : "Two sentences of one Siri answer, as the language joins sentences: the Big Run's, then the Splatfest's.",
       "extractionState" : "manual",
@@ -2161,6 +2071,96 @@
         }
       }
     },
+    "sentence.pause" : {
+      "comment" : "The sentence of a Battle Mode a running Splatfest pauses, read by VoiceOver, Tracking and Siri. %1$@: the Battle Mode. %2$@: when it comes back, a weekday and a time.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@: pausiert während des Splatfests bis %2$@."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: paused during the Splatfest until %2$@."
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: paused during the Splatfest until %2$@."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@: en pausa durante el Festival hasta el %2$@."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@: en pausa durante el Festival hasta el %2$@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ : en pause pendant le Festival jusqu’à %2$@."
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@ : en pause pendant le Festival jusqu’à %2$@."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@: in pausa durante lo Splatfest fino a %2$@."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@：フェス開催中のため休止、%2$@に再開。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@: 페스티벌 기간 중 일시 중지, %2$@에 재개."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@: gepauzeerd tijdens de Splatfest tot %2$@."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "%1$@: приостановлен на время Сплатфеста, возобновится: %2$@."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@：祭典期间暂停，%2$@恢复。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@：祭典期間暫停，%2$@恢復。"
+          }
+        }
+      }
+    },
     "sentence.rotation" : {
       "comment" : "A Rotation's sentence for VoiceOver and Siri. %1$@: the Battle Mode. %2$@: the Rule. %3$@: both Stages as a list. %4$@: the time range, with the time left while it runs.",
       "extractionState" : "manual",
@@ -2247,96 +2247,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@：在%3$@進行%2$@，%4$@。"
-          }
-        }
-      }
-    },
-    "sentence.rotation.paused" : {
-      "comment" : "The sentence of a Rotation a Splatfest pauses. %1$@: the Battle Mode. %2$@: the time range, with the time left while it runs.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: pausiert während des Splatfests, %2$@."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: paused during the Splatfest, %2$@."
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: paused during the Splatfest, %2$@."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: en pausa durante el Festival, %2$@."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: en pausa durante el Festival, %2$@."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@ : en pause pendant le Festival, %2$@."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@ : en pause pendant le Festival, %2$@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: in pausa durante lo Splatfest, %2$@."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：フェス開催中のため休止、%2$@。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: 페스티벌 기간 중 일시 중지, %2$@."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: gepauzeerd tijdens de Splatfest, %2$@."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: приостановлен на время Сплатфеста, %2$@."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：祭典期间暂停，%2$@。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：祭典期間暫停，%2$@。"
           }
         }
       }

@@ -30,21 +30,31 @@ public struct SentenceWriter: Sendable {
   }
 
   /// A Rotation's sentence: its Battle Mode, Rule, both Stages and time range, plus the time
-  /// left while it runs at `instant`. A paused Rotation reads that the Splatfest pauses it.
+  /// left while it runs at `instant`.
   ///
   /// A Rotation lasts hours, so its times carry no day.
+  ///
+  /// A lineup's Rotations always play: a paused window is never an item, and a pause reads
+  /// `sentence(forPauseOf:returningAt:)` with the lineup's return time. A paused window taken
+  /// straight from the feed knows only its own end, so it reads as paused until then.
   public func sentence(for rotation: Rotation, at instant: Date) -> String {
-    let when = when(rotation, at: instant, times: .init().hour().minute())
-    guard let setting = rotation.setting else {
-      return format("sentence.rotation.paused", rotation.mode.name(in: language), when)
-    }
+    let mode = rotation.mode.name(in: language)
+    guard let setting = rotation.setting else { return pauseSentence(named: mode, returningAt: rotation.endTime) }
 
     return format(
       "sentence.rotation",
-      rotation.mode.name(in: language),
+      mode,
       terms.name(of: setting.rule),
       list(setting.stages.map(terms.name(of:))),
-      when)
+      when(rotation, at: instant, times: .init().hour().minute()))
+  }
+
+  /// The sentence of a Battle Mode a Splatfest pauses: the Battle Mode and when it comes back,
+  /// as `OnNow.paused(returnTime:)` and a lineup's pause carry it.
+  ///
+  /// The return can be days away, so its time carries the weekday.
+  public func sentence(forPauseOf mode: BattleMode, returningAt returnTime: Date) -> String {
+    pauseSentence(named: mode.name(in: language), returningAt: returnTime)
   }
 
   /// A Shift's sentence: Salmon Run, Big Run or Eggstra Work, its Stage, four weapons and time
@@ -97,9 +107,10 @@ public struct SentenceWriter: Sendable {
     return format("sentence.timeLeft", span)
   }
 
-  /// An instant within the coming days, as a Shift's times read: its weekday and time.
-  func weekdayAndTime(_ instant: Date) -> String {
-    instant.formatted(localized(Self.weekdayAndTimeStyle))
+  /// The pause sentence of a Battle Mode named `mode`. `SiriAnswers` reads a lineup's pause
+  /// with it.
+  func pauseSentence(named mode: String, returningAt returnTime: Date) -> String {
+    format("sentence.pause", mode, returnTime.formatted(localized(Self.weekdayAndTimeStyle)))
   }
 
   // MARK: Parts
