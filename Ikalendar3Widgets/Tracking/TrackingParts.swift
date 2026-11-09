@@ -398,7 +398,7 @@ struct TrackingRefreshButton: View {
 
   var body: some View {
     Button(intent: RefreshTrackingIntent()) {
-      Label(TrackingText.refresh.text(in: language), systemImage: "arrow.clockwise")
+      Label(TrackingText.refresh.text(in: language), systemImage: TrackingText.refresh.systemImage)
         .font(.caption.weight(.semibold))
         .lineLimit(1)
     }

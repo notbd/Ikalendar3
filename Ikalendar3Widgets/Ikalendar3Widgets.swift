@@ -15,7 +15,8 @@ import WidgetKit
 
 // MARK: - Ikalendar3Widgets
 
-/// The widget extension on iPhone, iPad and Mac, with Tracking's Live Activity on iOS.
+/// The widget extension on iPhone, iPad and Mac, with Tracking's Live Activity and Control Center
+/// control on iOS.
 @main
 struct Ikalendar3Widgets: WidgetBundle {
   /// Registers the fonts and points image lookups at the resource framework before anything draws.
@@ -29,13 +30,15 @@ struct Ikalendar3Widgets: WidgetBundle {
     SalmonRunWidget()
     #if os(iOS)
     TrackingLiveActivity()
+    TrackingControl()
     #endif
   }
 }
 
 // MARK: - WidgetKind
 
-/// Each widget's kind, which WidgetKit stores with every placed widget: never rename a raw value.
+/// Each widget's and control's kind, which WidgetKit stores with every placed one: never rename a
+/// raw value.
 enum WidgetKind: String {
   /// The widget set to one Battle Mode: Home Screen, StandBy, Mac desktop and Lock Screen.
   case battle
@@ -43,6 +46,8 @@ enum WidgetKind: String {
   case battleOverview = "battle-overview"
   /// The Salmon Run widget.
   case salmonRun = "salmon-run"
+  /// The Control Center control that starts Tracking a Mode (iOS).
+  case tracking
 
   /// The kind of the widget a player sets to `mode`. Every Mode has a widget: the switch is
   /// exhaustive, so a new member of the Mode value fails to compile here until one covers it.
@@ -57,9 +62,9 @@ enum WidgetKind: String {
 
 // MARK: - WidgetsIntentsPackage
 
-/// Adds `IkaIntents`' types, such as the Battle Mode parameter and the Live Activity's Refresh
-/// intent, to this extension's App Intents metadata, so the widget editor offers them and the
-/// activity's button finds its intent.
+/// Adds `IkaIntents`' types, such as the Battle Mode parameter, the Live Activity's Refresh intent
+/// and the control's start-Tracking intent, to this extension's App Intents metadata, so the
+/// widget editor and Control Center offer them and the buttons find their intents.
 struct WidgetsIntentsPackage: AppIntentsPackage {
   static var includedPackages: [any AppIntentsPackage.Type] { [IkaIntentsPackage.self] }
 }

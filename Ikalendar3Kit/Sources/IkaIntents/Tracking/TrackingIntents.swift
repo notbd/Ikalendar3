@@ -56,9 +56,9 @@ public struct RefreshTrackingIntent: LiveActivityIntent {
 
 // MARK: - TrackingText
 
-/// The words of Tracking's buttons in a text set: the intents' titles, from this module's
-/// string catalog, so a button reads as the intent it runs. The Refresh button's word is the one
-/// `TrackingReminder`'s phrases tell the player to tap.
+/// The words and symbols of Tracking's buttons. The words are the intents' titles, from this
+/// module's string catalog, so a button reads as the intent it runs. The Refresh button's word is
+/// the one `TrackingReminder`'s phrases tell the player to tap.
 public enum TrackingText: String, CaseIterable, Sendable {
   /// "Start Tracking": the app's track button.
   case startTracking = "Start Tracking"
@@ -68,6 +68,15 @@ public enum TrackingText: String, CaseIterable, Sendable {
   /// The word in a text set.
   public func text(in language: GameLanguage) -> String {
     Bundle.module.localizedString(forKey: rawValue, in: language)
+  }
+
+  /// The button's SF Symbol. The app's track button and the Control Center control share the
+  /// start-Tracking one: Control Center draws only symbols, never the bundled Mode icons.
+  public var systemImage: String {
+    switch self {
+      case .startTracking: "dot.radiowaves.left.and.right"
+      case .refresh: "arrow.clockwise"
+    }
   }
 }
 #endif
