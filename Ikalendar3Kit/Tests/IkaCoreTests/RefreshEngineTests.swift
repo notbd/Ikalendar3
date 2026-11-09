@@ -245,17 +245,24 @@ final class RefreshEngineTests {
     let cache: FeedCache = .init(directory: directory)
     var artRequests: Int { transport.requests.count { $0.url == splatfest.artURL } }
 
-    await engine.refresh()
-    let stored = try cache.splatfestArt(for: splatfest.id).map { try Data(contentsOf: $0) }
+    let first = await engine.refresh()
+    let storedFile = cache.splatfestArt(for: splatfest.id)
+    let stored = try storedFile.map { try Data(contentsOf: $0) }
+    let cachedArt = await cache.snapshot().splatfestArt
     clock.now = date("2026-11-01T06:23:00Z")
     await engine.refresh()
     let requestsWhileOn = artRequests
     clock.now = splatfest.endTime
-    await engine.refresh()
+    let over = await engine.refresh()
 
     #expect(stored == art)
+    // The first refresh publishes the art it downloaded, as the cache gives it to widgets.
+    #expect(first.snapshot.splatfestArt == storedFile)
+    #expect(cachedArt == storedFile)
     #expect(requestsWhileOn == 1)
     #expect(cache.splatfestArt(for: splatfest.id) == nil)
+    #expect(over.snapshot.splatfestArt == nil)
+    #expect(engine.snapshot.splatfestArt == nil)
     #expect(artRequests == 1)
   }
 }

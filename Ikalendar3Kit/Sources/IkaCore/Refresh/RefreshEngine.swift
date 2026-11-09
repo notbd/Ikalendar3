@@ -14,7 +14,8 @@ import Observation
 /// button, the Live Activity's Refresh button, Siri and background tasks.
 ///
 /// Each refresh publishes the cache first, so content shows at once and offline, then passes each
-/// feed through the shared `FeedGate`, then publishes the cache again. A failed feed keeps its
+/// feed through the shared `FeedGate`, then brings the Splatfest art in step and publishes the
+/// cache again, art included. A failed feed keeps its
 /// last good data and is marked stale; nothing a refresh does blanks content already shown. As
 /// in ikalendar 2, the in-flight `status` is kept apart from the `settledStatus` a screen shows.
 ///
@@ -34,7 +35,6 @@ final public class RefreshEngine {
   private(set) public var settledStatus: RefreshStatus = .loading
 
   @ObservationIgnored private let client: FeedClient
-  @ObservationIgnored private let gate: FeedGate
   @ObservationIgnored private let feeds: [Feed]
   /// The refresh in flight, which a call arriving meanwhile joins.
   @ObservationIgnored private var inFlight: Task<RefreshResult, Never>?
@@ -48,7 +48,6 @@ final public class RefreshEngine {
   ///   covers the other text sets.
   public init(client: FeedClient, language: GameLanguage) {
     self.client = client
-    gate = FeedGate(directory: client.cache.directory, lease: client.timeout, now: client.now)
     feeds = [.schedules, .festivals, .locale(language)]
   }
 
@@ -68,19 +67,20 @@ final public class RefreshEngine {
     return await run.value
   }
 
-  /// One refresh: publishes the cache, passes each feed through the gate, publishes the cache as
-  /// the feeds left it, and keeps the Splatfest art in step with it.
+  /// One refresh: publishes the cache, passes each feed through the gate, keeps the Splatfest art
+  /// in step with the cache the feeds left, and publishes that cache with its art.
   ///
   /// The cache is reread at both ends because other engines commit to it at any moment. Every
   /// published value is `Equatable`, and `@Observable` publishes no value equal to the current
   /// one, so a status or snapshot that does not change is not published again.
   private func run() async -> RefreshResult {
     status = .loading
-    await publishCache()
+    await publish(client.cache.snapshot())
 
-    let outcomes = await withTaskGroup(of: (Feed, RefreshOutcome).self) { [client, gate] group in
+    let outcomes = await withTaskGroup(of: (Feed, RefreshOutcome).self) { [client] group in
+      let gate = client.gate
       for feed in feeds {
-        group.addTask { await (feed, gate.pass(feed) { await client.fetch(feed) }) }
+        group.addTask { await (feed, gate.pass(.feed(feed)) { await client.fetch(feed) }) }
       }
       var outcomes: [Feed: RefreshOutcome] = [:]
       for await (feed, outcome) in group {
@@ -106,20 +106,21 @@ final public class RefreshEngine {
       }
     }
 
-    await publishCache()
-    await client.updateSplatfestArt(for: snapshot.splatfest)
+    var refreshed = await client.cache.snapshot()
+    refreshed.splatfestArt = await client.updateSplatfestArt(in: refreshed)
+    publish(refreshed)
     status = hasFailed ? .failed : .loaded
     settledStatus = status
     return RefreshResult(outcomes: outcomes, snapshot: snapshot)
   }
 
-  /// Rereads the cache and publishes it with this engine's stale marks.
+  /// Publishes a snapshot read from the cache with this engine's stale marks.
   ///
   /// A feed whose refresh failed here stays stale across rereads until its record is renewed
   /// after the failure, by a 200 or a 304 from any engine. The marks live only in this engine, so
   /// a relaunched app starts from the cache with none.
-  private func publishCache() async {
-    var snapshot = await client.cache.snapshot()
+  private func publish(_ snapshot: Snapshot) {
+    var snapshot = snapshot
     for (feed, failureTime) in failureTimes {
       if let fetchTime = snapshot.fetchTime(of: feed), fetchTime > failureTime {
         failureTimes[feed] = nil

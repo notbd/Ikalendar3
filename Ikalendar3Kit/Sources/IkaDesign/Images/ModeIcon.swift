@@ -10,15 +10,15 @@ import IkaCore
 // MARK: - ModeIcon
 
 /// The icon of a Mode, of Challenge or Splatfest Battle, or of a kind of Shift. Raw values are the
-/// manifest ids of the `mode` group.
+/// manifest ids of the `mode` group. A kind `ModeColor` also lists has the same case name there.
 public enum ModeIcon: String, CaseIterable, Sendable {
-  case regular
+  case regularBattle = "regular"
   /// Anarchy Series and Anarchy Open, as in the game.
   case anarchy
-  case x
+  case xBattle = "x"
   case challenge
   /// Splatfest Battle. A placeholder stands in until the drawn icon lands.
-  case splatfest
+  case splatfestBattle = "splatfest"
   case salmonRun = "salmon-run"
   case bigRun = "big-run"
   case eggstraWork = "eggstra-work"
@@ -26,10 +26,10 @@ public enum ModeIcon: String, CaseIterable, Sendable {
   /// The icon of `mode`.
   public init(_ mode: Mode) {
     switch mode {
-      case .battle(.regular): self = .regular
+      case .battle(.regular): self = .regularBattle
       case .battle(.anarchySeries),
            .battle(.anarchyOpen): self = .anarchy
-      case .battle(.x): self = .x
+      case .battle(.x): self = .xBattle
       case .salmonRun: self = .salmonRun
     }
   }

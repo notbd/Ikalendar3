@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-/// The fixed sizes of Ink's base components, from the round 3 mock and SplatNet 3's style sheet.
+/// The fixed sizes of Ink's base components, from the navigation prototype's round 3 mock (the
+/// planning folder's `prototypes/14-navigation`) and SplatNet 3's style sheet.
 /// Sizes that follow a cell's width stay with the screens, in `CellMetrics`. Ticket 56 judges the
 /// final values.
 enum InkMetrics {

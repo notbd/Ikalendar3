@@ -30,21 +30,29 @@ public struct SentenceWriter: Sendable {
   }
 
   /// A Rotation's sentence: its Battle Mode, Rule, both Stages and time range, plus the time
-  /// left while it runs at `instant`. A paused Rotation reads that the Splatfest pauses it.
+  /// left while it runs at `instant`.
   ///
   /// A Rotation lasts hours, so its times carry no day.
+  ///
+  /// A lineup's Rotations always play: a paused window is never an item, and a pause reads
+  /// `sentence(forPauseOf:returningAt:)` with the lineup's return time. A paused window taken
+  /// straight from the feed knows only its own end, so it reads as paused until then.
   public func sentence(for rotation: Rotation, at instant: Date) -> String {
-    let when = when(rotation, at: instant, times: .init().hour().minute())
-    guard let setting = rotation.setting else {
-      return format("sentence.rotation.paused", mode(rotation.mode), when)
-    }
+    sentence(of: rotation.mode.name(in: language), playing: rotation.setting, in: rotation, at: instant)
+  }
 
-    return format(
-      "sentence.rotation",
-      mode(rotation.mode),
-      terms.name(of: setting.rule),
-      list(setting.stages.map(terms.name(of:))),
-      when)
+  /// A Tracking item's sentence: a Rotation of `mode` reads as `sentence(for:at:)`, a pause as
+  /// `sentence(forPauseOf:returningAt:)` with the item's end, when the Battle Mode returns.
+  public func sentence(for item: TrackedRotation, of mode: BattleMode, at instant: Date) -> String {
+    sentence(of: mode.name(in: language), playing: item.setting, in: item, at: instant)
+  }
+
+  /// The sentence of a Battle Mode a Splatfest pauses: the Battle Mode and when it comes back,
+  /// as `OnNow.paused(returnTime:)` and a lineup's pause carry it.
+  ///
+  /// The return can be days away, so its time carries the weekday.
+  public func sentence(forPauseOf mode: BattleMode, returningAt returnTime: Date) -> String {
+    pauseSentence(named: mode.name(in: language), returningAt: returnTime)
   }
 
   /// A Shift's sentence: Salmon Run, Big Run or Eggstra Work, its Stage, four weapons and time
@@ -59,12 +67,13 @@ public struct SentenceWriter: Sendable {
         case .bigRun: .bigRun
         case .eggstraWork: .eggstraWork
       }
-    return format(
-      "sentence.shift",
-      kind.text(in: language),
-      terms.name(of: shift.stage),
-      list(shift.weapons.map(weaponName)),
-      when(shift, at: instant, times: Self.weekdayAndTimeStyle))
+    return sentence(of: kind, on: shift.stage, with: shift.weapons, in: shift, at: instant)
+  }
+
+  /// A Tracking item's sentence: the regular Shift or Big Run it stands for, read as
+  /// `sentence(for:at:)`.
+  public func sentence(for item: TrackedShift, at instant: Date) -> String {
+    sentence(of: item.isBigRun ? .bigRun : .salmonRun, on: item.stage, with: item.weapons, in: item, at: instant)
   }
 
   /// A Splatfest's sentence: its title and time range, plus the time left while it runs at
@@ -97,12 +106,49 @@ public struct SentenceWriter: Sendable {
     return format("sentence.timeLeft", span)
   }
 
-  /// An instant within the coming days, as a Shift's times read: its weekday and time.
-  func weekdayAndTime(_ instant: Date) -> String {
-    instant.formatted(localized(Self.weekdayAndTimeStyle))
+  /// The pause sentence of a Battle Mode named `mode`. `SiriAnswers` reads a lineup's pause
+  /// with it.
+  func pauseSentence(named mode: String, returningAt returnTime: Date) -> String {
+    format("sentence.pause", mode, returnTime.formatted(localized(Self.weekdayAndTimeStyle)))
   }
 
   // MARK: Parts
+
+  /// The sentence of a Rotation of Battle Mode `mode` over `window`, or of its pause until the
+  /// window ends when `setting` is `nil`.
+  private func sentence(
+    of mode: String,
+    playing setting: Rotation.Setting?,
+    in window: some TimeWindow,
+    at instant: Date)
+    -> String
+  {
+    guard let setting else { return pauseSentence(named: mode, returningAt: window.endTime) }
+
+    return format(
+      "sentence.rotation",
+      mode,
+      terms.name(of: setting.rule),
+      list(setting.stages.map(terms.name(of:))),
+      when(window, at: instant, times: .init().hour().minute()))
+  }
+
+  /// The sentence of a Shift of `kind` over `window`.
+  private func sentence(
+    of kind: ModeLabel,
+    on stage: StageID,
+    with weapons: [WeaponID],
+    in window: some TimeWindow,
+    at instant: Date)
+    -> String
+  {
+    format(
+      "sentence.shift",
+      kind.text(in: language),
+      terms.name(of: stage),
+      list(weapons.map(weaponName)),
+      when(window, at: instant, times: Self.weekdayAndTimeStyle))
+  }
 
   /// A weekday and a time: "Thursday 8:00 AM".
   static private let weekdayAndTimeStyle: Date.FormatStyle = .init().weekday(.wide).hour().minute()
@@ -121,22 +167,6 @@ public struct SentenceWriter: Sendable {
   /// as rare random.
   private func weaponName(_ id: WeaponID) -> String {
     id == .rareRandom ? format("weapon.rareRandom", terms.name(of: id)) : terms.name(of: id)
-  }
-
-  /// A Rotation's Battle Mode name, with its form for Anarchy Battle and Splatfest Battle.
-  private func mode(_ mode: RotationMode) -> String {
-    switch mode {
-      case .battle(.regular): ModeLabel.regularBattle.text(in: language)
-      case .battle(.anarchySeries): withForm(.anarchyBattle, .series)
-      case .battle(.anarchyOpen): withForm(.anarchyBattle, .open)
-      case .battle(.x): ModeLabel.xBattle.text(in: language)
-      case .splatfestBattle(.open): withForm(.splatfestBattle, .open)
-      case .splatfestBattle(.pro): withForm(.splatfestBattle, .pro)
-    }
-  }
-
-  private func withForm(_ mode: ModeLabel, _ form: ModeLabel) -> String {
-    format("sentence.modeWithForm", mode.text(in: language), form.text(in: language))
   }
 
   /// Names joined as the text set lists them: "A and B", "A、B".
