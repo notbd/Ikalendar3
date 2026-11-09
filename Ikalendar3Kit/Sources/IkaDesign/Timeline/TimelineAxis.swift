@@ -133,7 +133,7 @@ private struct TimelineTrack: View {
 // MARK: - TimelinePin
 
 /// A start time on the axis: in the Mode colour while its item runs, light grey otherwise.
-private struct TimelinePin: View {
+struct TimelinePin: View {
   let text: String
   let color: TimelineTint
   let isCurrent: Bool

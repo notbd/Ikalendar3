@@ -288,7 +288,7 @@ private struct TimelineStagePicture: View {
 
 /// A Shift's four weapons on a black plate, random marks drawn as the game's question marks, and
 /// the King Salmonid at the far end. Each picture carries its name.
-private struct TimelineWeapons: View {
+struct TimelineWeapons: View {
   let weapons: [WeaponID]
   let kingSalmonid: KingSalmonidID?
   let terms: GameTerms
