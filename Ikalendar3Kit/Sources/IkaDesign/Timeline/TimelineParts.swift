@@ -121,7 +121,7 @@ private struct TimelineHeadline<Leading: View, Trailing: View>: View {
 // MARK: - TimelineNowTag
 
 /// "Now" in the Mode colour, with the time left counting down on whole seconds.
-private struct TimelineNowTag: View {
+struct TimelineNowTag: View {
   @Environment(\.colorScheme) private var colorScheme
 
   let timeLeft: Duration
@@ -148,7 +148,7 @@ private struct TimelineNowTag: View {
 // MARK: - TimelineKindTag
 
 /// The mark of a Big Run or an Eggstra Work: its icon and label on a tag in its colour.
-private struct TimelineKindTag: View {
+struct TimelineKindTag: View {
   let label: ModeLabel
   let kind: Shift.Kind
   let language: GameLanguage
@@ -180,7 +180,7 @@ private struct TimelineKindTag: View {
 /// Stage pictures joined in one strip with rounded outer corners, each name on a black tag
 /// centred at its bottom. Stacked, the pictures run one under the other and the names wrap below
 /// them.
-private struct TimelineStageStrip: View {
+struct TimelineStageStrip: View {
   let stages: [StageID]
   let terms: GameTerms
   let arrangement: CellArrangement
@@ -255,7 +255,7 @@ private struct TimelineStagePicture: View {
 
 /// A Shift's four weapons on a black plate, random marks drawn as the game's question marks, and
 /// the King Salmonid at the far end. Each picture carries its name.
-private struct TimelineWeapons: View {
+struct TimelineWeapons: View {
   let weapons: [WeaponID]
   let kingSalmonid: KingSalmonidID?
   let terms: GameTerms

@@ -15,7 +15,6 @@ import SwiftUI
 /// Salmonid, and, while it runs, the tape and the progress. A Big Run or an Eggstra Work wears
 /// its name on a tag in its colour, which also colours its "Now!".
 struct InkShiftPanel: View {
-  @Environment(\.colorScheme) private var colorScheme
   @Environment(\.gameLanguage) private var language
 
   let entry: InkPanelEntry<Shift>
@@ -38,7 +37,7 @@ struct InkShiftPanel: View {
       }
       stageAndWeapons(of: shift)
       if let kingSalmonid = shift.kingSalmonid {
-        kingSalmonidRow(kingSalmonid)
+        InkKingSalmonidRow(kingSalmonid: kingSalmonid, terms: terms, arrangement: metrics.arrangement)
       }
       if let progress = entry.place.progress {
         InkProgressBar(
@@ -64,40 +63,30 @@ struct InkShiftPanel: View {
       case .sideBySide:
         HStack(alignment: .top, spacing: InkScreenMetrics.cardSpacing) {
           stageCard
-          weapons(shift.weapons, columns: 2)
+          InkWeaponPlates(weapons: shift.weapons, terms: terms, columns: 2)
             .frame(width: metrics.length(InkScreenMetrics.weaponsWidth))
         }
 
       case .stacked:
         VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
           stageCard
-          weapons(shift.weapons, columns: shift.weapons.count)
+          InkWeaponPlates(weapons: shift.weapons, terms: terms, columns: shift.weapons.count)
         }
     }
   }
+}
 
-  /// The weapons on round dark plates, as the game shows them; a random mark is the game's
-  /// question mark. Each image is labelled with the weapon's name.
-  private func weapons(_ weapons: [WeaponID], columns: Int) -> some View {
-    let grid: [GridItem] = .init(
-      repeating: GridItem(.flexible(), spacing: InkScreenMetrics.cardSpacing / 2),
-      count: max(columns, 1))
+// MARK: - InkKingSalmonidRow
 
-    // Keyed by position: a Shift can list one weapon more than once (four golden marks).
-    return LazyVGrid(columns: grid, spacing: InkScreenMetrics.cardSpacing / 2) {
-      ForEach(Array(weapons.enumerated()), id: \.offset) { _, weapon in
-        Image(BundledImage.name(for: weapon, size: .medium), bundle: BundledImage.catalogBundle)
-          .resizable()
-          .scaledToFit()
-          .accessibilityLabel(Text(verbatim: terms.name(of: weapon)))
-          .padding(InkScreenMetrics.cardSpacing / 2)
-          .background(Color(InkPair.tagText.colors(in: colorScheme).background), in: .circle)
-      }
-    }
-  }
+/// The King Salmonid that can appear at the end of a Shift: its icon and name.
+struct InkKingSalmonidRow: View {
+  @Environment(\.colorScheme) private var colorScheme
 
-  /// The King Salmonid that can appear at the end of the Shift.
-  private func kingSalmonidRow(_ kingSalmonid: KingSalmonidID) -> some View {
+  let kingSalmonid: KingSalmonidID
+  let terms: GameTerms
+  let arrangement: CellArrangement
+
+  var body: some View {
     HStack(spacing: InkScreenMetrics.cardSpacing) {
       Image(decorative: BundledImage.name(for: kingSalmonid, size: .small), bundle: BundledImage.catalogBundle)
         .resizable()
@@ -106,7 +95,37 @@ struct InkShiftPanel: View {
       Text(verbatim: terms.name(of: kingSalmonid))
         .inkFont(.caption)
         .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
-        .scaledLimitedLine(for: metrics.arrangement)
+        .scaledLimitedLine(for: arrangement)
+    }
+  }
+}
+
+// MARK: - InkWeaponPlates
+
+/// A Shift's weapons on round dark plates, as the game shows them, in a grid of `columns`; a
+/// random mark is the game's question mark. Each image is labelled with the weapon's name.
+struct InkWeaponPlates: View {
+  @Environment(\.colorScheme) private var colorScheme
+
+  let weapons: [WeaponID]
+  let terms: GameTerms
+  let columns: Int
+
+  var body: some View {
+    let grid: [GridItem] = .init(
+      repeating: GridItem(.flexible(), spacing: InkScreenMetrics.cardSpacing / 2),
+      count: max(columns, 1))
+
+    // Keyed by position: a Shift can list one weapon more than once (four golden marks).
+    LazyVGrid(columns: grid, spacing: InkScreenMetrics.cardSpacing / 2) {
+      ForEach(Array(weapons.enumerated()), id: \.offset) { _, weapon in
+        Image(BundledImage.name(for: weapon, size: .medium), bundle: BundledImage.catalogBundle)
+          .resizable()
+          .scaledToFit()
+          .accessibilityLabel(Text(verbatim: terms.name(of: weapon)))
+          .padding(InkScreenMetrics.cardSpacing / 2)
+          .background(Color(InkPair.tagText.colors(in: colorScheme).background), in: .circle)
+      }
     }
   }
 }

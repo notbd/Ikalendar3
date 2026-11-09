@@ -163,7 +163,7 @@ public struct InkSalmonRunScreenView: View {
 /// What both Ink screens share around their panels: the dotted background, the Mode's heading
 /// and docking stamp, the panels' metrics for the screen's width and text size, the reflow when
 /// a panel leaves, and the fetch time at the end.
-private struct InkScheduleList<Panels: View>: View {
+struct InkScheduleList<Panels: View>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   let mode: Mode
@@ -255,7 +255,7 @@ private struct InkModeHeadingView: View {
 
 /// A taped panel in the featured place that says why nothing is current: a pause by a Splatfest,
 /// with the return time, or nothing on right now.
-private struct InkNote: View {
+struct InkNote: View {
   let text: String
 
   var body: some View {

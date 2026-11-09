@@ -57,3 +57,19 @@ public struct WideDetailMetrics: Equatable, Sendable {
     half = CellMetrics(width: columnWidth / 2, dynamicTypeSize: dynamicTypeSize)
   }
 }
+
+// MARK: - CellShare
+
+extension CellShare {
+  /// The wide current row's progress ring, a share of `WideDetailMetrics.half`.
+  static public let wideRingSize: CellShare = .init(0.15)
+  /// A table row's Rule column, a share of `WideDetailMetrics.half`. Every Style's table lines
+  /// its columns up on these shares; the time column takes the rest of the row.
+  static public let tableRuleWidth: CellShare = .init(0.46)
+  /// A table row's Stage thumbnail, with its name under it.
+  static public let tableThumbnailWidth: CellShare = .init(0.36)
+  /// A table row's Rule icon.
+  static public let tableRuleIconHeight: CellShare = .init(0.1)
+  /// A Salmon Run table row's weapon.
+  static public let tableWeaponSize: CellShare = .init(0.13)
+}
