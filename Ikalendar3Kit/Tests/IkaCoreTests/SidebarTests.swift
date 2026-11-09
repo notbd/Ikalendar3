@@ -135,7 +135,7 @@ struct SidebarTests {
         continue
       }
 
-      #expect(sidebar.groups[0].rows.contains(.splatfestBattle(form, screen.current)))
+      #expect(sidebar.groups[0].rows.contains(.mode(.splatfestBattle(form, screen.current))))
     }
   }
 

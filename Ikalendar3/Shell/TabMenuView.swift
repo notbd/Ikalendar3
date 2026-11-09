@@ -156,32 +156,12 @@ private struct TabMenuRow: View {
     }
   }
 
-  /// The current Rule and time left, the pause with the return time, or nothing on; none before
-  /// the Mode has a screen.
+  /// The summary's line, worded as the sidebar's: the current Rule and time left, the pause with
+  /// the return time, or nothing on; none before the Mode has a screen.
   private var summary: String? {
-    guard let summary = option.summary else { return nil }
-
-    let writer: SentenceWriter = time.writer(terms)
-    switch summary {
-      case .battle(_, .running(let running)),
-           .splatfestBattle(_, .running(let running)):
-        // A summary's Rotation always plays: a paused window reads as the pause instead.
-        let rule: String = running.item.setting.map { terms.name(of: $0.rule) } ?? ""
-        return "\(rule) · \(writer.timeLeft(running.progress))"
-
-      case .salmonRun(.running(let running)):
-        return "\(terms.name(of: running.item.stage)) · \(writer.timeLeft(running.progress))"
-
-      case .battle(_, .paused(let returnTime)),
-           .splatfestBattle(_, .paused(let returnTime)),
-           .salmonRun(.paused(let returnTime)):
-        let format = time.format(terms.language)
-        return ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now))
-
-      case .battle(_, .nothingCurrent),
-           .splatfestBattle(_, .nothingCurrent),
-           .salmonRun(.nothingCurrent):
-        return ScreenText.nothingCurrent.text(in: terms.language)
+    option.summary.map { summary in
+      SidebarRowContent(row: .mode(summary), writer: time.writer(terms), format: time.format(terms.language), now: now)
+        .summary
     }
   }
 }

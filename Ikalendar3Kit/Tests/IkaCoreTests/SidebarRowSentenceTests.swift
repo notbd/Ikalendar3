@@ -44,7 +44,7 @@ struct SidebarRowSentenceTests {
 
   @Test(arguments: [
     (
-      SidebarRow.splatfestBattle(.pro, .nothingCurrent),
+      SidebarRow.mode(.splatfestBattle(.pro, .nothingCurrent)),
       "Splatfest Battle (Pro): what is on now is not in the published Schedule."),
     (.challenge(nil), "Challenges: none announced yet."),
   ])
