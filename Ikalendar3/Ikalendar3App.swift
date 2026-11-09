@@ -33,6 +33,16 @@ struct Ikalendar3App: App {
           .environment(\.gameLanguage, AppServices.language)
       }
     }
+
+    #if os(macOS)
+    // The standard Settings window, which Command-comma opens.
+    Settings {
+      if !AppServices.isTestHost, let services {
+        SettingsView()
+          .environment(services)
+      }
+    }
+    #endif
   }
 
   init() {

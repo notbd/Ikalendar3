@@ -32,4 +32,10 @@ struct HapticTests {
   func `A tab or Mode switch plays a soft impact`() {
     #expect(Haptic.modeSwitch == .impact(flexibility: .soft))
   }
+
+  @Test
+  func `Showing Settings plays a rigid impact and dismissing it plays none`() {
+    #expect(Haptic.settingsPresentationChanged(to: true) == .impact(flexibility: .rigid))
+    #expect(Haptic.settingsPresentationChanged(to: false) == nil)
+  }
 }

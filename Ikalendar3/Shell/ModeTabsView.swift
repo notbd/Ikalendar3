@@ -16,8 +16,8 @@ import SwiftUI
 /// runs. iPad and Mac show them too until their own navigation lands.
 ///
 /// It refreshes each time the app becomes active (the engine's gate decides whether a request
-/// goes out), plays the haptics of ikalendar 2's table, and reports a failed refresh in a toast
-/// while the screens keep their data.
+/// goes out), plays the haptics of ikalendar 2's table, reports a failed refresh in a toast while
+/// the screens keep their data, and shows Settings from each tab's toolbar.
 struct ModeTabsView: View {
   @Environment(RefreshEngine.self) private var engine
   @Environment(AppClock.self) private var clock
@@ -37,6 +37,7 @@ struct ModeTabsView: View {
         Tab(value: tab.place) {
           NavigationStack {
             screen(for: tab)
+              .settingsButton(isPresented: $status.isSettingsPresented, language: language)
           }
           .overlay(alignment: .bottom) {
             if failureToast != nil {
@@ -51,7 +52,8 @@ struct ModeTabsView: View {
       }
     }
     .minimizingTabBar(preferences.shouldMinimizeTabBar)
-    .preferredColorScheme(preferences.colorScheme.colorScheme)
+    .settingsPresentation(isPresented: $status.isSettingsPresented)
+    .appColorScheme(preferences.colorScheme)
     .sensoryFeedback(Haptic.modeSwitch, trigger: status.selectedPlace)
     .sensoryFeedback(trigger: engine.status) { old, new in
       Haptic.refreshChanged(from: old, to: new)
@@ -83,49 +85,6 @@ struct ModeTabsView: View {
       case .mode(.challenge),
            .splatfest:
         EmptyScheduleScreenView(title: tab.title(in: language))
-    }
-  }
-}
-
-// MARK: - AppTab
-
-extension AppTab {
-  /// The tab's name in the tab bar.
-  fileprivate func title(in language: GameLanguage) -> String {
-    let label: ModeLabel =
-      switch self {
-        case .mode(.regularBattle): .regularBattle
-        case .mode(.anarchy): .anarchyBattle
-        case .mode(.xBattle): .xBattle
-        case .mode(.challenge): .challenges
-        case .mode(.salmonRun): .salmonRun
-        case .splatfest: .splatfestBattle
-      }
-    return label.text(in: language)
-  }
-
-  /// The tab's symbol: ikalendar 2's where it had the Mode.
-  fileprivate var systemImage: String {
-    switch self {
-      case .mode(.regularBattle): "paintbrush.fill"
-      case .mode(.anarchy): "trophy.fill"
-      case .mode(.xBattle): "crown.fill"
-      case .mode(.challenge): "flag.checkered"
-      case .mode(.salmonRun): "lifepreserver.fill"
-      case .splatfest: "party.popper.fill"
-    }
-  }
-}
-
-// MARK: - ColorSchemePreference
-
-extension ColorSchemePreference {
-  /// The scheme the app asks for, or `nil` to follow the system.
-  fileprivate var colorScheme: ColorScheme? {
-    switch self {
-      case .followSystem: nil
-      case .dark: .dark
-      case .light: .light
     }
   }
 }
