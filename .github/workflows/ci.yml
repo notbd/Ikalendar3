@@ -1,0 +1,100 @@
+# Runs scripts/verify.sh, the same checks in the same order as a local run, on every push and on
+# manual dispatch. The pinned Xcode and linters come from scripts/versions.env.
+name: CI
+
+on:
+  push:
+
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for a manual run, echoed into the log"
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+# A new push to the same branch cancels the run it supersedes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  verify:
+    name: Verify
+    # The Xcode 27 image (public preview since 2026-07): macos-26 carries Xcode 26 only. On
+    # 2026-11-04 (image 20261104.0337.1) it has Xcode 27.0, 27.1 (default) and 27.2.
+    runs-on: xcode-27
+    timeout-minutes: 45
+
+    steps:
+      - name: Log Trigger Information
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          REASON: ${{ inputs.reason }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "Trigger: manual dispatch on '$REF_NAME'. Reason: $REASON"
+          else
+            echo "Trigger: $EVENT_NAME on '$REF_NAME'."
+          fi
+
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Load Pinned Versions
+        run: grep -E '^[A-Z_]+=' scripts/versions.env >> "$GITHUB_ENV"
+
+      - name: Select Xcode ${{ env.XCODE_VERSION }}
+        run: |
+          set -euo pipefail
+          # Exactly the pinned Xcode, never a fallback: code built against the newer SDK breaks on
+          # an older one, and a newer one may differ from what every local run used.
+          XCODE_APP="/Applications/Xcode_${XCODE_VERSION}.app"
+          if [ ! -d "$XCODE_APP" ]; then
+            echo "::error::$XCODE_APP is not on this runner image. Installed:"
+            ls -d /Applications/Xcode*.app || true
+            exit 1
+          fi
+          sudo xcode-select --switch "$XCODE_APP"
+          xcodebuild -version
+
+      - name: Install SwiftFormat ${{ env.SWIFTFORMAT_VERSION }}
+        run: |
+          set -euo pipefail
+          curl -sSfL -o "$RUNNER_TEMP/swiftformat.zip" \
+            "https://github.com/nicklockwood/SwiftFormat/releases/download/${SWIFTFORMAT_VERSION}/swiftformat.zip"
+          unzip -o -q "$RUNNER_TEMP/swiftformat.zip" -d "$RUNNER_TEMP/swiftformat"
+          # A directory of its own, first on PATH: the image's Homebrew linters would shadow it.
+          mkdir -p "$RUNNER_TEMP/pinned-tools"
+          install "$RUNNER_TEMP/swiftformat/swiftformat" "$RUNNER_TEMP/pinned-tools/swiftformat"
+          echo "$RUNNER_TEMP/pinned-tools" >> "$GITHUB_PATH"
+
+      - name: Install SwiftLint ${{ env.SWIFTLINT_VERSION }}
+        run: |
+          set -euo pipefail
+          curl -sSfL -o "$RUNNER_TEMP/swiftlint.zip" \
+            "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip"
+          unzip -o -q "$RUNNER_TEMP/swiftlint.zip" -d "$RUNNER_TEMP/swiftlint"
+          mkdir -p "$RUNNER_TEMP/pinned-tools"
+          install "$RUNNER_TEMP/swiftlint/swiftlint" "$RUNNER_TEMP/pinned-tools/swiftlint"
+
+      # Uses the defaults: derived data inside the checkout, and an iPhone and an Apple Watch
+      # simulator created for this checkout. The script checks the linter versions itself.
+      - name: Verify
+        run: scripts/verify.sh
+
+      - name: Upload Verify Logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: verify-logs
+          path: build/DerivedData/Verify
+          retention-days: 7
