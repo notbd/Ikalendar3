@@ -16,10 +16,13 @@ public struct FeedClient: Sendable {
   /// Where good answers go.
   public let cache: FeedCache
 
+  /// How long a request may take before it counts as unanswered; the refresh engine's lease.
+  let timeout: Duration
+  /// The wall clock, which the refresh engine's gate shares.
+  let now: @Sendable () -> Date
+
   private let transport: any HTTPTransport
   private let userAgent: String
-  private let timeout: Duration
-  private let now: @Sendable () -> Date
 
   /// A client that sends through a transport and keeps good answers in a cache.
   ///
