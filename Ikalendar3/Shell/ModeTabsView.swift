@@ -87,11 +87,10 @@ struct ModeTabsView: View {
       // Anarchy Open joins with the Series and Open menu.
       case .mode(.anarchy): BattleModeScreenView(mode: .anarchySeries)
       case .mode(.xBattle): BattleModeScreenView(mode: .x)
+      case .mode(.challenge): ChallengeScreenView()
       case .mode(.salmonRun): SalmonRunScreenView()
-      // Their screens come with the Challenge and Splatfest tabs.
-      case .mode(.challenge),
-           .splatfest:
-        EmptyScheduleScreenView(title: tab.title(in: language))
+      // Pro joins with the Open and Pro menu.
+      case .splatfest: SplatfestScreenView(form: .open)
     }
   }
 }

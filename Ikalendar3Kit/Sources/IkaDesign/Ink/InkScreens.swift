@@ -39,6 +39,10 @@ public struct InkBattleScreenView: View {
   public var body: some View {
     ScrollView {
       LazyVStack(spacing: 12) {
+        if let card = screen.announcedSplatfest {
+          SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .ink, now: now)
+            .inkPanel()
+        }
         switch screen.current {
           case .running(let running):
             panel(running.item, progress: running.progress)
@@ -119,6 +123,9 @@ public struct InkSalmonRunScreenView: View {
       LazyVStack(spacing: 12) {
         if let eggstraWork = screen.eggstraWork {
           panel(eggstraWork.item, progress: eggstraWork.progress)
+        }
+        else if let nextEggstraWork = screen.nextEggstraWork {
+          panel(nextEggstraWork, progress: nil)
         }
         switch screen.current {
           case .running(let running):

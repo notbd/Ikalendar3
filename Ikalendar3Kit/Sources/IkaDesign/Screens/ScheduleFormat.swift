@@ -25,10 +25,14 @@ public struct ScheduleFormat: Sendable {
 
   /// A window's start and end, with the weekday for a Shift, which spans days.
   public func timeRange(of window: some TimeWindow, withWeekday: Bool = false) -> String {
-    var style: Date.IntervalFormatStyle = .interval.hour().minute().locale(locale)
-    if withWeekday { style = style.weekday() }
-    style.timeZone = timeZone
-    return (window.startTime ..< window.endTime).formatted(style)
+    let style: Date.IntervalFormatStyle = .interval.hour().minute()
+    return range(of: window, in: withWeekday ? style.weekday() : style)
+  }
+
+  /// A window's start and end with their dates, for a window announced days ahead, such as a
+  /// Splatfest's.
+  func dateRange(of window: some TimeWindow) -> String {
+    range(of: window, in: .interval.weekday().month().day().hour().minute())
   }
 
   /// An instant: its time on the day of `now`, else its weekday and time.
@@ -38,6 +42,12 @@ public struct ScheduleFormat: Sendable {
     var style: Date.FormatStyle = .init(locale: locale, calendar: calendar, timeZone: timeZone).hour().minute()
     if !calendar.isDate(instant, inSameDayAs: now) { style = style.weekday().month().day() }
     return instant.formatted(style)
+  }
+
+  private func range(of window: some TimeWindow, in style: Date.IntervalFormatStyle) -> String {
+    var style: Date.IntervalFormatStyle = style.locale(locale)
+    style.timeZone = timeZone
+    return (window.startTime ..< window.endTime).formatted(style)
   }
 
   /// The language's locale on the device's hour cycle.

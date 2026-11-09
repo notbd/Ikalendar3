@@ -28,6 +28,7 @@ struct SalmonRunScreenTests {
     #expect(screen.later.map(\.startTime) == ["2026-09-10T16:00:00Z", "2026-09-12T00:00:00Z", "2026-09-14T00:00:00Z"]
       .map(date))
     #expect(screen.eggstraWork == nil)
+    #expect(screen.nextEggstraWork == nil)
   }
 
   @Test
@@ -59,6 +60,27 @@ struct SalmonRunScreenTests {
 
     #expect(screen.eggstraWork == nil)
     #expect(screen.current != .nothingCurrent)
+  }
+
+  @Test(arguments: [Fixture.eggstraWork, .splatfestEnd])
+  func `An Eggstra Work not yet started is on top as the next one`(_ fixture: Fixture) async throws {
+    let snapshot = try await Snapshot.schedules(fixture)
+    let eggstraWork = try #require(snapshot.schedules?.content.eggstraWork.first)
+    try #require(eggstraWork.startTime == date("2026-08-29T00:00:00Z"))
+
+    let screen = try #require(snapshot.salmonRunScreen(at: date("2026-08-23T20:00:00Z")))
+
+    #expect(screen.nextEggstraWork == eggstraWork)
+    #expect(screen.eggstraWork == nil)
+  }
+
+  @Test(arguments: ["2026-08-29T00:00:00Z", "2026-08-31T00:00:00Z"])
+  func `An Eggstra Work is no longer next once it starts`(_ instant: String) async throws {
+    let snapshot = try await Snapshot.schedules(.eggstraWork)
+
+    let screen = try #require(snapshot.salmonRunScreen(at: date(instant)))
+
+    #expect(screen.nextEggstraWork == nil)
   }
 
   @Test

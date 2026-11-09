@@ -10,8 +10,9 @@ import Foundation
 // MARK: - BattleScreen
 
 /// What a continuous Battle Mode's screen shows at an instant: the current Rotation, or why none
-/// is, the next Rotation and every later one in the published Schedule. It holds ids and times
-/// only; names and images resolve at display time.
+/// is, the next Rotation and every later one in the published Schedule, and on Regular Battle's
+/// screen an announced Splatfest. It holds ids and times only; names and images resolve at
+/// display time.
 public struct BattleScreen: Hashable, Sendable {
   /// The Battle Mode.
   public let mode: BattleMode
@@ -21,6 +22,9 @@ public struct BattleScreen: Hashable, Sendable {
   public let next: Rotation?
   /// Every published Rotation after `next`, in time order.
   public let later: [Rotation]
+  /// The card of the Splatfest announced and not started, on Regular Battle's screen only: the
+  /// Splatfest takes that tab's place when it starts, so the player meets it where it will run.
+  public let announcedSplatfest: SplatfestCard?
   /// When the schedules feed shown was last confirmed.
   public let fetchTime: Date
 }
@@ -32,11 +36,26 @@ extension Snapshot {
     guard let schedules else { return nil }
 
     let lineup = schedules.content.battleLineup(of: .battle(mode), at: instant)
+    let splatfest = mode == .regular ? splatfest : nil
     return BattleScreen(
       mode: mode,
       current: OnNow(lineup.current, at: instant),
       next: lineup.next,
       later: lineup.later,
+      announcedSplatfest: splatfest?.phase(at: instant) == .announced
+        ? splatfest.map { SplatfestCard(splatfest: $0, art: splatfestArt) }
+        : nil,
       fetchTime: schedules.fetchTime)
   }
+}
+
+// MARK: - SplatfestCard
+
+/// What a Splatfest's card shows outside the Splatfest screen: the Splatfest and its stored art.
+public struct SplatfestCard: Hashable, Sendable {
+  /// The Splatfest: its times, team colours and id, which keys its title and team names.
+  public let splatfest: Splatfest
+  /// Its art, a local image file the refresh engine stored, or `nil` while none is downloaded:
+  /// the card shows the team colours alone then.
+  public let art: URL?
 }

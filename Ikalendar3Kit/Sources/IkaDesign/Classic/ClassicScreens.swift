@@ -12,8 +12,9 @@ import SwiftUI
 // MARK: - ClassicBattleScreenView
 
 /// Classic's Battle Mode screen, ikalendar 2's look with Splatoon 3's Mode colours, icons and
-/// fonts: the Mode stamp, the current Rotation featured under "Now:" with its progress, then the
-/// next and every later Rotation in secondary cells.
+/// fonts: the Mode stamp, an announced Splatfest's card on Regular Battle's screen, the current
+/// Rotation featured under "Now:" with its progress, then the next and every later Rotation in
+/// secondary cells.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store. Pull to
 /// refresh reaches its list through the `refreshable` action the shared screen sets. A finished
@@ -44,6 +45,11 @@ public struct ClassicBattleScreenView: View {
       icon: ModeIcon(Mode.battle(screen.mode)),
       reflowValue: rows.map(\.id))
     { metrics in
+      if let card = screen.announcedSplatfest {
+        Section {
+          SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .classic, now: now)
+        }
+      }
       ForEach(rows) { row in
         ClassicBattleSection(row: row, mode: screen.mode, terms: terms, now: now, metrics: metrics)
       }
@@ -56,7 +62,7 @@ public struct ClassicBattleScreenView: View {
 // MARK: - ClassicSalmonRunScreenView
 
 /// Classic's Salmon Run screen, ikalendar 2's look with Splatoon 3's Mode colours, icons and
-/// fonts: a running Eggstra Work on top, then one cell per Shift with its Stage, four weapons,
+/// fonts: a running or next Eggstra Work on top, then one cell per Shift with its Stage, four weapons,
 /// King Salmonid and time range, a Big Run inline where it falls. It receives `IkaCore` values
 /// only and reads no store.
 public struct ClassicSalmonRunScreenView: View {
@@ -137,7 +143,7 @@ private struct ClassicScheduleList<Rows: View, Footer: View>: View {
 
 extension View {
   /// Classic's list: inset grouped on iPhone and iPad, inset on the Mac.
-  fileprivate func classicListStyle() -> some View {
+  func classicListStyle() -> some View {
     #if os(iOS)
     listStyle(.insetGrouped)
     #else
