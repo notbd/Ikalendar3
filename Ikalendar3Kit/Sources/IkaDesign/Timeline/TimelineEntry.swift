@@ -23,7 +23,7 @@ enum TimelineEntry<Item: TimeWindow & Hashable & Sendable>: Hashable, Identifiab
 
   /// An item keeps its id when it becomes current, so its slot stays and the axis moves on; the
   /// status entries share one id.
-  var id: ID {
+  var id: Identity {
     switch self {
       case .item(let item, _): .item(item)
       case .paused,
@@ -42,7 +42,7 @@ enum TimelineEntry<Item: TimeWindow & Hashable & Sendable>: Hashable, Identifiab
   }
 
   /// The current entry for `current`, then one per item still to come.
-  private static func entries(current: OnNow<Item>, upcoming: [Item]) -> [TimelineEntry] {
+  static private func entries(current: OnNow<Item>, upcoming: [Item]) -> [TimelineEntry] {
     let first: TimelineEntry =
       switch current {
         case .running(let running): .item(running.item, progress: running.progress)
@@ -53,11 +53,11 @@ enum TimelineEntry<Item: TimeWindow & Hashable & Sendable>: Hashable, Identifiab
   }
 }
 
-// MARK: TimelineEntry.ID
+// MARK: TimelineEntry.Identity
 
 extension TimelineEntry {
   /// What keeps an entry's identity while the clock runs.
-  enum ID: Hashable {
+  enum Identity: Hashable {
     /// A Rotation or Shift, by value: an Eggstra Work can start with a regular Shift, so a start
     /// time alone is not enough.
     case item(Item)

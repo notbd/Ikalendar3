@@ -40,7 +40,7 @@ struct TimelineFormatTests {
   @Test
   func `A countdown rounds up to the second, so a running window never reads zero`() {
     #expect(TimelineFormat.countdown(.milliseconds(200)) == "0:00:01")
-    #expect(TimelineFormat.countdown(.milliseconds(59_200)) == "0:01:00")
+    #expect(TimelineFormat.countdown(.milliseconds(59200)) == "0:01:00")
   }
 
   @Test

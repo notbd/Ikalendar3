@@ -40,7 +40,7 @@ struct TimelineFormat {
   /// A Shift's start and end with their weekdays, joined as the game joins a range:
   /// "Tue 17:00 - Thu 09:00".
   func timeRange(from start: Date, to end: Date) -> String {
-    let style: Date.FormatStyle = style(.init().weekday(.abbreviated).hour(.twoDigits(amPM: .omitted)).minute(.twoDigits))
+    let style: Date.FormatStyle = style(Self.weekdayAndTime)
     return TimelineText.timeRange.text(in: language, start.formatted(style), end.formatted(style))
   }
 
@@ -53,8 +53,14 @@ struct TimelineFormat {
     return "\(hours):\(twoDigits(minutes)):\(twoDigits(secondsPastMinute))"
   }
 
+  /// A weekday and a two-digit time: "Tue 17:00".
+  static private let weekdayAndTime: Date.FormatStyle = .init()
+    .weekday(.abbreviated)
+    .hour(.twoDigits(amPM: .omitted))
+    .minute(.twoDigits)
+
   /// `value` with a leading zero below 10.
-  private static func twoDigits(_ value: Int) -> String {
+  static private func twoDigits(_ value: Int) -> String {
     value < 10 ? "0\(value)" : "\(value)"
   }
 

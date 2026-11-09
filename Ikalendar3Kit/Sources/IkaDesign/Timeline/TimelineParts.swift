@@ -108,6 +108,7 @@ private struct TimelineHeadline<Leading: View, Trailing: View>: View {
           Spacer(minLength: 0)
           trailing
         }
+
       case .stacked:
         VStack(alignment: .leading, spacing: 4) {
           leading
@@ -219,6 +220,7 @@ private struct TimelineStagePicture: View {
               .padding(.horizontal, 4)
               .padding(.bottom, 5)
           }
+
       case .stacked:
         VStack(spacing: 0) {
           picture

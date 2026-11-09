@@ -18,11 +18,12 @@ struct TimelineAxis<Item: TimeWindow & Hashable & Sendable, SlotContent: View>: 
   let entries: [TimelineEntry<Item>]
   let format: TimelineFormat
   let arrangement: CellArrangement
+  /// What an entry's slot shows right of the line.
+  @ViewBuilder let content: (TimelineEntry<Item>) -> SlotContent
   /// The colour of an entry's stretch of the line and of its pin while it runs.
   let color: (TimelineEntry<Item>) -> ModeColor
   /// The sentence VoiceOver reads for an entry.
   let sentence: (TimelineEntry<Item>) -> String
-  @ViewBuilder let content: (TimelineEntry<Item>) -> SlotContent
 
   var body: some View {
     VStack(spacing: 0) {
@@ -165,14 +166,16 @@ private struct TimelineDayMark: View {
       .ikaFont(.light, size: 14, relativeTo: .footnote)
       .foregroundStyle(TimelinePalette.secondaryText)
       .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.leading, arrangement == .stacked
-        ? TimelineMetrics.stackedContentLeading
-        : TimelineMetrics.contentLeading)
-      .padding(.bottom, TimelineMetrics.slotSpacing / 2)
-      .background(alignment: .topLeading) {
-        TimelineTrack(color: color, progress: nil)
-      }
-      .accessibilityAddTraits(.isHeader)
+      .padding(
+        .leading,
+        arrangement == .stacked
+          ? TimelineMetrics.stackedContentLeading
+          : TimelineMetrics.contentLeading)
+        .padding(.bottom, TimelineMetrics.slotSpacing / 2)
+        .background(alignment: .topLeading) {
+          TimelineTrack(color: color, progress: nil)
+        }
+        .accessibilityAddTraits(.isHeader)
   }
 }
 #endif

@@ -12,7 +12,8 @@ import SwiftUI
 // MARK: - TimelineBattleScreenView
 
 /// Timeline's Battle Mode screen, after SplatNet 3's schedule page: a black header with the Mode,
-/// the Series and Open strip on Anarchy, an announced Splatfest's card, then every Rotation top to bottom on a Mode-colour time
+/// the Series and Open strip on Anarchy, an announced Splatfest's card, then every Rotation top to bottom on a
+/// Mode-colour time
 /// axis with 24-hour pins, the current one's progress filled in along the axis.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store. Pull to
@@ -61,9 +62,7 @@ public struct TimelineBattleScreenView: View {
       TimelineAxis(
         entries: entries,
         format: TimelineFormat(language: terms.language, timeZone: timeZone),
-        arrangement: arrangement,
-        color: { _ in color },
-        sentence: { sentence(for: $0, writer: writer) })
+        arrangement: arrangement)
       { entry in
         switch entry {
           case .item(let rotation, let progress):
@@ -76,11 +75,19 @@ public struct TimelineBattleScreenView: View {
                 now: now,
                 arrangement: arrangement)
             }
+
           case .paused(let returnTime):
-            TimelineStatusContent(text: ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now)))
+            TimelineStatusContent(text: ScreenText.paused.text(
+              in: terms.language,
+              format.time(returnTime, relativeTo: now)))
+
           case .nothingCurrent:
             TimelineStatusContent(text: ScreenText.nothingCurrent.text(in: terms.language))
         }
+      } color: { _ in
+        color
+      } sentence: { entry in
+        sentence(for: entry, writer: writer)
       }
     } footer: {
       FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
@@ -153,11 +160,7 @@ public struct TimelineSalmonRunScreenView: View {
       TimelineAxis(
         entries: entries,
         format: format,
-        arrangement: arrangement,
-        color: { $0.item.map { ModeColor($0.kind) } ?? .salmonRun },
-        sentence: { entry in
-          entry.item.map { writer.sentence(for: $0, at: now) } ?? ScreenText.nothingCurrent.text(in: terms.language)
-        })
+        arrangement: arrangement)
       { entry in
         if case .item(let shift, let progress) = entry {
           TimelineShiftContent(
@@ -172,6 +175,10 @@ public struct TimelineSalmonRunScreenView: View {
           // Salmon Run is never paused: any status is nothing current.
           TimelineStatusContent(text: ScreenText.nothingCurrent.text(in: terms.language))
         }
+      } color: { entry in
+        entry.item.map { ModeColor($0.kind) } ?? .salmonRun
+      } sentence: { entry in
+        entry.item.map { writer.sentence(for: $0, at: now) } ?? ScreenText.nothingCurrent.text(in: terms.language)
       }
     } footer: {
       FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
@@ -225,7 +232,7 @@ private struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, R
       .background(TimelinePalette.page)
       .environment(\.colorScheme, .dark)
       #if os(iOS)
-        .modeStampDock(icon: icon, title: title, dockProgress: $dockProgress)
+      .modeStampDock(icon: icon, title: title, dockProgress: $dockProgress)
       #endif
     }
   }
@@ -242,33 +249,34 @@ extension View {
   fileprivate func modeStampDock(icon: ModeIcon, title: String, dockProgress: Binding<Double>) -> some View {
     let badgeOpacity: Double = ModeStampMath.badgeOpacity(progress: dockProgress.wrappedValue)
 
-    return self
-      .onScrollGeometryChange(for: Double.self) { geometry in
-        ModeStampMath.dockProgress(contentOffsetY: geometry.contentOffset.y, restingTopInset: geometry.contentInsets.top)
-      } action: { _, progress in
-        dockProgress.wrappedValue = progress
+    return onScrollGeometryChange(for: Double.self) { geometry in
+      ModeStampMath.dockProgress(
+        contentOffsetY: geometry.contentOffset.y,
+        restingTopInset: geometry.contentInsets.top)
+    } action: { _, progress in
+      dockProgress.wrappedValue = progress
+    }
+    .navigationBarTitleDisplayMode(.inline)
+    .toolbarColorScheme(.dark, for: .navigationBar)
+    .toolbar {
+      // The header names the Mode at rest; the title takes over once the header scrolls away.
+      ToolbarItem(placement: .principal) {
+        Text(verbatim: title)
+          .ikaFont(.heavy, size: 17, relativeTo: .headline)
+          .lineLimit(1)
+          .foregroundStyle(.white)
+          .opacity(badgeOpacity)
+          .accessibilityAddTraits(.isHeader)
       }
-      .navigationBarTitleDisplayMode(.inline)
-      .toolbarColorScheme(.dark, for: .navigationBar)
-      .toolbar {
-        // The header names the Mode at rest; the title takes over once the header scrolls away.
-        ToolbarItem(placement: .principal) {
-          Text(verbatim: title)
-            .ikaFont(.heavy, size: 17, relativeTo: .headline)
-            .lineLimit(1)
-            .foregroundStyle(.white)
-            .opacity(badgeOpacity)
-            .accessibilityAddTraits(.isHeader)
-        }
-        ToolbarItem(placement: .topBarTrailing) {
-          TimelineModeBadge(icon: icon)
-            .opacity(badgeOpacity)
-            .allowsHitTesting(false)
-            .accessibilityHidden(true)
-        }
-        // The badge draws its own glass, so the glass fades in with the badge.
-        .sharedBackgroundVisibility(.hidden)
+      ToolbarItem(placement: .topBarTrailing) {
+        TimelineModeBadge(icon: icon)
+          .opacity(badgeOpacity)
+          .allowsHitTesting(false)
+          .accessibilityHidden(true)
       }
+      // The badge draws its own glass, so the glass fades in with the badge.
+      .sharedBackgroundVisibility(.hidden)
+    }
   }
 }
 #endif
