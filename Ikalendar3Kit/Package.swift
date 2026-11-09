@@ -22,11 +22,16 @@ let package = Package(
   targets: [
     // Domain, data and every Surface's content. Foundation only (a SwiftLint rule enforces it).
     .target(name: "IkaCore", swiftSettings: swiftSettings),
-    // Design system. Linked by every product target, the watch ones included.
-    .target(name: "IkaDesign", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
+    // Design system. Linked by every product target, the watch ones included. `Resources` holds the
+    // asset catalog that scripts/assets.sh builds.
+    .target(
+      name: "IkaDesign",
+      dependencies: ["IkaCore"],
+      resources: [.process("Resources")],
+      swiftSettings: swiftSettings),
     // Siri, App Shortcuts and the effects shell. iOS and macOS; Live Activity parts behind `#if os(iOS)`.
     .target(name: "IkaIntents", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
     .testTarget(name: "IkaCoreTests", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
-    .testTarget(name: "IkaDesignTests", dependencies: ["IkaDesign"], swiftSettings: swiftSettings),
+    .testTarget(name: "IkaDesignTests", dependencies: ["IkaDesign", "IkaCore"], swiftSettings: swiftSettings),
     .testTarget(name: "IkaIntentsTests", dependencies: ["IkaIntents"], swiftSettings: swiftSettings),
   ])

@@ -1,0 +1,43 @@
+//
+//  ModeIcon.swift
+//  Ikalendar3
+//
+//  Copyright (c) TIANWEI ZHANG. All rights reserved.
+//
+
+import IkaCore
+
+// MARK: - ModeIcon
+
+/// The icon of a Mode, of Challenge or Splatfest Battle, or of a kind of Shift. Raw values are the
+/// manifest ids of the `mode` group.
+public enum ModeIcon: String, CaseIterable, Sendable {
+  case regular
+  /// Anarchy Series and Anarchy Open, as in the game.
+  case anarchy
+  case x
+  case challenge
+  /// Splatfest Battle. A placeholder stands in until the drawn icon lands.
+  case splatfest
+  case salmonRun = "salmon-run"
+  case bigRun = "big-run"
+  case eggstraWork = "eggstra-work"
+
+  /// The icon of `mode`.
+  public init(_ mode: Mode) {
+    switch mode {
+      case .battle(.regular): self = .regular
+      case .battle(.anarchySeries),
+           .battle(.anarchyOpen): self = .anarchy
+      case .battle(.x): self = .x
+      case .salmonRun: self = .salmonRun
+    }
+  }
+}
+
+extension BundledImage {
+  /// The icon of a Mode, of Challenge or Splatfest Battle, or of a kind of Shift.
+  static public func name(for icon: ModeIcon, size: Size) -> String {
+    name(of: icon.rawValue, in: .mode, size: size)
+  }
+}
