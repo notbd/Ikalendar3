@@ -3,7 +3,8 @@
 # Runs every check CI runs, in CI's order, and stops at the first failure:
 #
 #   1-2  SwiftFormat and SwiftLint, zero violations
-#   3    every string catalog key in all 14 localizations (scripts/check-string-catalogs.sh)
+#   3    every string catalog key in all 14 localizations, every App Shortcuts phrase naming the app
+#        (scripts/check-string-catalogs.sh)
 #   4    package tests on macOS
 #   5-7  unsigned Debug builds: iOS Simulator, macOS, watchOS Simulator
 #   8-9  unsigned Release builds: iOS device (with the watch app), macOS, with no fixture file
