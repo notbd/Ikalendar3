@@ -8,6 +8,7 @@
 import Foundation
 import IkaCore
 import IkaDesign
+import IkaIntents
 import SwiftUI
 
 // MARK: - AppServices
@@ -16,6 +17,9 @@ import SwiftUI
 struct AppServices {
   /// The one refresh engine, whose snapshot every screen shows.
   let engine: RefreshEngine
+  /// The one effects shell, which every refresh in the app runs: activation, pull to refresh and
+  /// the background task.
+  let effects: EffectsShell
   /// The player's preferences.
   let preferences: PreferenceStore
   /// The one clock the screens read.
@@ -23,11 +27,13 @@ struct AppServices {
   /// The in-session state.
   let status: AppStatus
 
-  /// The engine, the preferences on `defaults`, a clock reading `timeSource` and the status,
-  /// opening on the default Mode.
+  /// The engine with its effects shell, the preferences on `defaults`, a clock reading
+  /// `timeSource` and the status, opening on the default Mode.
   init(client: FeedClient, timeSource: any TimeSource, defaults: UserDefaults) {
+    let engine: RefreshEngine = .init(client: client, language: Self.language)
     let preferences: PreferenceStore = .init(defaults: defaults)
-    engine = RefreshEngine(client: client, language: Self.language)
+    self.engine = engine
+    effects = EffectsShell(engine: engine)
     self.preferences = preferences
     clock = AppClock(source: timeSource)
     status = AppStatus(selectedPlace: preferences.defaultMode)
@@ -96,11 +102,18 @@ extension View {
   /// Injects the services and the app language, which picks every string, game term and Han face.
   func environment(_ services: AppServices) -> some View {
     environment(services.engine)
+      .environment(\.effects, services.effects)
       .environment(services.preferences)
       .environment(services.clock)
       .environment(services.status)
       .environment(\.gameLanguage, AppServices.language)
   }
+}
+
+extension EnvironmentValues {
+  /// The effects shell, which every refresh control runs; `nil` only where no services are
+  /// injected.
+  @Entry var effects: EffectsShell?
 }
 
 // MARK: - SharedStorage
