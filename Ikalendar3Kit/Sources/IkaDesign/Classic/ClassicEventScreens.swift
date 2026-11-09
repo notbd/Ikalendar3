@@ -60,11 +60,11 @@ public struct ClassicChallengeScreenView: View {
     return VStack(alignment: .leading, spacing: 4) {
       Text(verbatim: texts.name)
         .font(.headline)
-      Text(verbatim: texts.description)
+      Text(verbatim: texts.displayDescription)
         .font(.subheadline)
       Text(verbatim: ruleAndStages.joined(separator: " · "))
         .font(.subheadline.weight(.semibold))
-      Text(verbatim: texts.rulesText)
+      Text(verbatim: texts.displayRulesText)
         .font(.caption)
         .foregroundStyle(.secondary)
     }
@@ -149,7 +149,7 @@ public struct ClassicSplatfestScreenView: View {
       if let tricolor = screen.tricolorTurfWar {
         Section(ModeLabel.tricolor.text(in: terms.language)) {
           VStack(alignment: .leading, spacing: 2) {
-            Text(verbatim: format.timeRange(of: tricolor.item))
+            Text(verbatim: format.dateRange(of: tricolor.item))
               .font(.caption)
               .foregroundStyle(.secondary)
             Text(verbatim: tricolor.item.stages.map(terms.name(of:)).joined(separator: " · "))

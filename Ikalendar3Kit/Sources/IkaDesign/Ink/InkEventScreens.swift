@@ -62,11 +62,11 @@ public struct InkChallengeScreenView: View {
     return VStack(alignment: .leading, spacing: 4) {
       Text(verbatim: texts.name)
         .inkFont(.headline)
-      Text(verbatim: texts.description)
+      Text(verbatim: texts.displayDescription)
         .inkFont(.body)
       Text(verbatim: ruleAndStages.joined(separator: " · "))
         .inkFont(.label)
-      Text(verbatim: texts.rulesText)
+      Text(verbatim: texts.displayRulesText)
         .inkFont(.caption)
       ForEach(listing.windows, id: \.window) { window in
         row(window)
@@ -152,7 +152,7 @@ public struct InkSplatfestScreenView: View {
         }
         if let tricolor = screen.tricolorTurfWar {
           VStack(alignment: .leading, spacing: 4) {
-            Text(verbatim: format.timeRange(of: tricolor.item))
+            Text(verbatim: format.dateRange(of: tricolor.item))
               .inkFont(.body)
             Text(verbatim: ModeLabel.tricolor.text(in: terms.language))
               .inkFont(.tag)

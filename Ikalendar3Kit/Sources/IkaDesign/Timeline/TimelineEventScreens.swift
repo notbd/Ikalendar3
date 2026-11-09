@@ -57,11 +57,11 @@ public struct TimelineChallengeScreenView: View {
     return VStack(alignment: .leading, spacing: 4) {
       Text(verbatim: texts.name)
         .font(.title3.weight(.bold))
-      Text(verbatim: texts.description)
+      Text(verbatim: texts.displayDescription)
         .font(.subheadline)
       Text(verbatim: ruleAndStages.joined(separator: " · "))
         .font(.subheadline.weight(.semibold))
-      Text(verbatim: texts.rulesText)
+      Text(verbatim: texts.displayRulesText)
         .font(.caption)
         .foregroundStyle(.secondary)
     }
