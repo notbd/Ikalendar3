@@ -154,7 +154,10 @@ struct CurrentView: View {
 // MARK: - RotationView
 
 /// A Rotation's Rule, its two Stages as cards and, for the current one, the system's countdown to
-/// its end; else its time range. VoiceOver reads it as one element, the Rotation's sentence.
+/// its end; else its time range. VoiceOver reads it as one element: the Rotation's sentence, then,
+/// for the current one, the countdown as its value. The sentence carries no time left, because
+/// the system draws a widget ahead of the moment VoiceOver reads it; the system's timer text
+/// stays current.
 struct RotationView: View {
   @TimeSettings private var time
 
@@ -165,13 +168,15 @@ struct RotationView: View {
   var showsCountdown = false
 
   var body: some View {
+    let countdown: Text? = showsCountdown ? Text(timerInterval: rotation.startTime ... rotation.endTime) : nil
+
     VStack(alignment: .leading, spacing: 6) {
       if let setting = rotation.setting {
         RuleLabel(rule: setting.rule, terms: terms, style: ruleStyle)
         StageCards(stages: setting.stages, terms: terms, axis: stageAxis)
       }
-      if showsCountdown {
-        InkTimeTag(Text(timerInterval: rotation.startTime ... rotation.endTime))
+      if let countdown {
+        InkTimeTag(countdown)
       }
       else {
         InkTimeTag(Text(verbatim: time.format(terms.language).timeRange(of: rotation)))
@@ -179,6 +184,7 @@ struct RotationView: View {
     }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(writer.sentence(for: rotation))
+    .accessibilityValue(countdown ?? Text(verbatim: ""))
   }
 
   private var writer: SentenceWriter { time.writer(terms) }
