@@ -120,6 +120,12 @@ struct ClassicTimeFormatTests {
   }
 
   @Test
+  func `A countdown rounds up to the second, as every Style's, so a running window never reads zero`() {
+    #expect(format().span(.milliseconds(59200)) == "1m 0s")
+    #expect(format().span(.milliseconds(400)) == "1s")
+  }
+
+  @Test
   func `Countdowns read as time left and time until`() {
     #expect(ClassicText.timeLeft.text(in: .enUS, "1h 7s") == "1h 7s remaining")
     #expect(ClassicText.timeUntil.text(in: .enUS, "5m 0s") == "in 5m 0s")

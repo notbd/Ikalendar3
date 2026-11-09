@@ -157,14 +157,16 @@ public struct SentenceWriter: Sendable {
     return format("sentence.timeLeft", span)
   }
 
-  /// The time left in a window as a ticking countdown shows it: abbreviated units from the
-  /// largest one that is not zero down to whole seconds, rounded up so a running window never
-  /// reads zero. Hours run past a day, as `timeLeft(_:)` reads them.
+  /// The time left in a window as the `Countdown` every Style shows: abbreviated units from the
+  /// largest one that is not zero down to whole seconds. Hours run past a day, as `timeLeft(_:)`
+  /// reads them.
   public func countdown(_ progress: WindowProgress) -> String {
-    let seconds: Int = .init((progress.timeLeft / .seconds(1)).rounded(.up))
-    let (hours, secondsPastHour) = seconds.quotientAndRemainder(dividingBy: 3600)
-    let (minutes, secondsPastMinute) = secondsPastHour.quotientAndRemainder(dividingBy: 60)
-    let parts: [(unit: TimeUnit, amount: Int)] = [(.hours, hours), (.minutes, minutes), (.seconds, secondsPastMinute)]
+    let countdown: Countdown = .init(progress.timeLeft)
+    let parts: [(unit: TimeUnit, amount: Int)] = [
+      (.hours, countdown.hours),
+      (.minutes, countdown.minutes),
+      (.seconds, countdown.seconds),
+    ]
     let span = parts
       .drop { $0.amount == 0 && $0.unit != .seconds }
       .lazy

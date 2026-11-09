@@ -44,13 +44,11 @@ struct TimelineFormat {
     return TimelineText.timeRange.text(in: language, start.formatted(style), end.formatted(style))
   }
 
-  /// The time left as a countdown on whole seconds, rounded up so a running window never reads
-  /// zero, its hours running past a day: "1:09:59".
+  /// The time left as the `Countdown` every Style shows, its hours running past a day:
+  /// "1:09:59".
   static func countdown(_ timeLeft: Duration) -> String {
-    let seconds: Int = .init((timeLeft / .seconds(1)).rounded(.up))
-    let (hours, secondsPastHour) = seconds.quotientAndRemainder(dividingBy: 3600)
-    let (minutes, secondsPastMinute) = secondsPastHour.quotientAndRemainder(dividingBy: 60)
-    return "\(hours):\(twoDigits(minutes)):\(twoDigits(secondsPastMinute))"
+    let countdown: Countdown = .init(timeLeft)
+    return "\(countdown.hours):\(twoDigits(countdown.minutes)):\(twoDigits(countdown.seconds))"
   }
 
   /// A weekday and a two-digit time: "Tue 17:00".
