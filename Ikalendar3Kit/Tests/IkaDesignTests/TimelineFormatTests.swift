@@ -87,6 +87,26 @@ struct TimelineFormatTests {
     #expect(range == "火 17:00 ~ 木 09:00")
   }
 
+  /// A Challenge window on the axis sits under its day mark, so its range carries no weekday.
+  @Test
+  func `A range under a day mark writes only each end's 24-hour time`() {
+    let format: TimelineFormat = .init(language: .enUS, timeZone: tokyo)
+
+    let range = format.hourRange(from: date("2026-10-20T08:00:00Z"), to: date("2026-10-20T10:00:00Z"))
+
+    #expect(range == "17:00 - 19:00")
+  }
+
+  /// A Splatfest is announced weeks ahead, so its range carries each end's date.
+  @Test
+  func `A Splatfest's range writes each end's weekday, date and 24-hour time`() {
+    let format: TimelineFormat = .init(language: .enUS, timeZone: tokyo)
+
+    let range = format.dateRange(from: date("2026-10-31T00:00:00Z"), to: date("2026-11-02T00:00:00Z"))
+
+    #expect(range == "Sat, 10/31, 09:00 - Mon, 11/2, 09:00")
+  }
+
   // MARK: Helpers
 
   private func date(_ text: String) -> Date {

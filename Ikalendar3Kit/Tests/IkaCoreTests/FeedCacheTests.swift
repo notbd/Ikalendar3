@@ -62,6 +62,27 @@ final class FeedCacheTests {
     #expect(snapshot.locales.values.allSatisfy { !$0.isStale })
   }
 
+  /// Views that render on the spot, such as a Live Activity's, read names without a snapshot.
+  @Test
+  func `Names read on the spot come from the cached locale file first, then the shipped snapshot`() throws {
+    let scorchGorge: StageID = .init("VnNTdGFnZS0x")
+    let eeltailAlley: StageID = .init("VnNTdGFnZS0y")
+    let cache: FeedCache = .init(directory: directory)
+    let localeFile: Data = .init(#"{"stages": {"VnNTdGFnZS0x": {"name": "Gorge (cached)"}}}"#.utf8)
+
+    #expect(cache.terms(in: .enUS).name(of: scorchGorge) == "Scorch Gorge")
+
+    try cache.commit(
+      FeedRecord(body: localeFile, etag: nil, fetchTime: date("2026-11-01T05:23:00Z")),
+      for: .locale(.enUS))
+
+    let terms = cache.terms(in: .enUS)
+    #expect(terms.language == .enUS)
+    #expect(terms.name(of: scorchGorge) == "Gorge (cached)")
+    #expect(terms.name(of: eeltailAlley) == "Eeltail Alley")
+    #expect(cache.terms(in: .jaJP).name(of: scorchGorge) == "ユノハナ大渓谷")
+  }
+
   @Test
   func `An empty directory reads as an empty snapshot`() async {
     #expect(await FeedCache(directory: directory).snapshot() == Snapshot())

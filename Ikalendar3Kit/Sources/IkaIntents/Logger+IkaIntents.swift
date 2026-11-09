@@ -15,4 +15,7 @@ extension Logger {
 
   /// Background refresh: each run asked of the system (at info level), and requests it refused.
   static let background: Logger = .init(subsystem: subsystem, category: "background")
+
+  /// Tracking: each Live Activity started, updated and ended, at info level.
+  static let tracking: Logger = .init(subsystem: subsystem, category: "tracking")
 }

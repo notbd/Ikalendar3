@@ -46,5 +46,6 @@ struct BattleModeScreenView: View {
         }
       }
     }
+    .trackButton(for: .battle(mode), language: language)
   }
 }

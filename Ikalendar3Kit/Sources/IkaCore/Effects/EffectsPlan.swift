@@ -5,6 +5,8 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import Foundation
+
 // MARK: - EffectsPlan
 
 /// The effects one run of the effects shell applies after its refresh. Every decision is made
@@ -13,10 +15,78 @@ public struct EffectsPlan: Equatable, Sendable {
   /// Whether every widget timeline reloads: after each refresh that committed a feed, a 304
   /// included, so the widgets show the fetch time the app shows.
   public let reloadsWidgetTimelines: Bool
+  /// What the run does to each running Tracking, by its activity's id. Every run re-arms each
+  /// one from the cache, a run the gate kept from the network included, so the activity moves to
+  /// the item on now and its stale date to that item's end. One past its end date ends instead.
+  /// While the cache holds no schedules feed, a running Tracking has no entry and stays as it is.
+  public let tracking: [String: TrackingEffect]
+  /// When the run asks the background task to run next: at the next boundary of a running
+  /// Tracking, so one update lands between any two boundaries, or two hours on if that is sooner.
+  /// `nil` while no Tracking runs: the request made as the app last moved to the background
+  /// stands.
+  public let nextBackgroundRun: Date?
 
-  /// The plan after a refresh.
-  public init(after result: RefreshResult) {
+  /// The plan after a refresh at `instant`, with `tracking` running.
+  public init(after result: RefreshResult, tracking: [RunningTracking] = [], at instant: Date) {
     reloadsWidgetTimelines = result.hasCommitted
+
+    var effects: [String: TrackingEffect] = [:]
+    for running in tracking {
+      if TrackingContent.endDate(startedAt: running.startTime) <= instant {
+        effects[running.id] = .end
+      }
+      else if let state = result.snapshot.trackingState(of: running.mode, at: instant) {
+        effects[running.id] = .update(state)
+      }
+    }
+    self.tracking = effects
+    nextBackgroundRun = tracking.isEmpty
+      ? nil
+      : Self.nextBackgroundRun(after: instant, trackingBoundaries: effects.values.compactMap { $0.state?.staleDate })
+  }
+
+  /// When the background task should run next after `now`, given the next boundary of each
+  /// running Tracking: the first of them, or two hours on if that is sooner. The system holds one
+  /// pending request for the task, so every request, wherever it is made, asks for this run.
+  static public func nextBackgroundRun(after now: Date, trackingBoundaries: some Sequence<Date>) -> Date {
+    trackingBoundaries.reduce(now.addingTimeInterval(backgroundRefreshInterval)) { min($0, $1) }
+  }
+
+  /// How long after a run the background task is due again with no boundary sooner: about two
+  /// hours, so widgets stay fresh while the app is not opened.
+  static let backgroundRefreshInterval: TimeInterval = 2 * 3600
+}
+
+// MARK: - RunningTracking
+
+/// A running Live Activity as the effects plan sees it: its id and its attributes.
+public struct RunningTracking: Hashable, Sendable {
+  /// The activity's id.
+  public let id: String
+  /// The tracked Mode.
+  public let mode: Mode
+  /// When Tracking started.
+  public let startTime: Date
+
+  public init(id: String, mode: Mode, startTime: Date) {
+    self.id = id
+    self.mode = mode
+    self.startTime = startTime
+  }
+}
+
+// MARK: - TrackingEffect
+
+/// What a run of the effects shell does to one running Tracking.
+public enum TrackingEffect: Hashable, Sendable {
+  /// Update the activity to `state`, with its stale date at `state.staleDate`.
+  case update(TrackingState)
+  /// End the activity: it is past its end date, eight hours after it started.
+  case end
+
+  /// The state an update applies, or `nil` for an end.
+  var state: TrackingState? {
+    if case .update(let state) = self { state } else { nil }
   }
 }
 

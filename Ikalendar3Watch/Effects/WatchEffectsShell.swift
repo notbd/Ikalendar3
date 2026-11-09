@@ -30,7 +30,7 @@ struct WatchEffectsShell {
   @discardableResult
   func run() async -> RefreshResult {
     let result = await engine.refresh()
-    if EffectsPlan(after: result).reloadsWidgetTimelines {
+    if EffectsPlan(after: result, at: Date()).reloadsWidgetTimelines {
       WidgetCenter.shared.reloadAllTimelines()
     }
     return result

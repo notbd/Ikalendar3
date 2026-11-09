@@ -43,5 +43,6 @@ struct SalmonRunScreenView: View {
         }
       }
     }
+    .trackButton(for: .salmonRun, language: language)
   }
 }

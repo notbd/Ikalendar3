@@ -20,7 +20,6 @@ import SwiftUI
 /// refresh reaches its list through the `refreshable` action the shared screen sets. A finished
 /// Rotation leaves the axis as the app clock passes its end, and the next one becomes current.
 public struct TimelineBattleScreenView: View {
-  @Environment(\.timeZone) private var timeZone
   @TimeSettings private var time
 
   private let screen: BattleScreen
@@ -42,7 +41,7 @@ public struct TimelineBattleScreenView: View {
 
   public var body: some View {
     let entries: [TimelineEntry<Rotation>] = TimelineEntry.entries(of: screen)
-    let color: ModeColor = .init(screen.mode)
+    let color: TimelineTint = .init(ModeColor(screen.mode))
     let writer: SentenceWriter = time.writer(terms)
 
     TimelineScheduleList(
@@ -55,14 +54,14 @@ public struct TimelineBattleScreenView: View {
         TimelineFormStrip(shown: screen.mode, language: terms.language)
       }
       if let card = screen.announcedSplatfest {
-        SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .timeline, now: now)
+        TimelineSplatfestCard(splatfest: card.splatfest, art: card.art, terms: terms, now: now)
           .padding(.horizontal, TimelineMetrics.contentTrailing)
           .padding(.top, TimelineMetrics.axisTop)
       }
     } axis: { arrangement in
       TimelineAxis(
         entries: entries,
-        format: TimelineFormat(language: terms.language, timeZone: timeZone),
+        format: time.timelineFormat(terms.language),
         arrangement: arrangement)
       { entry in
         switch entry {
@@ -95,7 +94,7 @@ public struct TimelineBattleScreenView: View {
     }
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
+  private var format: ScheduleFormat { time.format(terms.language) }
 }
 
 // MARK: - BattleMode
@@ -134,7 +133,6 @@ extension TimelineEntry<Rotation> {
 /// inline where it falls and marked in its colour. It receives `IkaCore` values only and reads no
 /// store.
 public struct TimelineSalmonRunScreenView: View {
-  @Environment(\.timeZone) private var timeZone
   @TimeSettings private var time
 
   private let screen: SalmonRunScreen
@@ -156,7 +154,7 @@ public struct TimelineSalmonRunScreenView: View {
 
   public var body: some View {
     let entries: [TimelineEntry<Shift>] = TimelineEntry.entries(of: screen)
-    let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
+    let format: TimelineFormat = time.timelineFormat(terms.language)
     let writer: SentenceWriter = time.writer(terms)
     let name: String = Mode.salmonRun.name(in: terms.language)
 
@@ -187,7 +185,7 @@ public struct TimelineSalmonRunScreenView: View {
           TimelineStatusContent(text: ScreenText.nothingCurrent.text(in: terms.language))
         }
       } color: { entry in
-        entry.item.map { ModeColor($0.kind) } ?? .salmonRun
+        TimelineTint(entry.item.map { ModeColor($0.kind) } ?? .salmonRun)
       } sentence: { entry in
         entry.item.map { writer.sentence(for: $0, at: now) } ?? ScreenText.nothingCurrent.text(in: terms.language)
       }
@@ -197,9 +195,21 @@ public struct TimelineSalmonRunScreenView: View {
   }
 }
 
+// MARK: - TimelineBackground
+
+/// SplatNet 3's dark page, which Timeline's screens draw under their lists, for a view that
+/// shows Timeline's parts outside them, such as the Debug event card gallery.
+public struct TimelineBackground: View {
+  public init() { }
+
+  public var body: some View {
+    TimelinePalette.page
+  }
+}
+
 // MARK: - TimelineScheduleList
 
-/// What both Timeline screens share: SplatNet 3's dark page under the black header, the axis sized
+/// What every Timeline screen shares: SplatNet 3's dark page under the black header, the axis sized
 /// for the text size, entries moving into place as the clock changes them and, on iPhone and
 /// iPad, the header's stamp docking into the navigation bar badge, the inline title fading in
 /// with it.
@@ -218,8 +228,7 @@ struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowVal
   /// The Mode's name in the header.
   let headerName: String
   let reflowValue: ReflowValue
-  /// What sits between the header and the axis: the Series and Open strip, an announced
-  /// Splatfest's card.
+  /// What sits between the header and the axis: the strip of forms, a Splatfest's card.
   @ViewBuilder let aboveAxis: () -> AboveAxis
   @ViewBuilder let axis: (CellArrangement) -> Axis
   @ViewBuilder let footer: () -> Footer
@@ -240,6 +249,7 @@ struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowVal
         }
         .listReflow(value: reflowValue)
       }
+      // A colour, not a view, so the page runs under the bars too.
       .background(TimelinePalette.page)
       .environment(\.colorScheme, .dark)
       #if os(iOS)

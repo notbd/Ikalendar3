@@ -187,12 +187,7 @@ public struct ClassicEventCard: View {
   // MARK: Accessibility
 
   private var sentence: String {
-    switch item {
-      case .challenge(let window): writer.sentence(for: window, at: now)
-      case .splatfest(let splatfest): writer.sentence(for: splatfest, at: now)
-      case .bigRun(let shift),
-           .eggstraWork(let shift): writer.sentence(for: shift, at: now)
-    }
+    writer.sentence(for: item, at: now)
   }
 
   /// A Splatfest's team names; the other events' sentences say all.

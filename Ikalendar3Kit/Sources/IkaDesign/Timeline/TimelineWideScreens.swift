@@ -19,7 +19,6 @@ import SwiftUI
 ///
 /// It receives `IkaCore` values only and reads no store.
 public struct TimelineWideBattleScreenView: View {
-  @Environment(\.timeZone) private var timeZone
   @TimeSettings private var time
 
   private let screen: BattleScreen
@@ -44,8 +43,8 @@ public struct TimelineWideBattleScreenView: View {
 
   public var body: some View {
     let entries: [TimelineEntry<Rotation>] = TimelineEntry.entries(of: screen)
-    let color: ModeColor = .init(screen.mode)
-    let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
+    let color: TimelineTint = .init(ModeColor(screen.mode))
+    let format: TimelineFormat = time.timelineFormat(terms.language)
     let writer: SentenceWriter = time.writer(terms)
 
     TimelineScheduleList(
@@ -58,7 +57,7 @@ public struct TimelineWideBattleScreenView: View {
         TimelineFormStrip(shown: screen.mode, language: terms.language)
       }
       if let card = screen.announcedSplatfest {
-        SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .timeline, now: now)
+        TimelineSplatfestCard(splatfest: card.splatfest, art: card.art, terms: terms, now: now)
           .padding(.horizontal, TimelineMetrics.contentTrailing)
           .padding(.top, TimelineMetrics.axisTop)
       }
@@ -119,7 +118,6 @@ public struct TimelineWideBattleScreenView: View {
 ///
 /// It receives `IkaCore` values only and reads no store.
 public struct TimelineWideSalmonRunScreenView: View {
-  @Environment(\.timeZone) private var timeZone
   @TimeSettings private var time
 
   private let screen: SalmonRunScreen
@@ -144,7 +142,7 @@ public struct TimelineWideSalmonRunScreenView: View {
 
   public var body: some View {
     let entries: [TimelineEntry<Shift>] = TimelineEntry.entries(of: screen)
-    let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
+    let format: TimelineFormat = time.timelineFormat(terms.language)
     let writer: SentenceWriter = time.writer(terms)
     let name: String = Mode.salmonRun.name(in: terms.language)
 
@@ -159,9 +157,9 @@ public struct TimelineWideSalmonRunScreenView: View {
       TimelineWideColumn(entries: entries, format: nil) { entry in
         switch entry {
           case .item(let shift, let progress?):
-            let color: ModeColor = .init(shift.kind)
+            let color: TimelineTint = .init(ModeColor(shift.kind))
             TimelineWideRow(color: color) {
-              time(of: shift, format: format)
+              timeRange(of: shift, format: format)
               TimelineWideProgress(progress: progress, color: color, writer: writer, now: now, wide: wide)
             } trailing: {
               VStack(spacing: TimelineWideMetrics.spacing) {
@@ -181,7 +179,7 @@ public struct TimelineWideSalmonRunScreenView: View {
         }
       } row: { shift in
         WideTableColumns(wide: wide, spacing: TimelineWideMetrics.spacing) {
-          time(of: shift, format: format)
+          timeRange(of: shift, format: format)
         } middle: {
           TimelineStageStrip(stages: [shift.stage], terms: terms, arrangement: .sideBySide)
             .frame(width: wide.half.length(.tableThumbnailWidth))
@@ -200,9 +198,12 @@ public struct TimelineWideSalmonRunScreenView: View {
 
   /// A Shift's kind tag over its time range with the weekdays.
   @ViewBuilder
-  private func time(of shift: Shift, format: TimelineFormat) -> some View {
+  private func timeRange(of shift: Shift, format: TimelineFormat) -> some View {
     if let label = shift.kind.label {
-      TimelineKindTag(label: label, kind: shift.kind, language: terms.language)
+      TimelineModeTag(
+        icon: ModeIcon(shift.kind),
+        label: label.text(in: terms.language),
+        colors: ModeColor(shift.kind).asFill)
     }
     Text(verbatim: format.timeRange(from: shift.startTime, to: shift.endTime))
       .ikaFont(.light, size: 14, relativeTo: .subheadline)
@@ -296,7 +297,7 @@ private struct TimelineWideColumn<Item: TimeWindow & Hashable & Sendable, Featur
 
 /// The wide current row on a black plate with a Mode-colour edge, where the axis line would run.
 private struct TimelineWideRow<Leading: View, Trailing: View>: View {
-  let color: ModeColor
+  let color: TimelineTint
   @ViewBuilder let leading: Leading
   @ViewBuilder let trailing: Trailing
 
@@ -352,7 +353,7 @@ private struct TimelineWideProgress: View {
   static private let lineWidthShare: CGFloat = 0.2
 
   let progress: WindowProgress
-  let color: ModeColor
+  let color: TimelineTint
   let writer: SentenceWriter
   let now: Date
   let wide: WideDetailMetrics
