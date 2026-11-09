@@ -79,7 +79,7 @@ custom_rules:
   ika_core_imports_no_ui_frameworks:
     name: "IkaCore imports no UI or system-surface framework"
     included: /Ikalendar3Kit/Sources/IkaCore/
-    regex: "^[ \\t]*(?:@[A-Za-z_]+(?:\\([^)]*\\))?[ \\t]+)*(?:(?:public|package|internal|fileprivate|private)[ \\t]+)?import[ \\t]+(?:(?:typealias|struct|class|enum|protocol|let|var|func)[ \\t]+)?(?:SwiftUI|SwiftUICore|UIKit|AppKit|WidgetKit|ActivityKit|AppIntents)\\b"
+    regex: "^[ \\t]*(?:@[A-Za-z_]+(?:\\([^)]*\\))?[ \\t]+)*(?:(?:public|package|internal|fileprivate|private)[ \\t]+)?import[ \\t]+(?:(?:typealias|struct|class|enum|protocol|let|var|func)[ \\t]+)?(?:SwiftUI|SwiftUICore|UIKit|AppKit|WidgetKit|ActivityKit|AppIntents|UserNotifications|BackgroundTasks)\\b"
     message: "IkaCore is plain values only, so every target and Swift Testing can link it. Put framework code in IkaDesign, IkaIntents or a target."
     severity: error
   no_objcMembers:
