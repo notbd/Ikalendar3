@@ -12,8 +12,8 @@ import SwiftUI
 
 // MARK: - OverviewLayoutView
 
-/// The Mac's Overview: the event strip over a card per Mode of the Mode value, each its summary
-/// in the selected Style (`Snapshot.summaries(at:)`). A Battle Mode a Splatfest pauses shows its
+/// The Mac's Overview: the event strip over a card per Mode of the Mode value, each the summary of
+/// the Mode's page in the selected Style (`Snapshot.modePages(at:)`). A Battle Mode a Splatfest pauses shows its
 /// pause, dimmed, as its summary does everywhere; the Splatfest's own card is on the strip.
 ///
 /// A card opens its Mode's Schedule in the window, with a back button to the cards, and picks the
@@ -30,11 +30,11 @@ struct OverviewLayoutView: View {
   var body: some View {
     NavigationStack(path: $path) {
       Group {
-        if let summaries = engine.snapshot.summaries(at: clock.now) {
+        if let pages = engine.snapshot.modePages(at: clock.now) {
           ScrollView {
             VStack(spacing: 0) {
               EventStrip()
-              OverviewCards(summaries: summaries, now: clock.now, open: open)
+              OverviewCards(pages: pages, now: clock.now, open: open)
             }
           }
           .background { StyleBackground().ignoresSafeArea() }
@@ -73,7 +73,7 @@ private struct OverviewCards: View {
   @Environment(\.gameLanguage) private var language
   @TimeSettings private var time
 
-  let summaries: [ModeSummary]
+  let pages: [ModePage]
   let now: Date
   let open: (Mode) -> Void
 
@@ -82,20 +82,18 @@ private struct OverviewCards: View {
     let format: ScheduleFormat = time.format(language)
 
     LazyVGrid(columns: OverviewMetrics.columns, spacing: OverviewMetrics.spacing) {
-      ForEach(summaries, id: \.mode) { summary in
-        if let mode = summary.mode {
-          Button { open(mode) } label: {
-            card(SidebarRowContent(row: .mode(summary), writer: writer, format: format, now: now))
-          }
-          .buttonStyle(.plain)
+      ForEach(pages, id: \.mode) { page in
+        Button { open(page.mode) } label: {
+          card(SummaryRowContent(page.summary, writer: writer, format: format, now: now))
         }
+        .buttonStyle(.plain)
       }
     }
     .padding(OverviewMetrics.spacing)
   }
 
   @ViewBuilder
-  private func card(_ content: SidebarRowContent) -> some View {
+  private func card(_ content: SummaryRowContent) -> some View {
     switch preferences.style {
       case .classic: ClassicOverviewCard(content: content)
       case .ink: InkOverviewCard(content: content)

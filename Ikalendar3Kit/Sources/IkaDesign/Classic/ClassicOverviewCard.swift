@@ -12,36 +12,28 @@ import SwiftUI
 // MARK: - ClassicOverviewCard
 
 /// Classic's Mac Overview card on a list cell's colour, as its event cards sit: the Mode's icon in
-/// a ring of its colour, the name in the heavy face and the summary in the light face. It receives
-/// a sidebar row's content only and reads no store.
+/// a ring of its colour, the name in the heavy face and the line in the light face. It receives a
+/// summary row's content only and reads no store.
 public struct ClassicOverviewCard: View {
   @Environment(\.colorScheme) private var colorScheme
 
-  private let content: SidebarRowContent
+  private let content: SummaryRowContent
 
-  public init(content: SidebarRowContent) {
+  public init(content: SummaryRowContent) {
     self.content = content
   }
 
   public var body: some View {
-    OverviewCardFrame(content: content, ringColor: ringColor) { name in
+    OverviewCardFrame(content: content, ringColor: content.classicRingColor(in: colorScheme)) { name in
       Text(verbatim: name)
         .ikaFont(.heavy, size: 20, relativeTo: .title3)
-    } summary: { summary in
-      Text(verbatim: summary)
+    } line: { line in
+      Text(verbatim: line)
         .ikaFont(.light, size: 15, relativeTo: .subheadline)
         .foregroundStyle(.secondary)
     }
     .padding(OverviewCardMetrics.padding)
     .background(ClassicEventCard.background, in: .rect(cornerRadius: ClassicMetrics.EventCard.cornerRadius))
-  }
-
-  /// The Mode colour, tinted where it would not read on the card; the primary colour for the
-  /// Splatfest's rows.
-  private var ringColor: Color {
-    guard let color = content.color else { return .primary }
-
-    return Color(color.onPanel(of: .classic, in: colorScheme, for: .largeTextAndIcons).foreground)
   }
 }
 #endif

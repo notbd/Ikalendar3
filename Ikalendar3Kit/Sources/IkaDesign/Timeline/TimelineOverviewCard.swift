@@ -12,12 +12,12 @@ import SwiftUI
 // MARK: - TimelineOverviewCard
 
 /// Timeline's Mac Overview card on its panel, in the dark appearance Timeline draws in: the Mode's
-/// icon in a ring of its colour, the name in the heavy face and the summary in the light face. It
-/// receives a sidebar row's content only and reads no store.
+/// icon in a ring of its colour, the name in the heavy face and the line in the light face. It
+/// receives a summary row's content only and reads no store.
 public struct TimelineOverviewCard: View {
-  private let content: SidebarRowContent
+  private let content: SummaryRowContent
 
-  public init(content: SidebarRowContent) {
+  public init(content: SummaryRowContent) {
     self.content = content
   }
 
@@ -29,8 +29,8 @@ public struct TimelineOverviewCard: View {
         Text(verbatim: name)
           .ikaFont(.heavy, size: 18, relativeTo: .headline)
           .foregroundStyle(.white)
-      } summary: { summary in
-        Text(verbatim: summary)
+      } line: { line in
+        Text(verbatim: line)
           .ikaFont(.light, size: 14, relativeTo: .subheadline)
           .foregroundStyle(TimelinePalette.secondaryText)
       }

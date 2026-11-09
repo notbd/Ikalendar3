@@ -24,7 +24,7 @@ public struct ClassicSidebarRow: View {
   }
 
   public var body: some View {
-    SidebarRowFrame(content: content, ringColor: ringColor) { name in
+    SidebarRowFrame(content: content, ringColor: content.classicRingColor(in: colorScheme)) { name in
       Text(verbatim: name)
         .ikaFont(.heavy, size: 17, relativeTo: .headline)
     } line: { line in
@@ -33,11 +33,15 @@ public struct ClassicSidebarRow: View {
         .foregroundStyle(.secondary)
     }
   }
+}
 
-  /// The Mode colour, tinted where it would not read on the list; the primary colour for the
-  /// Splatfest's rows.
-  private var ringColor: Color {
-    guard let color = content.color else { return .primary }
+// MARK: - SummaryRowContent
+
+extension SummaryRowContent {
+  /// The ring's colour in Classic's summary rows and Overview cards: the Mode colour, tinted where
+  /// it would not read on Classic's panels; the primary colour for the Splatfest's rows.
+  func classicRingColor(in colorScheme: ColorScheme) -> Color {
+    guard let color else { return .primary }
 
     return Color(color.onPanel(of: .classic, in: colorScheme, for: .largeTextAndIcons).foreground)
   }

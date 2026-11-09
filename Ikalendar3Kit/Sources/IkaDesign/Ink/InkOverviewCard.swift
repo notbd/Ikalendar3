@@ -12,25 +12,25 @@ import SwiftUI
 // MARK: - InkOverviewCard
 
 /// Ink's Mac Overview card on its rough-edged dark panel: the Mode's icon in a ring of its accent,
-/// the name in the heavy face and the summary in the light face. It receives a sidebar row's
-/// content only and reads no store.
+/// the name in the heavy face and the line in the light face. It receives a summary row's content
+/// only and reads no store.
 public struct InkOverviewCard: View {
   @Environment(\.colorScheme) private var colorScheme
 
-  private let content: SidebarRowContent
+  private let content: SummaryRowContent
 
-  public init(content: SidebarRowContent) {
+  public init(content: SummaryRowContent) {
     self.content = content
   }
 
   public var body: some View {
-    let accent: InkAccent = content.color.map(InkAccent.init) ?? .splatfest
+    let accent: InkAccent = .init(content.color)
 
     OverviewCardFrame(content: content, ringColor: Color(accent.base)) { name in
       Text(verbatim: name)
         .inkFont(.tag)
-    } summary: { summary in
-      Text(verbatim: summary)
+    } line: { line in
+      Text(verbatim: line)
         .inkFont(.body)
         .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
     }
