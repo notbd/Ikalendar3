@@ -86,7 +86,8 @@ struct TimelineModeBadge: View {
 // MARK: - TimelineFormStrip
 
 /// The Series and Open strip under Anarchy's header, the form shown underlined in the Mode
-/// colour. It shows which form the screen holds; ticket 24's tab menu switches it.
+/// colour. It shows which form the screen holds and takes no tap: ticket 24's tab menu switches
+/// it. VoiceOver reads it as one text naming the shown form, not as a selector.
 struct TimelineFormStrip: View {
   /// The Anarchy form the screen shows.
   let shown: BattleMode
@@ -94,12 +95,18 @@ struct TimelineFormStrip: View {
 
   var body: some View {
     HStack(spacing: 28) {
-      form(.anarchySeries, label: .series)
-      form(.anarchyOpen, label: .open)
+      ForEach(Self.forms, id: \.mode) { form in
+        self.form(form.mode, label: form.label)
+      }
     }
     .frame(maxWidth: .infinity, minHeight: TimelineMetrics.stripHeight)
     .background(TimelinePalette.strip)
+    .accessibilityElement(children: .ignore)
+    .accessibilityLabel(Text(verbatim: Self.forms.first { $0.mode == shown }?.label.text(in: language) ?? ""))
   }
+
+  /// Anarchy Battle's forms in strip order, each with its label.
+  static private let forms: [(mode: BattleMode, label: ModeLabel)] = [(.anarchySeries, .series), (.anarchyOpen, .open)]
 
   private func form(_ mode: BattleMode, label: ModeLabel) -> some View {
     let isShown: Bool = mode == shown
@@ -115,7 +122,6 @@ struct TimelineFormStrip: View {
             .frame(height: TimelineMetrics.stripUnderline)
         }
       }
-      .accessibilityAddTraits(isShown ? .isSelected : [])
   }
 }
 #endif
