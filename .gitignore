@@ -35,3 +35,6 @@ SourcePackages/
 *.ipa
 *.dSYM.zip
 *.dSYM
+
+# Coverage data a binary writes when it runs outside Xcode
+*.profraw
