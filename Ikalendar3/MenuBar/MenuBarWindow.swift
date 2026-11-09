@@ -41,7 +41,7 @@ struct MenuBarWindow: View {
   }
 
   /// The window with each Mode's row drawn by `row`.
-  private func window(row: @escaping (SidebarRowContent) -> some View) -> some View {
+  private func window(row: @escaping (SummaryRowContent) -> some View) -> some View {
     VStack(spacing: MenuBarMetrics.spacing) {
       ModeRows(snapshot: engine.snapshot, now: clock.now, row: row)
 
@@ -71,16 +71,16 @@ private struct ModeRows<Row: View>: View {
 
   let snapshot: Snapshot
   let now: Date
-  let row: (SidebarRowContent) -> Row
+  let row: (SummaryRowContent) -> Row
 
   var body: some View {
-    if let summaries = snapshot.summaries(at: now), let schedules = snapshot.schedules {
+    if let pages = snapshot.modePages(at: now), let schedules = snapshot.schedules {
       let writer: SentenceWriter = time.writer(snapshot.terms(in: language))
       let format: ScheduleFormat = time.format(language)
 
       VStack(alignment: .leading, spacing: 0) {
-        ForEach(summaries, id: \.mode) { summary in
-          row(SidebarRowContent(row: .mode(summary), writer: writer, format: format, now: now))
+        ForEach(pages, id: \.mode) { page in
+          row(SummaryRowContent(page.summary, writer: writer, format: format, now: now))
         }
       }
 

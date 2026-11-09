@@ -35,7 +35,10 @@ public enum BackgroundRefresh {
   /// Asks for the next run after `now`: at the next boundary of a running Tracking, or two hours
   /// on if that is sooner (`EffectsPlan.nextBackgroundRun`).
   static public func requestNextRun(after now: Date = Date()) async {
-    await requestRun(at: EffectsPlan.nextBackgroundRun(after: now, trackingBoundaries: TrackingActivities.boundaries()))
+    await requestRun(at: EffectsPlan.nextBackgroundRun(
+      after: now,
+      tracking: TrackingActivities.running(),
+      staleDates: TrackingActivities.staleDates()))
   }
 
   /// Asks for a run at `date` or as soon after as the system allows. The system holds one pending

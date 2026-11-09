@@ -12,12 +12,12 @@ import SwiftUI
 // MARK: - TimelineSidebarRow
 
 /// Timeline's sidebar row on SplatNet 3's page colour: the Mode's icon in a ring of its colour,
-/// the name in the heavy face and the summary in the light face. It receives a sidebar row's
+/// the name in the heavy face and the line in the light face. It receives a summary row's
 /// content only and reads no store.
 public struct TimelineSidebarRow: View {
-  private let content: SidebarRowContent
+  private let content: SummaryRowContent
 
-  public init(content: SidebarRowContent) {
+  public init(content: SummaryRowContent) {
     self.content = content
   }
 
@@ -28,8 +28,8 @@ public struct TimelineSidebarRow: View {
       Text(verbatim: name)
         .ikaFont(.heavy, size: 16, relativeTo: .headline)
         .foregroundStyle(.white)
-    } summary: { summary in
-      Text(verbatim: summary)
+    } line: { line in
+      Text(verbatim: line)
         .ikaFont(.light, size: 13, relativeTo: .subheadline)
         .foregroundStyle(TimelinePalette.secondaryText)
     }

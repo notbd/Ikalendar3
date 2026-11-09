@@ -28,7 +28,8 @@ import IkaIntents
 /// - The event card gallery: `--event-cards` shows every event card at the app clock's instant
 ///   instead of the tabs, for screenshots of each card at an iPhone's width.
 /// - The short-item Tracking, on iOS: `--fixture-short-tracking <Mode>` Tracks the Mode with
-///   items two minutes long after each activation run (`restartShortTracking(with:)`).
+///   items two minutes long after each activation run (`restartShortTracking(with:)`). An
+///   unrebased fixture launch hides the track button (`hidesTrackButton`).
 ///
 /// A malformed option stops the launch with its reason: a launch that asked for test data never
 /// falls back to the network or the shared folder.
@@ -57,6 +58,13 @@ enum DebugLaunch {
   }
 
   #if os(iOS)
+  /// Whether the launch hides the track button: an unrebased fixture launch keeps its data in its
+  /// own process, while the button's intent would refresh and Track on the App Group's cache and
+  /// the network. A rebased launch commits the fixture to that cache, so Tracking shows it.
+  static func hidesTrackButton(_ arguments: [String] = ProcessInfo.processInfo.arguments) -> Bool {
+    (try? FixtureLaunch(arguments: arguments))?.isRebased == false
+  }
+
   /// The Mode the short-item Tracking follows, by the Mode parameter's raw value, or `nil` when
   /// the launch names none.
   static func shortTracking(_ arguments: [String] = ProcessInfo.processInfo.arguments) -> Mode? {

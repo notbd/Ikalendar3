@@ -11,8 +11,9 @@ import SwiftUI
 
 // MARK: - SplatfestTeamsPanel
 
-/// The running Splatfest on top of the Now page: its three teams, each on a tag in its colour,
-/// and the time left. A team whose name the source lacks shows as its colour alone.
+/// The running Splatfest on top of the Now page: its teams, each on a tag in its colour, and the
+/// time left. Only teams whose names the terms carry are listed (`GameTerms.teams(of:)`), so a
+/// colour never stands alone.
 ///
 /// It is one VoiceOver element reading the Splatfest's sentence, with the team names as its
 /// value. It receives `IkaCore` values only.
@@ -25,23 +26,13 @@ struct SplatfestTeamsPanel: View {
   let now: Date
 
   var body: some View {
-    // Looked up one by one: the source may lack them.
-    let teamNames = terms.splatfest(splatfest.id).teamNames ?? []
     let writer: SentenceWriter = time.writer(terms)
 
     VStack(alignment: .leading, spacing: WatchMetrics.lineSpacing) {
       Text(verbatim: ModeLabel.splatfest.text(in: terms.language))
         .ikaFont(.heavy, size: WatchMetrics.modeNameSize, relativeTo: .footnote)
-      ForEach(splatfest.teamColors.indices, id: \.self) { index in
-        let color: SRGBColor = .init(splatfest.teamColors[index])
-        if teamNames.indices.contains(index) {
-          InkTeamTag(Text(verbatim: teamNames[index]), color: color)
-        }
-        else {
-          Capsule()
-            .fill(Color(color))
-            .frame(width: WatchMetrics.teamSwatchSize.width, height: WatchMetrics.teamSwatchSize.height)
-        }
+      ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
+        InkTeamTag(Text(verbatim: team.name), color: SRGBColor(team.color))
       }
       Text(verbatim: writer.countdown(splatfest.progress(at: now)))
         .ikaFont(.light, size: WatchMetrics.countdownSize, relativeTo: .footnote)
@@ -50,8 +41,6 @@ struct SplatfestTeamsPanel: View {
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .inkPanel()
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(writer.sentence(for: splatfest, at: now))
-    .accessibilityValue(teamNames.formatted(.list(type: .and).locale(Locale(identifier: terms.language.rawValue))))
+    .splatfestAccessibility(splatfest, writer: writer, at: now)
   }
 }

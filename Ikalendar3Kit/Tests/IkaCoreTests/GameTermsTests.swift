@@ -70,6 +70,23 @@ struct GameTermsTests {
     #expect(snapshot.terms(in: .deDE).name(of: Self.scorchGorge) == "Sengkluft")
   }
 
+  // MARK: - Splatfest teams
+
+  @Test
+  func `A Splatfest's teams pair each name with its colour, leaving out a team with no name`() async throws {
+    let snapshot: Snapshot = try await .schedules(.splatfestSecondHalf)
+    let splatfest = try #require(snapshot.splatfest)
+    var refreshed: TermTable = .init()
+    refreshed.splatfests[splatfest.id] = SplatfestTerms(title: "Which?", teamNames: ["Wizard", "Knight"])
+
+    let teams = GameTerms(language: .enUS, refreshed: refreshed, feed: TermTable()).teams(of: splatfest)
+
+    #expect(teams == [
+      SplatfestTeam(name: "Wizard", color: splatfest.teamColors[0]),
+      SplatfestTeam(name: "Knight", color: splatfest.teamColors[1]),
+    ])
+  }
+
   // MARK: - Coverage
 
   /// Every Stage, Rule, weapon, King Salmonid and Challenge the schedules fixtures name.

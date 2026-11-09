@@ -131,6 +131,12 @@ public struct SentenceWriter: Sendable {
       when(splatfest, at: instant, times: .init().weekday(.wide).month(.wide).day().hour().minute()))
   }
 
+  /// A Splatfest's team names as the text set lists them, those with a name in its terms. A
+  /// Splatfest's sentence leaves them out: VoiceOver reads them after it, as its value.
+  public func teamNames(of splatfest: Splatfest) -> String {
+    list(terms.teams(of: splatfest).map(\.name))
+  }
+
   /// An event card's sentence: the sentence of the Challenge window, Splatfest or Shift it shows.
   public func sentence(for event: EventItem, at instant: Date) -> String {
     switch event {
@@ -144,7 +150,10 @@ public struct SentenceWriter: Sendable {
   /// The time left in a window, which is how a progress bar or ring reads: whole hours and
   /// minutes, rounded up to the minute so a running window never reads zero.
   public func timeLeft(_ progress: WindowProgress) -> String {
-    let minutes: Int = .init((progress.timeLeft / .seconds(60)).rounded(.up))
+    // From the countdown's whole parts, as it is for seconds: a division through `Double` reads
+    // some whole minutes a hair above them.
+    let countdown: Countdown = .init(progress.timeLeft)
+    let minutes: Int = countdown.hours * 60 + countdown.minutes + (countdown.seconds > 0 ? 1 : 0)
     let (hours, minutesPastHour) = minutes.quotientAndRemainder(dividingBy: 60)
     let span =
       switch (hours, minutesPastHour) {
@@ -263,7 +272,7 @@ public struct SentenceWriter: Sendable {
   }
 
   /// Names joined as the text set lists them: "A and B", "A、B".
-  private func list(_ names: [String]) -> String {
+  public func list(_ names: [String]) -> String {
     names.formatted(.list(type: .and).locale(locale))
   }
 

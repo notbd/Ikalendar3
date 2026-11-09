@@ -13,20 +13,14 @@ import Testing
 /// The 2026-10-31 Splatfest runs from 2026-10-31 00:00 UTC to 2026-11-02 00:00 UTC.
 struct NowPageTests {
   @Test
-  func `The Now page lists the five Modes' summaries in the Mode value's order`() async throws {
+  func `The Now page lists the five Modes' pages in the Mode value's order`() async throws {
     let snapshot = try await Snapshot.schedules(.normalDay)
     let instant = date("2026-10-20T13:30:00Z")
 
     let page = try #require(snapshot.nowPage(at: instant))
 
-    #expect(page.summaries.map(\.mode) == [
-      .battle(.regular),
-      .battle(.anarchySeries),
-      .battle(.anarchyOpen),
-      .battle(.x),
-      .salmonRun,
-    ])
-    #expect(page.summaries == Mode.allCases.compactMap { snapshot.summary(of: $0, at: instant) })
+    #expect(page.modePages.map(\.mode) == Mode.allCases)
+    #expect(page.modePages.map(\.summary) == Mode.allCases.compactMap { snapshot.summary(of: $0, at: instant) })
     #expect(page.splatfest == nil)
     #expect(page.fetchTime == TestData.epoch)
   }
@@ -67,7 +61,9 @@ struct NowPageTests {
     let page = try #require(snapshot.nowPage(at: date("2026-11-01T05:23:00Z")))
 
     let returnTime = date("2026-11-02T00:00:00Z")
-    #expect(Array(page.summaries.prefix(4)) == BattleMode.allCases.map { .battle($0, .paused(returnTime: returnTime)) })
+    #expect(page.modePages.prefix(4).map(\.summary) == BattleMode.allCases.map {
+      .battle($0, .paused(returnTime: returnTime))
+    })
   }
 
   @Test

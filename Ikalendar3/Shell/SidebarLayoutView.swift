@@ -100,7 +100,7 @@ private struct SidebarList: View {
 
   /// The list with each row drawn by `row` and each group's title by `header`.
   private func list(
-    row: @escaping (SidebarRowContent) -> some View,
+    row: @escaping (SummaryRowContent) -> some View,
     header: @escaping (String) -> some View)
     -> some View
   {
@@ -111,7 +111,7 @@ private struct SidebarList: View {
       ForEach(sidebar?.groups ?? [], id: \.kind) { group in
         Section {
           ForEach(group.rows, id: \.item) { sidebarRow in
-            row(SidebarRowContent(row: sidebarRow, writer: writer, format: format, now: now))
+            row(SummaryRowContent(row: sidebarRow, writer: writer, format: format, now: now))
               .tag(sidebarRow.item)
           }
         } header: {
