@@ -9,6 +9,9 @@ import IkaCore
 import IkaDesign
 import SwiftUI
 import WidgetKit
+#if DEBUG
+import IkaFixtures
+#endif
 
 // MARK: - SalmonRunWidget
 
@@ -33,7 +36,7 @@ struct SalmonRunWidget: Widget {
 struct SalmonRunTimelineProvider: TimelineProvider {
   typealias Entry = ScheduleWidgetEntry<SalmonRunWidgetContent>
 
-  var load: @Sendable () async -> Snapshot = WidgetData.cachedSnapshot
+  var load: @Sendable () async -> Snapshot = AppGroup.cachedSnapshot
 
   func placeholder(in _: Context) -> Entry {
     .empty(at: .now)
@@ -67,25 +70,25 @@ struct SalmonRunTimelineProvider: TimelineProvider {
 #Preview("Small", as: .systemSmall) {
   SalmonRunWidget()
 } timelineProvider: {
-  SalmonRunTimelineProvider(load: WidgetData.fixture(.normalDay))
+  SalmonRunTimelineProvider(load: Snapshot.preview(.normalDay))
 }
 
 #Preview("Medium", as: .systemMedium) {
   SalmonRunWidget()
 } timelineProvider: {
-  SalmonRunTimelineProvider(load: WidgetData.fixture(.normalDay))
+  SalmonRunTimelineProvider(load: Snapshot.preview(.normalDay))
 }
 
 #Preview("Small, Big Run with random weapons", as: .systemSmall) {
   SalmonRunWidget()
 } timelineProvider: {
-  SalmonRunTimelineProvider(load: WidgetData.fixture(.bigRun))
+  SalmonRunTimelineProvider(load: Snapshot.preview(.bigRun))
 }
 
 #Preview("Medium, Big Run with random weapons", as: .systemMedium) {
   SalmonRunWidget()
 } timelineProvider: {
-  SalmonRunTimelineProvider(load: WidgetData.fixture(.bigRun))
+  SalmonRunTimelineProvider(load: Snapshot.preview(.bigRun))
 }
 
 #Preview("Small, empty", as: .systemSmall) {

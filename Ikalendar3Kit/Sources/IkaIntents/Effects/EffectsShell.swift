@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if !os(watchOS)
 import Foundation
 import IkaCore
 import WidgetKit
@@ -17,7 +18,8 @@ import WidgetKit
 /// that commits new data applies every effect, whichever entry point started it.
 ///
 /// On iOS it also starts Tracking, and every run re-arms each running Tracking from the cache.
-/// Live Activities render on the system's clock, so their instant is the wall clock's.
+/// Live Activities render on the system's clock, so their instant is the wall clock's. Not on
+/// watchOS: the watch app runs its own shell and links no `IkaIntents`.
 @MainActor
 public struct EffectsShell {
   private let engine: RefreshEngine
@@ -106,4 +108,5 @@ public enum TrackingError: Error, CustomLocalizedStringResourceConvertible {
     }
   }
 }
+#endif
 #endif

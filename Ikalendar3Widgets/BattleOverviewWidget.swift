@@ -9,6 +9,9 @@ import IkaCore
 import IkaDesign
 import SwiftUI
 import WidgetKit
+#if DEBUG
+import IkaFixtures
+#endif
 
 // MARK: - BattleOverviewWidget
 
@@ -33,7 +36,7 @@ struct BattleOverviewWidget: Widget {
 struct BattleOverviewTimelineProvider: TimelineProvider {
   typealias Entry = ScheduleWidgetEntry<[BattleWidgetContent]>
 
-  var load: @Sendable () async -> Snapshot = WidgetData.cachedSnapshot
+  var load: @Sendable () async -> Snapshot = AppGroup.cachedSnapshot
 
   func placeholder(in _: Context) -> Entry {
     .empty(at: .now)
@@ -67,12 +70,12 @@ struct BattleOverviewTimelineProvider: TimelineProvider {
 #Preview("Extra large", as: .systemExtraLarge) {
   BattleOverviewWidget()
 } timelineProvider: {
-  BattleOverviewTimelineProvider(load: WidgetData.fixture(.normalDay))
+  BattleOverviewTimelineProvider(load: Snapshot.preview(.normalDay))
 }
 
 #Preview("Extra large, Splatfest", as: .systemExtraLarge) {
   BattleOverviewWidget()
 } timelineProvider: {
-  BattleOverviewTimelineProvider(load: WidgetData.fixture(.splatfestSecondHalf))
+  BattleOverviewTimelineProvider(load: Snapshot.preview(.splatfestSecondHalf))
 }
 #endif
