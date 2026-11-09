@@ -7,12 +7,14 @@
 
 import IkaCore
 import IkaDesign
+import IkaIntents
 import SwiftUI
 
 // MARK: - ScheduleScreen
 
 /// What every shared screen does around its Style's view: the navigation title, pull to
-/// refresh, and the shared empty state until the schedules feed's first good response.
+/// refresh through the effects shell, and the shared empty state until the schedules feed's
+/// first good response.
 ///
 /// The shared screens own state, navigation and actions, and switch exhaustively over the Style
 /// into `IkaDesign`'s per-Style views, which receive only `IkaCore` values and action closures
@@ -20,6 +22,7 @@ import SwiftUI
 /// action set here.
 struct ScheduleScreen<Content, StyleView: View>: View {
   @Environment(RefreshEngine.self) private var engine
+  @Environment(\.effects) private var effects
 
   /// The navigation title.
   let title: String
@@ -41,7 +44,7 @@ struct ScheduleScreen<Content, StyleView: View>: View {
       }
     }
     .navigationTitle(title)
-    .refreshable { await engine.refresh() }
+    .refreshable { await effects?.run() }
   }
 }
 
@@ -49,7 +52,7 @@ struct ScheduleScreen<Content, StyleView: View>: View {
 
 /// The shared empty state as a screen, which pull to refresh still reaches.
 struct EmptyScheduleScreenView: View {
-  @Environment(RefreshEngine.self) private var engine
+  @Environment(\.effects) private var effects
 
   /// The navigation title.
   let title: String
@@ -60,6 +63,6 @@ struct EmptyScheduleScreenView: View {
         .containerRelativeFrame(.vertical)
     }
     .navigationTitle(title)
-    .refreshable { await engine.refresh() }
+    .refreshable { await effects?.run() }
   }
 }
