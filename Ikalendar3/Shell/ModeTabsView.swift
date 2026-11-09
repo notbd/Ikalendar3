@@ -7,6 +7,7 @@
 
 import IkaCore
 import IkaDesign
+import IkaIntents
 import SwiftUI
 
 // MARK: - ModeTabsView
@@ -15,11 +16,12 @@ import SwiftUI
 /// Challenge and Salmon Run, with the Splatfest tab in Regular Battle's place while a Splatfest
 /// runs. iPad and Mac show them too until their own navigation lands.
 ///
-/// It refreshes each time the app becomes active (the engine's gate decides whether a request
+/// It runs the effects shell each time the app becomes active (the gate decides whether a request
 /// goes out), plays the haptics of ikalendar 2's table, and reports a failed refresh in a toast
 /// while the screens keep their data.
 struct ModeTabsView: View {
   @Environment(RefreshEngine.self) private var engine
+  @Environment(\.effects) private var effects
   @Environment(AppClock.self) private var clock
   @Environment(AppStatus.self) private var status
   @Environment(PreferenceStore.self) private var preferences
@@ -67,7 +69,7 @@ struct ModeTabsView: View {
       withAnimation { failureToast = nil }
     }
     .task(id: scenePhase) {
-      if scenePhase == .active { await engine.refresh() }
+      if scenePhase == .active { await effects?.run() }
     }
   }
 
