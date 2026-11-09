@@ -50,7 +50,10 @@ struct TimelineShiftContent: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       if let label = shift.kind.label {
-        TimelineModeTag(icon: ModeIcon(shift.kind), label: label.text(in: terms.language), colors: ModeColor(shift.kind).asFill)
+        TimelineModeTag(
+          icon: ModeIcon(shift.kind),
+          label: label.text(in: terms.language),
+          colors: ModeColor(shift.kind).asFill)
       }
       TimelineHeadline(arrangement: arrangement) {
         Text(verbatim: format.timeRange(from: shift.startTime, to: shift.endTime))

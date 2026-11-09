@@ -126,7 +126,7 @@ extension TimelineEntry<TimelineSplatfestItem> {
 
 /// What the Splatfest screen's axis holds: Rotations, of the form and of Regular Battle after
 /// the end, and Tricolor Turf War.
-enum TimelineSplatfestItem: TimeWindow, Hashable, Sendable {
+enum TimelineSplatfestItem: TimeWindow, Hashable {
   case rotation(Rotation)
   case tricolorTurfWar(TricolorTurfWar)
 
