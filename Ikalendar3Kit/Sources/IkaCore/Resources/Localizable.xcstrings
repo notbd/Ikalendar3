@@ -1982,7 +1982,7 @@
       }
     },
     "sentence.hoursAndMinutes" : {
-      "comment" : "A span of whole hours and minutes. %1$@: the hours. %2$@: the minutes.",
+      "comment" : "A span of two time units, the larger first: whole hours and minutes, or in a countdown also minutes and seconds. %1$@: the larger unit, or the units so far. %2$@: the next smaller unit.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
