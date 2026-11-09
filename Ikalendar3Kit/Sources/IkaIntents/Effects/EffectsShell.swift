@@ -13,7 +13,8 @@ import WidgetKit
 // MARK: - EffectsShell
 
 /// The one run every entry point makes: the app on activation, on a manual refresh and from its
-/// background task, and the intents that refresh, directly. A run refreshes under the hourly gate,
+/// background task (on the Mac, its periodic and after-wake runs), and the intents that refresh,
+/// directly. A run refreshes under the hourly gate,
 /// then applies the effects plan `IkaCore` makes of the result, deciding nothing itself. So a run
 /// that commits new data applies every effect, whichever entry point started it.
 ///

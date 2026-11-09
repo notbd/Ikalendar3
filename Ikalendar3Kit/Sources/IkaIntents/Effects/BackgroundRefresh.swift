@@ -17,7 +17,7 @@ import OSLog
 /// widgets stay fresh while the app is not opened, and at each boundary of a running Tracking so
 /// its Live Activity moves on. Best effort: the system decides when a run happens, and runs none
 /// while background refresh is off or after the player quits the app from the app switcher. The
-/// Mac has no such task.
+/// Mac has no such task; `MacBackgroundRefresh` stands in for it.
 ///
 /// The app registers `perform(with:)` as the task's handler and asks for the next run each time
 /// it moves to the background, which starts the chain that every run then continues.

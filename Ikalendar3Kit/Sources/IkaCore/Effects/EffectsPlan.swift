@@ -53,8 +53,9 @@ public struct EffectsPlan: Equatable, Sendable {
   }
 
   /// How long after a run the background task is due again with no boundary sooner: about two
-  /// hours, so widgets stay fresh while the app is not opened.
-  static let backgroundRefreshInterval: TimeInterval = 2 * 3600
+  /// hours, so widgets stay fresh while the app is not opened. The Mac's periodic run, which
+  /// stands in for the task there, keeps the same interval.
+  static public let backgroundRefreshInterval: TimeInterval = 2 * 3600
 }
 
 // MARK: - RunningTracking
