@@ -38,6 +38,16 @@ struct Ikalendar3App: App {
       }
     }
     .refreshingInBackground(services?.effects, scenePhase: scenePhase)
+
+    #if os(macOS)
+    // The standard Settings window, which Command-comma opens.
+    Settings {
+      if !AppServices.isTestHost, let services {
+        SettingsView()
+          .environment(services)
+      }
+    }
+    #endif
   }
 
   /// Registers the fonts and points image lookups at the resource framework before anything draws,

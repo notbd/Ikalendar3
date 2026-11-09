@@ -5,6 +5,8 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import Foundation
+
 // MARK: - GameLanguage
 
 /// One of Splatoon 3's 14 text sets. The raw value is the locale code splatoon3.ink names its
@@ -74,5 +76,13 @@ extension GameLanguage {
       case .zhCN: "zh-Hans"
       case .zhTW: "zh-Hant"
     }
+  }
+
+  /// The localization's name in itself, as the system's language list writes it and starting with
+  /// a capital: "English (United Kingdom)", "Español (Latinoamérica)", "日本語".
+  public var nativeName: String {
+    let locale: Locale = .init(identifier: localization)
+    let name = locale.localizedString(forIdentifier: localization) ?? localization
+    return name.prefix(1).uppercased(with: locale) + name.dropFirst()
   }
 }
