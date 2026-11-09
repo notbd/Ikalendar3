@@ -16,6 +16,8 @@ final class AppStatus {
   /// The place of the selected tab. A place, not a tab, so the selection holds while the
   /// Splatfest tab takes Regular Battle's place and when it gives it back.
   var selectedPlace: ModeTab
+  /// Whether Settings is shown on iPhone and iPad.
+  var isSettingsPresented = false
 
   /// A status that opens on `selectedPlace`: the default Mode.
   init(selectedPlace: ModeTab) {

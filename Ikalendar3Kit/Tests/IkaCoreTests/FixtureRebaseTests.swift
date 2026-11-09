@@ -73,6 +73,27 @@ struct FixtureRebaseTests {
     #expect(moved?.later.count == recorded?.later.count)
   }
 
+  @Test
+  func `A fixture snapshot shows the recorded day at the instant it is shown, fetched then`() async throws {
+    let recordedInstant = date("2026-10-20T13:15:00Z")
+    let shownInstant = date("2026-11-09T08:40:00Z")
+    let recorded = try await Snapshot.schedules(.normalDay).battleScreen(of: .x, at: recordedInstant)
+
+    let snapshot = try await Snapshot.fixture(.normalDay, recordedAt: recordedInstant, shownAt: shownInstant)
+
+    let shown = snapshot.battleScreen(of: .x, at: shownInstant)
+    guard case .running(let recordedNow) = recorded?.current, case .running(let shownNow) = shown?.current else {
+      Issue.record("no current Rotation in the recorded or the shown schedules")
+      return
+    }
+
+    #expect(shownNow.item.setting == recordedNow.item.setting)
+    #expect(shownNow.progress == recordedNow.progress)
+    #expect(shown?.next?.setting == recorded?.next?.setting)
+    #expect(snapshot.schedules?.fetchTime == shownInstant)
+    #expect(snapshot.festivals != nil)
+  }
+
   // MARK: Reading times
 
   /// A JSON string that is a UTC instant, as the recorded payloads write it.

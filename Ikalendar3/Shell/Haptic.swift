@@ -11,10 +11,15 @@ import SwiftUI
 // MARK: - Haptic
 
 /// ikalendar 2's event-to-haptic table, played through SwiftUI's sensory feedback. Haptics stay
-/// in the app. Settings shown, a rigid impact, joins the table with Settings.
+/// in the app.
 enum Haptic {
   /// A tab or Mode switch.
   static let modeSwitch: SensoryFeedback = .impact(flexibility: .soft)
+
+  /// The haptic of Settings being shown or dismissed: a rigid impact when it is shown.
+  static func settingsPresentationChanged(to isPresented: Bool) -> SensoryFeedback? {
+    isPresented ? .impact(flexibility: .rigid) : nil
+  }
 
   /// The haptic of a change in the engine's status: a medium impact when a refresh ends with
   /// every feed loaded, the error pattern when one failed, and none when a refresh starts,
