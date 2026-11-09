@@ -1,0 +1,25 @@
+# macOS
+.DS_Store
+
+# Planning map, research notes and Nintendo reference material: never public
+/.scratch/
+
+# Claude Code
+.claude/worktrees/
+.claude/settings.local.json
+
+# Xcode
+xcuserdata/
+DerivedData/
+build/
+*.xcscmblueprint
+*.xccheckout
+
+# Swift Package Manager
+.build/
+SourcePackages/
+
+# App packaging
+*.ipa
+*.dSYM.zip
+*.dSYM
