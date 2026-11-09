@@ -177,9 +177,9 @@ public enum SidebarItem: Hashable, Sendable {
   /// Tricolor Turf War.
   case tricolorTurfWar
 
-  /// The row of the iPhone tab `tab`, the Anarchy tab's showing `anarchyMode`: where the sidebar
-  /// opens before the player picks a row, so it opens on the default Mode as the tabs do, on the
-  /// Splatfest while one runs.
+  /// The row of the iPhone tab `tab`, the Anarchy tab's showing `anarchyMode`: what the sidebar
+  /// shows until the player picks a row, so it opens on the default Mode as the tabs do, on the
+  /// Splatfest while one runs, and follows a tab picked in another layout.
   public init(_ tab: AppTab, anarchyMode: BattleMode) {
     switch tab {
       case .mode(.regularBattle): self = .mode(.battle(.regular))
@@ -188,6 +188,25 @@ public enum SidebarItem: Hashable, Sendable {
       case .mode(.challenge): self = .challenge
       case .mode(.salmonRun): self = .mode(.salmonRun)
       case .splatfest: self = .splatfest
+    }
+  }
+
+  /// The place of the iPhone tab that shows the row's screen, which the tabs select when the
+  /// player picks the row: the Splatfest's rows take the Splatfest tab's, Regular Battle's, and
+  /// Eggstra Work Salmon Run's. A row that leaves the sidebar falls back to a row in the same
+  /// place (`shown(in:)`), so both layouts fall back alike.
+  public var place: ModeTab {
+    switch self {
+      case .mode(.battle(.regular)): .regularBattle
+      case .mode(.battle(.anarchySeries)),
+           .mode(.battle(.anarchyOpen)): .anarchy
+      case .mode(.battle(.x)): .xBattle
+      case .mode(.salmonRun),
+           .eggstraWork: .salmonRun
+      case .challenge: .challenge
+      case .splatfest,
+           .splatfestBattle,
+           .tricolorTurfWar: AppTab.splatfest.place
     }
   }
 

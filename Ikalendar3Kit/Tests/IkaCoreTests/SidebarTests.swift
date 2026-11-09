@@ -220,11 +220,37 @@ struct SidebarTests {
     (.mode(.salmonRun), .anarchySeries, .mode(.salmonRun)),
     (.splatfest, .anarchySeries, .splatfest),
   ])
-  func `Before any choice the sidebar opens on the row of the default Mode's tab`(
+  func `Until the player picks a row, the sidebar shows the row of the selected tab`(
     _ tab: AppTab,
     _ anarchyMode: BattleMode,
     _ item: SidebarItem)
   {
     #expect(SidebarItem(tab, anarchyMode: anarchyMode) == item)
+  }
+
+  @Test(arguments: [
+    (SidebarItem.mode(.battle(.regular)), ModeTab.regularBattle),
+    (.mode(.battle(.anarchySeries)), .anarchy),
+    (.mode(.battle(.anarchyOpen)), .anarchy),
+    (.mode(.battle(.x)), .xBattle),
+    (.challenge, .challenge),
+    (.mode(.salmonRun), .salmonRun),
+    (.eggstraWork, .salmonRun),
+    (.splatfest, .regularBattle),
+    (.splatfestBattle(.open), .regularBattle),
+    (.splatfestBattle(.pro), .regularBattle),
+    (.tricolorTurfWar, .regularBattle),
+  ])
+  func `Each row maps to the place of the tab that shows its screen, before and after it leaves`(
+    _ item: SidebarItem,
+    _ place: ModeTab)
+  {
+    #expect(item.place == place)
+    #expect(item.shown(in: nil).place == place)
+  }
+
+  @Test(arguments: AppTab.allCases, [BattleMode.anarchySeries, .anarchyOpen])
+  func `Each tab's row maps back to the tab's place`(_ tab: AppTab, _ anarchyMode: BattleMode) {
+    #expect(SidebarItem(tab, anarchyMode: anarchyMode).place == tab.place)
   }
 }
