@@ -41,8 +41,9 @@ extension Rotation {
 
 // MARK: - RotationMode
 
-/// The Battle Mode a Rotation belongs to: one of the four continuous Battle Modes, or a form of
-/// Splatfest Battle, which replaces them while a Splatfest runs.
+/// The Battle Mode a Rotation belongs to, in the glossary's sense, which includes Splatfest
+/// Battle: one of the four continuous Battle Modes, or a form of Splatfest Battle, which replaces
+/// them while a Splatfest runs.
 public enum RotationMode: Hashable, Sendable {
   /// A continuous Battle Mode.
   case battle(BattleMode)

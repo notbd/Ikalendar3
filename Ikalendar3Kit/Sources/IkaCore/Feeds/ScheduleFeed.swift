@@ -46,7 +46,7 @@ public struct ScheduleFeed: Hashable, Sendable {
 // MARK: ScheduleFeed.Section
 
 extension ScheduleFeed {
-  /// A part of the feed that decodes on its own.
+  /// A part of the feed that decodes on its own (GLOSSARY.md's Section).
   public enum Section: Hashable, Sendable {
     /// One Battle Mode's Rotations.
     case rotations(RotationMode)
