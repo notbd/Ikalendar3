@@ -44,9 +44,9 @@ struct AppServices {
 }
 
 extension AppServices {
-  /// The app language: the text set of the localization the system resolved for the app bundle.
-  /// Every target declares the same 14, so the widget extension resolves the same one.
-  static let language: GameLanguage = .init(localization: Bundle.main.preferredLocalizations.first ?? "en")
+  /// The app language, resolved for the app bundle. Every target declares the same 14
+  /// localizations, so the widget extension resolves the same one.
+  static let language: GameLanguage = .init(resolvedFor: .main)
 
   /// Whether the process hosts the app's unit tests, which need a live process and no UI.
   static let isTestHost: Bool = {

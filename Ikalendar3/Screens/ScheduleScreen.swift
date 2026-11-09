@@ -23,6 +23,7 @@ import SwiftUI
 struct ScheduleScreen<Content, StyleView: View>: View {
   @Environment(RefreshEngine.self) private var engine
   @Environment(\.effects) private var effects
+  @Environment(AppStatus.self) private var status
 
   /// The navigation title.
   let title: String
@@ -44,7 +45,7 @@ struct ScheduleScreen<Content, StyleView: View>: View {
       }
     }
     .navigationTitle(title)
-    .refreshable { await effects?.run() }
+    .refreshable { await effects?.run(isRequested: true, reportingTo: status) }
   }
 }
 
@@ -53,6 +54,7 @@ struct ScheduleScreen<Content, StyleView: View>: View {
 /// The shared empty state as a screen, which pull to refresh still reaches.
 struct EmptyScheduleScreenView: View {
   @Environment(\.effects) private var effects
+  @Environment(AppStatus.self) private var status
 
   /// The navigation title.
   let title: String
@@ -63,6 +65,6 @@ struct EmptyScheduleScreenView: View {
         .containerRelativeFrame(.vertical)
     }
     .navigationTitle(title)
-    .refreshable { await effects?.run() }
+    .refreshable { await effects?.run(isRequested: true, reportingTo: status) }
   }
 }

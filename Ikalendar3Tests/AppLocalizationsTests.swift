@@ -26,8 +26,8 @@ struct AppLocalizationsTests {
     }
   }
 
-  /// Every process resolves its language from its own bundle, so each bundle must declare the
-  /// same 14 localizations, the ones `GameLanguage(localization:)` maps.
+  /// Every process resolves its language from its own bundle (`GameLanguage(resolvedFor:)`), so
+  /// each bundle must declare the same 14 localizations, the ones `GameLanguage(localization:)` maps.
   @Test
   func `The app and each bundle it embeds declare the 14 localizations`() {
     let bundles: [Bundle] = Self.shippedBundles()

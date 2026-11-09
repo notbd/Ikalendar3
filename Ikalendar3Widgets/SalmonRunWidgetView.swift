@@ -71,9 +71,10 @@ struct SalmonRunWidgetLayout: View {
 /// The current Shift: its Stage as an Ink card, its four weapons (random ones as the game's
 /// question marks), its King Salmonid and the system's countdown to its end. Stacked in the small
 /// widget; the Stage beside the rest where `isWide`. VoiceOver reads it as one element: the
-/// Shift's sentence, then the countdown as its value, so it hears the time left when it reads.
+/// Shift's sentence, then the countdown as its value, so it hears the time left when it reads
+/// (`WidgetAccessibility`).
 struct ShiftView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
   @ScaledMetric(relativeTo: .caption) private var kingSalmonidSide: CGFloat = 30
 
   let shift: Shift
@@ -108,9 +109,7 @@ struct ShiftView: View {
         }
       }
     }
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(writer.sentence(for: shift))
-    .accessibilityValue(Text(timerInterval: shift.startTime ... shift.endTime))
+    .widgetAccessibility(WidgetAccessibility(shift, writer: time.writer(terms), isCurrent: true))
   }
 
   private var stage: some View {
@@ -131,8 +130,6 @@ struct ShiftView: View {
   private var countdown: some View {
     InkTimeTag(Text(timerInterval: shift.startTime ... shift.endTime))
   }
-
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
 }
 
 // MARK: - WeaponIcons

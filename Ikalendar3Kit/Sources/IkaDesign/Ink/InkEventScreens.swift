@@ -16,6 +16,7 @@ import SwiftUI
 /// only and reads no store.
 public struct InkChallengeScreenView: View {
   @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: ChallengeScreen
   private let terms: GameTerms
@@ -100,7 +101,7 @@ public struct InkChallengeScreenView: View {
   }
 
   private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkSplatfestScreenView
@@ -111,6 +112,7 @@ public struct InkChallengeScreenView: View {
 /// only and reads no store.
 public struct InkSplatfestScreenView: View {
   @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: SplatfestScreen
   private let terms: GameTerms
@@ -203,6 +205,6 @@ public struct InkSplatfestScreenView: View {
   }
 
   private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 #endif

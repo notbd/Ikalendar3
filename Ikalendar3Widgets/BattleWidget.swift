@@ -113,6 +113,7 @@ extension BattleWidgetFamily {
 
 // MARK: - Previews
 
+#if DEBUG
 #Preview("Small", as: .systemSmall, using: BattleWidgetIntent(battleMode: .anarchySeries)) {
   BattleWidget()
 } timelineProvider: {
@@ -167,4 +168,5 @@ extension BattleWidgetFamily {
 } timelineProvider: {
   BattleTimelineProvider(load: WidgetData.fixture(.splatfestSecondHalf))
 }
+#endif
 #endif

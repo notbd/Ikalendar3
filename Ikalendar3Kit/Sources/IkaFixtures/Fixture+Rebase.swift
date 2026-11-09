@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if DEBUG
 import Foundation
 
 extension Fixture {
@@ -30,3 +31,4 @@ extension Fixture {
     return Data(rebased.utf8)
   }
 }
+#endif

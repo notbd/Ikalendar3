@@ -56,6 +56,8 @@ struct TabMenuView: View {
 /// One option: the current Rule's icon (the Mode's while none plays), the Mode's name, its
 /// summary line and a checkmark on the Battle Mode the tab shows.
 private struct TabMenuRow: View {
+  @TimeSettings private var time
+
   let option: TabMenuOption
   let isSelected: Bool
   let terms: GameTerms
@@ -101,7 +103,7 @@ private struct TabMenuRow: View {
   /// The current Rule and time left, the pause with the return time, or nothing on; none before
   /// the Mode has a screen.
   private var summary: String? {
-    let writer: SentenceWriter = .init(terms: terms, timeZone: .current, hourCycle: Locale.current.hourCycle)
+    let writer: SentenceWriter = time.writer(terms)
     switch option.current {
       case .running(let running):
         guard let setting = running.item.setting else { return writer.timeLeft(running.progress) }
@@ -109,7 +111,7 @@ private struct TabMenuRow: View {
         return "\(terms.name(of: setting.rule)) · \(writer.timeLeft(running.progress))"
 
       case .paused(let returnTime):
-        let format: ScheduleFormat = .init(language: terms.language, timeZone: .current)
+        let format = time.format(terms.language)
         return ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now))
 
       case .nothingCurrent:

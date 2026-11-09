@@ -7,6 +7,7 @@
 
 import Foundation
 import IkaCore
+import IkaFixtures
 import Testing
 @testable import IkaDesign
 
@@ -132,11 +133,5 @@ struct ClassicTimeFormatTests {
     for language in GameLanguage.allCases {
       #expect(text.text(in: language) != text.rawValue, "\(text.rawValue) in \(language.rawValue)")
     }
-  }
-
-  private func date(_ text: String) -> Date {
-    // A test literal: a malformed one should stop the test at once.
-    // swiftlint:disable:next force_try
-    try! Date(text, strategy: .iso8601)
   }
 }
