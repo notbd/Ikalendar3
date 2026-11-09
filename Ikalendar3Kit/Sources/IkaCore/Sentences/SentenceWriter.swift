@@ -104,6 +104,19 @@ public struct SentenceWriter: Sendable {
       hoursLongWhen(window, at: instant))
   }
 
+  /// Tricolor Turf War's sentence: a Rotation's, with Splatfest Battle as the Battle Mode and
+  /// Tricolor in the Rule's place, plus the time left while it runs at `instant`.
+  ///
+  /// It runs through the Splatfest's second half, a day long, so its times carry the weekday.
+  public func sentence(for tricolorTurfWar: TricolorTurfWar, at instant: Date) -> String {
+    format(
+      "sentence.rotation",
+      ModeLabel.splatfestBattle.text(in: language),
+      ModeLabel.tricolor.text(in: language),
+      list(tricolorTurfWar.stages.map(terms.name(of:))),
+      when(tricolorTurfWar, at: instant, times: Self.weekdayAndTimeStyle))
+  }
+
   /// A Splatfest's sentence: its title and time range, plus the time left while it runs at
   /// `instant`.
   ///
@@ -114,6 +127,16 @@ public struct SentenceWriter: Sendable {
       ModeLabel.splatfest.text(in: language),
       terms.splatfest(splatfest.id).title,
       when(splatfest, at: instant, times: .init().weekday(.wide).month(.wide).day().hour().minute()))
+  }
+
+  /// An event card's sentence: the sentence of the Challenge window, Splatfest or Shift it shows.
+  public func sentence(for event: EventItem, at instant: Date) -> String {
+    switch event {
+      case .challenge(let window): sentence(for: window, at: instant)
+      case .splatfest(let splatfest): sentence(for: splatfest, at: instant)
+      case .bigRun(let shift),
+           .eggstraWork(let shift): sentence(for: shift, at: instant)
+    }
   }
 
   /// The time left in a window, which is how a progress bar or ring reads: whole hours and

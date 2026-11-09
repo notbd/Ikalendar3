@@ -16,16 +16,21 @@ import WidgetKit
 /// tint, so it still stands out.
 public struct InkModeTag: View {
   private let text: Text
-  private let modeColor: ModeColor
+  private let colors: ColorPair
 
   /// A tag reading `text` in `modeColor`.
   public init(_ text: Text, modeColor: ModeColor) {
+    self.init(text, accent: InkAccent(modeColor))
+  }
+
+  /// A tag reading `text` in `accent`.
+  init(_ text: Text, accent: InkAccent) {
     self.text = text
-    self.modeColor = modeColor
+    colors = accent.fill
   }
 
   public var body: some View {
-    InkTagLabel(text: text, style: .tag, colors: modeColor.asFill)
+    InkTagLabel(text: text, style: .tag, colors: colors)
       .widgetAccentable()
   }
 }

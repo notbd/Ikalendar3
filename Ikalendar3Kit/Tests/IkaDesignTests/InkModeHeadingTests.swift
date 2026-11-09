@@ -23,4 +23,15 @@ struct InkModeHeadingTests {
     #expect(InkModeHeading(.battle(.x)) == InkModeHeading(name: .xBattle, form: nil))
     #expect(InkModeHeading(.salmonRun) == InkModeHeading(name: .salmonRun, form: nil))
   }
+
+  @Test
+  func `Splatfest Battle shows its name over the form the player chose`() {
+    #expect(InkModeHeading(splatfestBattle: .open) == InkModeHeading(name: .splatfestBattle, form: .open))
+    #expect(InkModeHeading(splatfestBattle: .pro) == InkModeHeading(name: .splatfestBattle, form: .pro))
+  }
+
+  @Test
+  func `The Challenge screen shows the Challenges heading alone`() {
+    #expect(InkModeHeading.challenges == InkModeHeading(name: .challenges, form: nil))
+  }
 }

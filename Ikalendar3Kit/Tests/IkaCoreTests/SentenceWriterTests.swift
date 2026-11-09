@@ -137,6 +137,38 @@ struct SentenceWriterTests {
       + "from Thursday 7:00\u{202F}PM to 9:00\u{202F}PM.")
   }
 
+  /// Tricolor Turf War reads like a Rotation of Splatfest Battle with Tricolor in the Rule's
+  /// place. It runs through the second half, a day long, so its times carry the weekday.
+  @Test
+  func `Tricolor Turf War reads its Stages, time range and time left`() async throws {
+    let snapshot: Snapshot = try await .schedules(.splatfestSecondHalf)
+    let splatfest = try #require(snapshot.splatfest)
+    let writer: SentenceWriter = .init(
+      terms: snapshot.terms(in: .enUS),
+      timeZone: Self.losAngeles,
+      hourCycle: .oneToTwelve)
+
+    #expect(writer.sentence(for: splatfest.tricolorTurfWar, at: date("2026-11-01T06:00:00Z")) ==
+      "Splatfest Battle: Tricolor on Scorch Gorge and Mincemeat Metalworks, "
+      + "from Saturday 5:00\u{202F}PM to Sunday 4:00\u{202F}PM, 18 hours left.")
+  }
+
+  /// An event card reads as the event it shows: a Big Run as its Shift.
+  @Test
+  func `An event reads as the Challenge window, Splatfest or Shift it shows`() async throws {
+    let snapshot: Snapshot = try await .schedules(.bigRun)
+    let instant = date("2026-09-12T12:00:00Z")
+    let bigRun = try #require(snapshot.eventItems(at: instant)?.first { if case .bigRun = $0 { true } else { false } })
+    let writer: SentenceWriter = .init(
+      terms: snapshot.terms(in: .enUS),
+      timeZone: Self.losAngeles,
+      hourCycle: .oneToTwelve)
+
+    #expect(writer.sentence(for: bigRun, at: instant) ==
+      "Big Run: Wahoo World with Random, Random, Random, and Random, "
+      + "from Friday 5:00\u{202F}PM to Sunday 5:00\u{202F}PM, 36 hours left.")
+  }
+
   /// The Salmon Run widget reads it, for the reason the battle widgets read a Rotation without
   /// an instant.
   @Test
