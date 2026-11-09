@@ -82,11 +82,13 @@ struct InkStageRow: View {
 
 // MARK: - InkTeamList
 
-/// A Splatfest's teams, one per line: a swatch of the team's colour from the feed, then the team's
-/// name in that colour, tinted to read on Ink's panel. Only teams whose names the terms carry are
-/// listed, so a colour never stands alone.
+/// A Splatfest's teams, one per line: a swatch of the team's colour from the feed, growing with
+/// the text size, then the team's name in that colour, tinted to read on Ink's panel. Only teams
+/// whose names the terms carry are listed, so a colour never stands alone.
 struct InkTeamList: View {
   @Environment(\.colorScheme) private var colorScheme
+
+  @ScaledMetric(relativeTo: .subheadline) private var swatchHeight: CGFloat = InkScreenMetrics.teamSwatchSize.height
 
   let splatfest: Splatfest
   let terms: GameTerms
@@ -99,7 +101,9 @@ struct InkTeamList: View {
         HStack(spacing: InkScreenMetrics.cardSpacing) {
           SkewedRectangle(slant: InkMetrics.tagSlant)
             .fill(Color(team.color))
-            .frame(width: InkScreenMetrics.teamSwatchSize.width, height: InkScreenMetrics.teamSwatchSize.height)
+            .frame(
+              width: swatchHeight * InkScreenMetrics.teamSwatchSize.width / InkScreenMetrics.teamSwatchSize.height,
+              height: swatchHeight)
             .accessibilityHidden(true)
           Text(verbatim: team.name)
             .inkFont(.tag)

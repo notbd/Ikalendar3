@@ -67,7 +67,7 @@ enum InkScreenMetrics {
   static let eventIconSize: CGFloat = 28
   /// A Challenge's Rule icon, square, before Dynamic Type.
   static let challengeRuleIconSize: CGFloat = 26
-  /// The swatch of a Splatfest team's colour before its name.
+  /// The swatch of a Splatfest team's colour before its name, at the default text size.
   static let teamSwatchSize: CGSize = .init(width: 22, height: 12)
   /// The opacity of a Challenge window that has ended.
   static let endedWindowOpacity: Double = 0.45
