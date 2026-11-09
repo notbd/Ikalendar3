@@ -38,7 +38,7 @@ struct GameLanguageTests {
     #expect(GameLanguage(localization: localization) == .enUS)
   }
 
-  /// Council round 5, M9: every process resolves its app language from its own bundle in one
+  /// Every process resolves its app language from its own bundle in one
   /// place. A bundle whose only localization is German resolves to German whatever the
   /// system's languages; one with none resolves to en-US.
   @Test

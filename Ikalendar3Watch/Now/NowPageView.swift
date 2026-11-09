@@ -66,7 +66,8 @@ struct NowPageView: View {
             if summary.mode != page.summaries.first?.mode {
               InkDottedRule()
             }
-            NavigationLink(value: WatchRoute.modePages(summary.mode)) {
+            // Every row of the Now page is a Mode's; a summary with none would not open a page.
+            NavigationLink(value: summary.mode.map(WatchRoute.modePages)) {
               NowRow(summary: summary, terms: terms, now: now)
             }
             .buttonStyle(.plain)

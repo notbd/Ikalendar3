@@ -168,7 +168,7 @@ final class RefreshGateTests {
     #expect(try Data(contentsOf: records) == answered)
   }
 
-  /// Sol's case: the clock set back 61 s, past a time sync's step, while the first request is in
+  /// The clock set back 61 s, past a time sync's step, while the first request is in
   /// flight.
   @Test
   func `A clock set back during a request keeps the feed leased until the request settles`() throws {

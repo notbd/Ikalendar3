@@ -15,11 +15,8 @@ import Foundation
 /// times and the stored art; the title and team names resolve at display time from the
 /// Splatfest's id.
 public struct SplatfestScreen: Hashable, Sendable {
-  /// The Splatfest the card shows: its times and team colours.
-  public let splatfest: Splatfest
-  /// The card's art, a local image file the refresh engine stored, or `nil` while none is
-  /// stored: the card then shows the team colours.
-  public let art: URL?
+  /// The Splatfest's card: its times, team colours and stored art.
+  public let card: SplatfestCard
   /// Where the Splatfest stands: announced, first half or second half.
   public let phase: Splatfest.Phase
   /// The form of Splatfest Battle shown, the app's Open or Pro choice.
@@ -72,8 +69,7 @@ extension Snapshot {
     let lineup = feed.battleLineup(of: .splatfestBattle(form), at: instant)
     let tricolorTurfWar = splatfest.tricolorTurfWar
     return SplatfestScreen(
-      splatfest: splatfest,
-      art: splatfestArt,
+      card: card(of: splatfest),
       phase: phase,
       form: form,
       current: OnNow(lineup.current, at: instant),

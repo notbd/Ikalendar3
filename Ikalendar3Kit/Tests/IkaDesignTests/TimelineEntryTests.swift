@@ -185,10 +185,4 @@ struct TimelineEntryTests {
   private func snapshot(_ fixture: Fixture) async throws -> Snapshot {
     try await Snapshot(schedules: Fetched(content: ScheduleFeed.decode(from: fixture.data()), fetchTime: .distantPast))
   }
-
-  private func date(_ text: String) -> Date {
-    // A test literal: a malformed one should stop the test at once.
-    // swiftlint:disable:next force_try
-    try! Date(text, strategy: .iso8601)
-  }
 }

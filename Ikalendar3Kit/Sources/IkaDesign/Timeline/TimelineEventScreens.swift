@@ -129,7 +129,7 @@ public struct TimelineSplatfestScreenView: View {
       reflowValue: entries.map(\.id))
     {
       TimelineFormStrip(shown: screen.form, language: terms.language)
-      TimelineSplatfestCard(splatfest: screen.splatfest, art: screen.art, terms: terms, now: now)
+      TimelineSplatfestCard(card: screen.card, terms: terms, now: now)
         .padding(.horizontal, TimelineMetrics.contentTrailing)
         .padding(.top, TimelineMetrics.axisTop)
     } axis: { arrangement in

@@ -138,7 +138,8 @@ private struct CurrentItem: View {
   @ViewBuilder
   private var picture: some View {
     switch summary {
-      case .battle(_, .running(let running)):
+      case .battle(_, .running(let running)),
+           .splatfestBattle(_, .running(let running)):
         // A summary's Rotation always plays.
         if let rule = running.item.setting?.rule {
           Image(decorative: BundledImage.name(for: rule, size: .small), bundle: BundledImage.catalogBundle)
@@ -152,7 +153,9 @@ private struct CurrentItem: View {
           .scaledToFill()
           .clipShape(.circle)
 
-      default:
+      case .battle,
+           .splatfestBattle,
+           .salmonRun:
         Image(decorative: BundledImage.name(for: look.icon, size: .small), bundle: BundledImage.catalogBundle)
           .resizable()
           .scaledToFit()

@@ -84,6 +84,21 @@ struct EventItemTests {
     try await expectEvents(of: eventCase)
   }
 
+  /// The same card a Splatfest screen holds, so every event card shows the art without being
+  /// handed it apart.
+  @Test
+  func `The Splatfest event carries its card with the stored art`() async throws {
+    var snapshot = try await Snapshot.schedules(.splatfestSecondHalf)
+    snapshot.splatfestArt = URL(filePath: "/cache/splatfest-JUEA-00108.png")
+    let instant = date("2026-11-01T05:23:00Z")
+
+    let items = try #require(snapshot.eventItems(at: instant))
+
+    let card = try #require(items.lazy.compactMap { if case .splatfest(let card) = $0 { card } else { nil } }.first)
+    #expect(card.art == snapshot.splatfestArt)
+    #expect(card == snapshot.splatfestScreen(of: .open, at: instant)?.card)
+  }
+
   @Test
   func `No event items exist before the schedules feed's first good response`() {
     #expect(Snapshot().eventItems(at: TestData.epoch) == nil)

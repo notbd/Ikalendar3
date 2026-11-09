@@ -138,7 +138,7 @@ struct ClassicWideShiftCell: View {
     ClassicWideRow {
       VStack(alignment: .leading, spacing: ClassicMetrics.BattlePrimary.cellSpacingV) {
         ClassicShiftTags(shift: shift, tag: tag, terms: terms)
-        ClassicWideTimeText(text: timeFormat.shiftRange(of: shift, now: now))
+        ClassicWideTimeText(text: timeFormat.range(of: shift, now: now))
         ClassicPicture(name: BundledImage.name(for: ModeIcon(shift.kind), size: .medium))
           .shadow(radius: ClassicMetrics.shadowRadius)
           .frame(height: wide.half.length(.battleRuleSectionHeight))
@@ -186,7 +186,7 @@ struct ClassicShiftTableRow: View {
   var body: some View {
     ClassicTableRow(wide: wide) {
       ClassicShiftTags(shift: shift, tag: tag, terms: terms)
-      ClassicWideTimeText(text: timeFormat.shiftRange(of: shift, now: now))
+      ClassicWideTimeText(text: timeFormat.range(of: shift, now: now))
       if tag == .soon {
         Text(verbatim: ClassicText.timeUntil.text(
           in: terms.language,
@@ -335,12 +335,4 @@ private struct ClassicWideTimeText: View {
   }
 }
 
-// MARK: - ClassicTimeFormat
-
-extension ClassicTimeFormat {
-  /// A Shift's range, each end with its day: "Today 16:00 - Thu, 10/22, 08:00".
-  fileprivate func shiftRange(of shift: Shift, now: Date) -> String {
-    "\(shiftTime(shift.startTime, now: now)) - \(shiftTime(shift.endTime, now: now))"
-  }
-}
 #endif

@@ -24,7 +24,8 @@ import IkaFixtures
 struct BattleWidget: Widget {
   var body: some WidgetConfiguration {
     AppIntentConfiguration(
-      kind: WidgetKind.battle.rawValue,
+      // Every Battle Mode shares this widget; Regular Battle is its configuration's default.
+      kind: WidgetKind(.battle(.regular)).rawValue,
       intent: BattleWidgetIntent.self,
       provider: BattleTimelineProvider())
     { entry in

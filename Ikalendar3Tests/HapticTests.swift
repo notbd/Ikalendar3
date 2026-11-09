@@ -19,7 +19,7 @@ struct HapticTests {
     [outcome, .gateClosed, .gateClosed]
   }
 
-  /// Council round 5, M4: ikalendar 2 played the haptic of a load on pull to refresh and when a
+  /// ikalendar 2 played the haptic of a load on pull to refresh and when a
   /// load ran; an activation the gate keeps entirely from the network loads nothing.
   @Test(arguments: [
     (outcomes(.gateClosed), false, SensoryFeedback?.none),

@@ -22,14 +22,35 @@ final class AppStatus {
   private(set) var anarchyMode: BattleMode = .anarchySeries
   /// The Splatfest tab's form of Splatfest Battle.
   private(set) var splatfestForm: SplatfestBattleForm = .open
+  /// The iPad sidebar row the player picked, or `nil` before any: the sidebar then opens on the
+  /// selected tab's row (`SidebarItem.init(_:anarchyMode:)`).
+  private(set) var sidebarChoice: SidebarItem?
   /// Whether Settings is shown on iPhone and iPad.
   var isSettingsPresented = false
-  /// The haptic the last refresh run ended with, which the tabs play; `nil` before the first.
+  /// The haptic the last refresh run ended with, which every layout plays; `nil` before the first.
   var refreshHaptic: RefreshHaptic?
 
   /// A status that opens on `selectedPlace`: the default Mode.
   init(selectedPlace: ModeTab) {
     self.selectedPlace = selectedPlace
+  }
+
+  /// Picks `item` in the iPad sidebar. A form picked there is the menus' choice too, so the
+  /// Anarchy and Splatfest views elsewhere show the form the player last picked.
+  func pick(_ item: SidebarItem) {
+    sidebarChoice = item
+    switch item {
+      case .mode(.battle(let mode)) where TabMenu.anarchy.modes.contains(.battle(mode)):
+        anarchyMode = mode
+      case .splatfestBattle(let form):
+        splatfestForm = form
+      case .mode,
+           .challenge,
+           .eggstraWork,
+           .splatfest,
+           .tricolorTurfWar:
+        break
+    }
   }
 
   /// Handles a tap on `tab` in the tab bar. Another tab is selected and closes the menu; a second
@@ -60,17 +81,12 @@ final class AppStatus {
     }
   }
 
-  /// Switches the tab whose menu offers `mode` to it, and closes the menu.
-  ///
-  /// - Precondition: `mode` is one of a menu's modes.
-  func choose(_ mode: RotationMode) {
-    switch mode {
-      case .battle(let battleMode):
-        precondition(TabMenu.anarchy.modes.contains(mode), "No menu offers \(battleMode)")
-        anarchyMode = battleMode
-
-      case .splatfestBattle(let form):
-        splatfestForm = form
+  /// Switches the tab whose menu offers `option` to its Battle Mode, and closes the menu.
+  func choose(_ option: TabMenuOption) {
+    switch option.mode {
+      // Only the Anarchy menu offers continuous Battle Modes.
+      case .battle(let mode): anarchyMode = mode
+      case .splatfestBattle(let form): splatfestForm = form
     }
     presentedMenu = nil
   }

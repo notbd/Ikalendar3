@@ -18,7 +18,7 @@ extension EnvironmentValues {
 extension Locale.HourCycle {
   /// The device's hour cycle, which its 24-Hour Time setting decides. The one place a Surface
   /// reads it.
-  @usableFromInline static var device: Self { Locale.current.hourCycle }
+  static fileprivate var device: Self { Locale.current.hourCycle }
 }
 
 // MARK: - TimeSettings

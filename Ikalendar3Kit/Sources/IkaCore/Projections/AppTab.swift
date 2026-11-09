@@ -77,14 +77,14 @@ public enum TabMenu: Hashable, Sendable {
 
 // MARK: - TabMenuOption
 
-/// One option of a tab's menu: a Battle Mode and its Mode summary, the current Rule with the time
-/// left, its pause by a Splatfest, or nothing current.
+/// One option of a tab's menu: a Battle Mode and its Mode summary. Only `Snapshot.options(of:at:)`
+/// makes one, so an option always holds one of its menu's modes.
 public struct TabMenuOption: Hashable, Sendable {
   /// The Battle Mode the option switches the tab to.
   public let mode: RotationMode
-  /// The current item of the Mode's screen, or `nil` when it has no screen: before the schedules
-  /// feed's first good response, or for a form of Splatfest Battle outside a Splatfest.
-  public let current: OnNow<Rotation>?
+  /// The Mode's summary, or `nil` when it has no screen: before the schedules feed's first good
+  /// response, or for a form of Splatfest Battle outside a Splatfest.
+  public let summary: ModeSummary?
 }
 
 extension Snapshot {
@@ -92,12 +92,12 @@ extension Snapshot {
   /// Mode's screen, so the menu and the screen behind it always agree.
   public func options(of menu: TabMenu, at instant: Date) -> [TabMenuOption] {
     menu.modes.map { mode in
-      let current: OnNow<Rotation>? =
+      let summary: ModeSummary? =
         switch mode {
-          case .battle(let battleMode): battleScreen(of: battleMode, at: instant)?.current
-          case .splatfestBattle(let form): splatfestBattleSummary(of: form, at: instant)?.current
+          case .battle(let battleMode): summary(of: Mode.battle(battleMode), at: instant)
+          case .splatfestBattle(let form): summary(of: form, at: instant)
         }
-      return TabMenuOption(mode: mode, current: current)
+      return TabMenuOption(mode: mode, summary: summary)
     }
   }
 }

@@ -28,6 +28,9 @@ public enum ScreenText: String, CaseIterable, Sendable {
   case paused = "screen.paused"
   /// "Couldn't refresh".
   case refreshFailed = "screen.refreshFailed"
+  /// "%1$@ - %2$@", a range's start and end joined as the game joins them: a wave dash in
+  /// Japanese and Korean. Every Style joins its ranges with it.
+  case timeRange = "screen.timeRange"
 
   /// The string in a text set, its placeholders filled in.
   public func text(in language: GameLanguage, _ arguments: any CVarArg...) -> String {

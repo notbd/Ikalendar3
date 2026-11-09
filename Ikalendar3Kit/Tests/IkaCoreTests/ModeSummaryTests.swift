@@ -43,6 +43,9 @@ struct ModeSummaryTests {
 
       case .salmonRun(let current):
         #expect(current == snapshot.salmonRunScreen(at: instant)?.current)
+
+      case .splatfestBattle:
+        Issue.record("A Mode's summary is never a form of Splatfest Battle's")
     }
   }
 

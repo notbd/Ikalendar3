@@ -39,6 +39,10 @@ private struct TabReselectionInterceptor: UIViewControllerRepresentable {
     Controller()
   }
 
+  /// Runs on every tick of the app clock, since `handle` is a new closure each time the tabs
+  /// render. That is harmless: `apply()` is a window lookup and a check of the delegate in place.
+  /// It installs or removes the interceptor only when `isEnabled` changes or SwiftUI replaced the
+  /// delegate; otherwise it hands the interceptor the new closure.
   func updateUIViewController(_ controller: Controller, context _: Context) {
     controller.isEnabled = isEnabled
     controller.handle = handle

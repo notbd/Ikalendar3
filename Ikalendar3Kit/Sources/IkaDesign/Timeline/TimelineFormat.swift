@@ -41,29 +41,27 @@ struct TimelineFormat {
   /// "Tue 17:00 - Thu 09:00".
   func timeRange(from start: Date, to end: Date) -> String {
     let style: Date.FormatStyle = style(Self.weekdayAndTime)
-    return TimelineText.timeRange.text(in: language, start.formatted(style), end.formatted(style))
+    return ScreenText.timeRange.text(in: language, start.formatted(style), end.formatted(style))
   }
 
   /// A Splatfest's start and end with their weekdays and dates, since it is announced weeks
   /// ahead: "Sat, 10/31, 09:00 - Mon, 11/2, 09:00".
   func dateRange(from start: Date, to end: Date) -> String {
     let style: Date.FormatStyle = style(Self.weekdayAndTime.month(.defaultDigits).day())
-    return TimelineText.timeRange.text(in: language, start.formatted(style), end.formatted(style))
+    return ScreenText.timeRange.text(in: language, start.formatted(style), end.formatted(style))
   }
 
   /// A window's start and end on the 24-hour clock alone, where a day mark above gives its day:
   /// "17:00 - 19:00".
   func hourRange(from start: Date, to end: Date) -> String {
-    TimelineText.timeRange.text(in: language, pin(start), pin(end))
+    ScreenText.timeRange.text(in: language, pin(start), pin(end))
   }
 
-  /// The time left as a countdown on whole seconds, rounded up so a running window never reads
-  /// zero, its hours running past a day: "1:09:59".
+  /// The time left as the `Countdown` every Style shows, its hours running past a day:
+  /// "1:09:59".
   static func countdown(_ timeLeft: Duration) -> String {
-    let seconds: Int = .init((timeLeft / .seconds(1)).rounded(.up))
-    let (hours, secondsPastHour) = seconds.quotientAndRemainder(dividingBy: 3600)
-    let (minutes, secondsPastMinute) = secondsPastHour.quotientAndRemainder(dividingBy: 60)
-    return "\(hours):\(twoDigits(minutes)):\(twoDigits(secondsPastMinute))"
+    let countdown: Countdown = .init(timeLeft)
+    return "\(countdown.hours):\(twoDigits(countdown.minutes)):\(twoDigits(countdown.seconds))"
   }
 
   /// A weekday and a two-digit time: "Tue 17:00".

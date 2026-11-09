@@ -15,10 +15,10 @@ import SwiftUI
 
 /// The Debug launch's event card gallery (`--event-cards`): every event the snapshot lists at the
 /// app clock's instant as the chosen Style's card, one under the other on that Style's
-/// background, so a fixture launch can show each card before the iPad event strip does.
+/// background, so a fixture launch can show each card before the iPad event strip does. The
+/// scene runs the effects shell, as it does for the tabs.
 struct EventCardGallery: View {
   @Environment(RefreshEngine.self) private var engine
-  @Environment(\.effects) private var effects
   @Environment(AppClock.self) private var clock
   @Environment(PreferenceStore.self) private var preferences
   @Environment(\.gameLanguage) private var language
@@ -32,9 +32,9 @@ struct EventCardGallery: View {
       VStack(spacing: 16) {
         ForEach(snapshot.eventItems(at: now) ?? [], id: \.self) { item in
           switch preferences.style {
-            case .classic: ClassicEventCard(item: item, art: snapshot.splatfestArt, terms: terms, now: now)
-            case .ink: InkEventCard(item: item, art: snapshot.splatfestArt, terms: terms, now: now)
-            case .timeline: TimelineEventCard(item: item, art: snapshot.splatfestArt, terms: terms, now: now)
+            case .classic: ClassicEventCard(item: item, terms: terms, now: now)
+            case .ink: InkEventCard(item: item, terms: terms, now: now)
+            case .timeline: TimelineEventCard(item: item, terms: terms, now: now)
           }
         }
       }
@@ -48,7 +48,6 @@ struct EventCardGallery: View {
       }
     }
     .appColorScheme(preferences.colorScheme)
-    .task { await effects?.run() }
   }
 
   /// What a Classic list's cells sit on.

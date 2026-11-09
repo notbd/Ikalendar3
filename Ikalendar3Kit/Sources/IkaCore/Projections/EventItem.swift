@@ -15,8 +15,8 @@ import Foundation
 public enum EventItem: TimeWindow, Hashable, Sendable {
   /// The Challenge window on now or next; the Challenge carries all its windows.
   case challenge(ChallengeWindow)
-  /// The Splatfest, announced or running.
-  case splatfest(Splatfest)
+  /// The Splatfest, announced or running, as its card with the stored art.
+  case splatfest(SplatfestCard)
   /// The Big Run running or next.
   case bigRun(Shift)
   /// The Eggstra Work running or next.
@@ -26,7 +26,7 @@ public enum EventItem: TimeWindow, Hashable, Sendable {
   public var startTime: Date {
     switch self {
       case .challenge(let window): window.startTime
-      case .splatfest(let splatfest): splatfest.startTime
+      case .splatfest(let card): card.splatfest.startTime
       case .bigRun(let shift),
            .eggstraWork(let shift): shift.startTime
     }
@@ -36,7 +36,7 @@ public enum EventItem: TimeWindow, Hashable, Sendable {
   public var endTime: Date {
     switch self {
       case .challenge(let window): window.endTime
-      case .splatfest(let splatfest): splatfest.endTime
+      case .splatfest(let card): card.splatfest.endTime
       case .bigRun(let shift),
            .eggstraWork(let shift): shift.endTime
     }
@@ -54,7 +54,7 @@ extension Snapshot {
     let challenges = feed.challengeLineup(at: instant)
     let eggstraWorks = feed.eggstraWorkLineup(at: instant)
     let challenge = (challenges.current.item ?? challenges.next).map(EventItem.challenge)
-    let splatfest = splatfest.flatMap { $0.phase(at: instant) == .over ? nil : EventItem.splatfest($0) }
+    let splatfest = splatfest.flatMap { $0.phase(at: instant) == .over ? nil : EventItem.splatfest(card(of: $0)) }
     let bigRun = feed.salmonRun.first { $0.kind == .bigRun && instant < $0.endTime }.map(EventItem.bigRun)
     let eggstraWork = (eggstraWorks.current.item ?? eggstraWorks.next).map(EventItem.eggstraWork)
     return [challenge, splatfest, bigRun, eggstraWork].compactMap(\.self)
