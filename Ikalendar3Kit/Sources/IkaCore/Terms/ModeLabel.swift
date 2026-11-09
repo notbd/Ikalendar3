@@ -37,6 +37,8 @@ public enum ModeLabel: String, CaseIterable, Sendable {
   case bigRun = "mode.bigRun"
   /// Eggstra Work.
   case eggstraWork = "mode.eggstraWork"
+  /// Splatfest.
+  case splatfest = "mode.splatfest"
 
   /// The label in a text set.
   public func text(in language: GameLanguage) -> String {
