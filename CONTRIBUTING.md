@@ -8,7 +8,7 @@
 
 ## Verify
 
-`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
+`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, the string catalog check, package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
 
 | Option | Environment variable | Default |
 |---|---|---|
@@ -49,6 +49,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 - `Ikalendar3/`: the app for iPhone, iPad and Mac (one target). `Ikalendar3Widgets/`: the widget extension for iOS and macOS. `Ikalendar3Watch/` and `Ikalendar3WatchWidgets/`: the watch app and its widget extension. `Ikalendar3Tests/`: the app's tests.
 - `Ikalendar3Kit/`: the local package with `IkaCore` (domain, data and every Surface's content), `IkaDesign` (design system) and `IkaIntents` (Siri, App Shortcuts and the effects shell; iOS and macOS, Live Activity parts behind `#if os(iOS)`). The app and the widget extension link all three; the watch targets link `IkaCore` and `IkaDesign`.
 - `Ikalendar3Kit/Fixtures/`: recorded splatoon3.ink payloads. Everything that needs one reads it by path, so there is one copy; no target lists the folder as a resource, so no product ships it.
+- `IkaFixtures`: the package's test support module, not a product module: the scripted transport, the settable clock and the `Fixture` loader for that folder. Package tests, Debug fixture launches and previews use it; Release code never calls it, and it holds no fixture file. A temporary directory per test stays a test helper (`makeTestDirectory()`).
 - Every target folder is a synchronized folder: a Swift file or subfolder added inside it is compiled with no project file change. A non-source file there becomes a resource of the target unless the project lists an exception, as it does for the widget extensions' `Info.plist`.
 - Code that more than one target needs goes into a package module, never into two target folders.
 - `IkaCore` imports no SwiftUI, UIKit, AppKit, WidgetKit, ActivityKit or App Intents; a SwiftLint rule fails the run if it does.
@@ -70,6 +71,13 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
   SwiftFormat removes a leading "Test" from such names, so start with the subject.
 - The test plan runs in English (US). A test of another language passes the language explicitly.
 - No test may depend on a font file being present: CI has none.
+
+## Strings
+
+- The app speaks the game's 14 text sets. Every target declares the same 14 localizations (`en`, `en-GB`, `es`, `es-419`, `fr`, `fr-CA`, `de`, `it`, `nl`, `ru`, `ja`, `ko`, `zh-Hans`, `zh-Hant`), so each process resolves the same text set; `GameLanguage(localization:)` maps them.
+- Every key of every string catalog has a value in all 14, the source language included; `scripts/check-string-catalogs.sh` fails verify otherwise. Only keys marked Don't Translate are exempt.
+- Game terms come from splatoon3.ink's locale files (shipped in `IkaCore`, looked up through `GameTerms`), Mode names and labels from its MIT-licensed site strings (`ModeLabel`). Strings written for this app use each language's in-game vocabulary; in es-ES, es-MX, fr-FR, fr-CA, de-DE, it-IT, nl-NL, ru-RU and ko-KR they carry the Needs Review state until a native speaker checks them.
+- Package modules look their strings up with `Bundle.module.localizedString(forKey:in:)` in the language the process passes in, never in the process locale.
 
 ## Code and commits
 

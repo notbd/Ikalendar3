@@ -3,12 +3,13 @@
 # Runs every check CI runs, in CI's order, and stops at the first failure:
 #
 #   1-2  SwiftFormat and SwiftLint, zero violations
-#   3    package tests on macOS
-#   4-6  unsigned Debug builds: iOS Simulator, macOS, watchOS Simulator
-#   7-8  unsigned Release builds: iOS device (with the watch app), macOS
-#   9    the iOS Simulator test run
+#   3    every string catalog key in all 14 localizations (scripts/check-string-catalogs.sh)
+#   4    package tests on macOS
+#   5-7  unsigned Debug builds: iOS Simulator, macOS, watchOS Simulator
+#   8-9  unsigned Release builds: iOS device (with the watch app), macOS
+#   10   the iOS Simulator test run
 #
-# Any compiler or build warning fails the step that shows it. Step 9 also fails when a test
+# Any compiler or build warning fails the step that shows it. Step 10 also fails when a test
 # bundle of the test plan is missing or ran no tests, or when a package test bundle ran fewer
 # tests in the simulator than on macOS: xcodebuild can skip a package's tests and still succeed.
 #
@@ -32,7 +33,7 @@ readonly TEST_PLAN=Ikalendar3.xctestplan
 readonly PACKAGE=Ikalendar3Kit
 # The app's test bundle. The test plan must list it beside every package test target.
 readonly APP_TEST_TARGET=Ikalendar3Tests
-readonly STEP_COUNT=9
+readonly STEP_COUNT=10
 
 # MARK: - Output
 
@@ -186,7 +187,7 @@ watch_simulator=$(resolve_simulator watchOS "Apple Watch" "$watch_udid") || true
 ios_udid=${ios_simulator%%|*}
 watch_udid=${watch_simulator%%|*}
 
-# Boots the iPhone while the earlier steps run; step 9 waits for it. It stays booted afterwards,
+# Boots the iPhone while the earlier steps run; step 10 waits for it. It stays booted afterwards,
 # which makes the next run faster.
 xcrun simctl bootstatus "$ios_udid" -b >"$VERIFY_DIR/boot-ios-simulator.log" 2>&1 &
 boot_pid=$!
@@ -274,6 +275,10 @@ step_done
 step "SwiftLint"
 run_logged swiftlint swiftlint lint --strict --quiet
 step_done
+
+step "String catalogs"
+run_logged string-catalogs scripts/check-string-catalogs.sh
+step_done "$(<"$VERIFY_DIR/string-catalogs.log")"
 
 step "Package tests, macOS"
 # The app's and every package test target must be in the test plan, or the simulator run never

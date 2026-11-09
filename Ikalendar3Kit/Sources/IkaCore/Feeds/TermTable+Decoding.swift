@@ -19,20 +19,24 @@ extension TermTable {
   /// - Throws: `DecodingError` when the body is not a locale file.
   @concurrent
   static public func decode(from body: Data) async throws -> TermTable {
+    try TermTable(localeFile: body)
+  }
+
+  /// Decodes a locale file on the calling thread, as `decode(from:)` does.
+  init(localeFile body: Data) throws {
     let dto = try FeedJSON.decoder().decode(LocaleDTO.self, from: body)
 
-    var terms: TermTable = .init()
-    terms.stages = usable(dto.stages) { $0.name.nonEmpty }
-    terms.rules = usable(dto.rules) { $0.name.nonEmpty }
-    terms.weapons = usable(dto.weapons) { $0.name.nonEmpty }
-    terms.kingSalmonids = usable(dto.bosses) { $0.name.nonEmpty }
-    terms.challenges = usable(dto.events) { event in
+    self.init()
+    stages = Self.usable(dto.stages) { $0.name.nonEmpty }
+    rules = Self.usable(dto.rules) { $0.name.nonEmpty }
+    weapons = Self.usable(dto.weapons) { $0.name.nonEmpty }
+    kingSalmonids = Self.usable(dto.bosses) { $0.name.nonEmpty }
+    challenges = Self.usable(dto.events) { event in
       event.name.nonEmpty.map { ChallengeTerms(name: $0, description: event.desc, rulesText: event.regulation) }
     }
-    terms.splatfests = usable(dto.festivals) { festival in
+    splatfests = Self.usable(dto.festivals) { festival in
       festival.title.nonEmpty.map { SplatfestTerms(title: $0, teamNames: festival.teams.map(\.teamName)) }
     }
-    return terms
   }
 
   /// The entries of a locale table that decode and that `term` accepts, keyed by typed id. A
