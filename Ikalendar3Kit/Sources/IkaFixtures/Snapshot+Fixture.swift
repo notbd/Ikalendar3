@@ -28,5 +28,22 @@ extension Snapshot {
       schedules: fetched(schedules, decode: ScheduleFeed.decode),
       festivals: fetched(.festivals, decode: FestivalFeed.decode))
   }
+
+  /// Widget and complication previews: a loader of a recorded day, moved so that a moment of it
+  /// is now: the normal day mid-Rotation, the Splatfest in its second half, or the Big Run with
+  /// its random weapons. An empty snapshot if the recording cannot be read.
+  static public func preview(_ schedules: Fixture) -> @Sendable () async -> Snapshot {
+    let recordedAt =
+      switch schedules {
+        case .splatfestSecondHalf: "2026-11-01T05:30:00Z"
+        case .bigRun: "2026-09-12T06:00:00Z"
+        default: "2026-10-20T13:15:00Z"
+      }
+    return {
+      guard let instant = try? Date(recordedAt, strategy: .iso8601) else { return Snapshot() }
+
+      return await (try? fixture(schedules, recordedAt: instant, shownAt: .now)) ?? Snapshot()
+    }
+  }
 }
 #endif
