@@ -76,9 +76,16 @@ enum TrackingActivities {
     staleDate?.description ?? "-"
   }
 
-  /// The activities that run: active, or stale after a missed boundary.
+  /// Whether an activity in `state` is a running Tracking: active, or stale after a missed
+  /// boundary. One the player dismissed, or that ended, is not: no run re-arms it, no start waits
+  /// to end it, and the Mode is Tracked again from the next start.
+  static func isRunning(_ state: ActivityState) -> Bool {
+    [.active, .stale].contains(state)
+  }
+
+  /// The activities that run (`isRunning(_:)`).
   static private func runningActivities() -> [Activity<TrackingAttributes>] {
-    Activity<TrackingAttributes>.activities.filter { [.active, .stale].contains($0.activityState) }
+    Activity<TrackingAttributes>.activities.filter { isRunning($0.activityState) }
   }
 }
 #endif
