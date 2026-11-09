@@ -57,6 +57,7 @@ struct LaterListView: View {
     ScrollView {
       VStack(spacing: WatchMetrics.rowSpacing) {
         PageHeading(heading: InkModeHeading(page.mode), color: ModeColor(page.mode), language: terms.language)
+          .padding(.leading, WatchMetrics.rowSpacing)
         switch page {
           case .battle(let screen):
             ForEach(screen.later, id: \.startTime) { rotation in
