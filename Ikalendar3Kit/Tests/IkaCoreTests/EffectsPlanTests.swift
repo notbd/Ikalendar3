@@ -211,12 +211,26 @@ final class EffectsPlanTests {
   }
 
   @Test
+  func `The background task runs again when a running Tracking ends, if that comes first`() async throws {
+    try transport.scriptFeeds()
+    // Ends at 12:35, before the current Rotation's 14:00 boundary and the two hours.
+    let started = date("2026-10-20T04:35:00Z")
+
+    let plan = await planAfterRefresh(tracking: [
+      RunningTracking(id: "ending soon", mode: .battle(.x), startTime: started),
+    ])
+
+    #expect(plan.nextBackgroundRun == date("2026-10-20T12:35:00Z"))
+  }
+
+  @Test
   func `A boundary two hours or more away leaves the background task's two hours`() {
     let now = date("2026-10-20T13:15:00Z")
+    let tracking = [RunningTracking(id: "a", mode: .salmonRun, startTime: date("2026-10-20T13:00:00Z"))]
 
-    #expect(EffectsPlan.nextBackgroundRun(after: now, trackingBoundaries: [date("2026-10-20T16:00:00Z")]) ==
+    #expect(EffectsPlan.nextBackgroundRun(after: now, tracking: tracking, staleDates: [date("2026-10-20T16:00:00Z")]) ==
       date("2026-10-20T15:15:00Z"))
-    #expect(EffectsPlan.nextBackgroundRun(after: now, trackingBoundaries: [
+    #expect(EffectsPlan.nextBackgroundRun(after: now, tracking: tracking, staleDates: [
       date("2026-10-20T16:00:00Z"),
       date("2026-10-20T14:00:00Z"),
     ]) == date("2026-10-20T14:00:00Z"))

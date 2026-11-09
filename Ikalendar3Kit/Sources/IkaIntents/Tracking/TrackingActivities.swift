@@ -23,8 +23,8 @@ enum TrackingActivities {
     }
   }
 
-  /// The next boundary of every Tracking that runs: each activity's stale date.
-  static func boundaries() -> [Date] {
+  /// The end of each running Tracking's current item: its activity's stale date.
+  static func staleDates() -> [Date] {
     runningActivities().compactMap(\.content.staleDate)
   }
 

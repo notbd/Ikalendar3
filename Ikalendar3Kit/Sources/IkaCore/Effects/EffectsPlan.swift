@@ -21,9 +21,9 @@ public struct EffectsPlan: Equatable, Sendable {
   /// While the cache holds no schedules feed, a running Tracking has no entry and stays as it is.
   public let tracking: [String: TrackingEffect]
   /// When the run asks the background task to run next: at the next boundary of a running
-  /// Tracking, so one update lands between any two boundaries, or two hours on if that is sooner.
-  /// `nil` while no Tracking runs: the request made as the app last moved to the background
-  /// stands.
+  /// Tracking, the end of its current item or its own end, so one update lands between any two
+  /// boundaries and an ended Tracking leaves at once, or two hours on if that is sooner. `nil`
+  /// while no Tracking runs: the request made as the app last moved to the background stands.
   public let nextBackgroundRun: Date?
 
   /// The plan after a refresh at `instant`, with `tracking` running.
@@ -42,14 +42,24 @@ public struct EffectsPlan: Equatable, Sendable {
     self.tracking = effects
     nextBackgroundRun = tracking.isEmpty
       ? nil
-      : Self.nextBackgroundRun(after: instant, trackingBoundaries: effects.values.compactMap { $0.state?.staleDate })
+      : Self.nextBackgroundRun(
+        after: instant,
+        tracking: tracking.filter { effects[$0.id] != .end },
+        staleDates: effects.values.compactMap { $0.state?.staleDate })
   }
 
-  /// When the background task should run next after `now`, given the next boundary of each
-  /// running Tracking: the first of them, or two hours on if that is sooner. The system holds one
-  /// pending request for the task, so every request, wherever it is made, asks for this run.
-  static public func nextBackgroundRun(after now: Date, trackingBoundaries: some Sequence<Date>) -> Date {
-    trackingBoundaries.reduce(now.addingTimeInterval(backgroundRefreshInterval)) { min($0, $1) }
+  /// When the background task should run next after `now`: at the first boundary of the running
+  /// `tracking`, the end of a current item (an activity's stale date, in `staleDates`) or a
+  /// Tracking's own end, or two hours on if that is sooner. The system holds one pending request
+  /// for the task, so every request, wherever it is made, asks for this run.
+  static public func nextBackgroundRun(
+    after now: Date,
+    tracking: [RunningTracking],
+    staleDates: some Sequence<Date>)
+    -> Date
+  {
+    let ends = tracking.lazy.map { TrackingContent.endDate(startedAt: $0.startTime) }
+    return ends.reduce(staleDates.reduce(now.addingTimeInterval(backgroundRefreshInterval), min), min)
   }
 
   /// How long after a run the background task is due again with no boundary sooner: about two
