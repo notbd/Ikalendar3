@@ -9,7 +9,7 @@
 
 /// The effects one run of the effects shell applies after its refresh. Every decision is made
 /// here, where it is tested; the shell in `IkaIntents` applies the plan and decides nothing itself.
-public struct EffectsPlan: Hashable, Sendable {
+public struct EffectsPlan: Equatable, Sendable {
   /// Whether every widget timeline reloads: after each refresh that committed a feed, a 304
   /// included, so the widgets show the fetch time the app shows.
   public let reloadsWidgetTimelines: Bool
