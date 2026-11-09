@@ -20,6 +20,7 @@ import SwiftUI
 /// It receives `IkaCore` values only and reads no store.
 public struct TimelineWideBattleScreenView: View {
   @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: BattleScreen
   private let terms: GameTerms
@@ -45,7 +46,7 @@ public struct TimelineWideBattleScreenView: View {
     let entries: [TimelineEntry<Rotation>] = TimelineEntry.entries(of: screen)
     let color: ModeColor = .init(screen.mode)
     let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
-    let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+    let writer: SentenceWriter = time.writer(terms)
 
     TimelineScheduleList(
       icon: ModeIcon(Mode.battle(screen.mode)),
@@ -82,7 +83,7 @@ public struct TimelineWideBattleScreenView: View {
           case .paused(let returnTime):
             TimelineStatusContent(text: ScreenText.paused.text(
               in: terms.language,
-              ScheduleFormat(language: terms.language, timeZone: timeZone).time(returnTime, relativeTo: now)))
+              time.format(terms.language).time(returnTime, relativeTo: now)))
 
           case .nothingCurrent:
             TimelineStatusContent(text: ScreenText.nothingCurrent.text(in: terms.language))
@@ -119,6 +120,7 @@ public struct TimelineWideBattleScreenView: View {
 /// It receives `IkaCore` values only and reads no store.
 public struct TimelineWideSalmonRunScreenView: View {
   @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: SalmonRunScreen
   private let terms: GameTerms
@@ -143,7 +145,7 @@ public struct TimelineWideSalmonRunScreenView: View {
   public var body: some View {
     let entries: [TimelineEntry<Shift>] = TimelineEntry.entries(of: screen)
     let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
-    let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+    let writer: SentenceWriter = time.writer(terms)
     let name: String = Mode.salmonRun.name(in: terms.language)
 
     TimelineScheduleList(

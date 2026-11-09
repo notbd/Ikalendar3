@@ -18,7 +18,7 @@ import SwiftUI
 ///
 /// It receives `IkaCore` values only and reads no store.
 public struct InkWideBattleScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: BattleScreen
   private let terms: GameTerms
@@ -112,8 +112,8 @@ public struct InkWideBattleScreenView: View {
     .contentMargins(.horizontal, wide.sideMargin, for: .scrollContent)
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var format: ScheduleFormat { time.format(terms.language) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkWideSalmonRunScreenView
@@ -125,7 +125,7 @@ public struct InkWideBattleScreenView: View {
 ///
 /// It receives `IkaCore` values only and reads no store.
 public struct InkWideSalmonRunScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
   @Environment(\.gameLanguage) private var language
 
   private let screen: SalmonRunScreen
@@ -228,8 +228,8 @@ public struct InkWideSalmonRunScreenView: View {
     }
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var format: ScheduleFormat { time.format(terms.language) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkWideRow

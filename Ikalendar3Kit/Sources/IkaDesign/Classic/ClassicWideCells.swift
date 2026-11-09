@@ -15,7 +15,7 @@ import SwiftUI
 /// the progress ring with the time left on the left half; both Stages with their names on glass
 /// labels on the right half. VoiceOver reads it as one element, the Rotation's sentence.
 struct ClassicWideBattleCell: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
   @Environment(\.colorScheme) private var colorScheme
 
   let running: Running<Rotation>
@@ -65,11 +65,9 @@ struct ClassicWideBattleCell: View {
     }
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - ClassicBattleTableRow
@@ -78,7 +76,7 @@ struct ClassicWideBattleCell: View {
 /// the Rule's icon and name, and two small Stage thumbnails with their names. VoiceOver reads it
 /// as one element, the Rotation's sentence.
 struct ClassicBattleTableRow: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let rotation: Rotation
   let isNext: Bool
@@ -114,11 +112,9 @@ struct ClassicBattleTableRow: View {
     }
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - ClassicWideShiftCell
@@ -128,7 +124,7 @@ struct ClassicBattleTableRow: View {
 /// beside the four weapons on the right half. VoiceOver reads it as one element, the Shift's
 /// sentence.
 struct ClassicWideShiftCell: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
   @Environment(\.colorScheme) private var colorScheme
 
   let shift: Shift
@@ -168,11 +164,9 @@ struct ClassicWideShiftCell: View {
     .accessibilityLabel(writer.sentence(for: shift, at: now))
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - ClassicShiftTableRow
@@ -181,7 +175,7 @@ struct ClassicWideShiftCell: View {
 /// start on the Soon one, the Stage thumbnail with its name, and the four weapons. VoiceOver
 /// reads it as one element, the Shift's sentence.
 struct ClassicShiftTableRow: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let shift: Shift
   let tag: ClassicSalmonRunRow.Tag?
@@ -225,11 +219,9 @@ struct ClassicShiftTableRow: View {
     .accessibilityLabel(writer.sentence(for: shift, at: now))
   }
 
-  private var timeFormat: ClassicTimeFormat {
-    .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-  }
+  private var timeFormat: ClassicTimeFormat { time.classicFormat(terms.language) }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - ClassicWideRow
@@ -275,7 +267,7 @@ private struct ClassicTableRow<Time: View, Middle: View, Trailing: View>: View {
 /// The wide current row's progress ring, tinted with the Mode's colour, with the time left
 /// beside it.
 private struct ClassicWideProgress: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   /// The ring's stroke, as a share of its side.
   static private let lineWidthShare: CGFloat = 0.2
@@ -288,8 +280,8 @@ private struct ClassicWideProgress: View {
 
   var body: some View {
     let side: CGFloat = wide.half.length(.wideRingSize)
-    let format: ClassicTimeFormat = .init(language: terms.language, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
-    let writer: SentenceWriter = .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle)
+    let format: ClassicTimeFormat = time.classicFormat(terms.language)
+    let writer: SentenceWriter = time.writer(terms)
 
     HStack(spacing: ClassicMetrics.BattlePrimary.ruleSectionSpacing) {
       ProgressRing(
