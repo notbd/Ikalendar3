@@ -10,16 +10,21 @@ import IkaCore
 
 // MARK: - ScheduleFormat
 
-/// How the screens write times: in the app language's locale on the device's hour cycle, as
-/// `SentenceWriter` reads them aloud, and in the device's time zone.
-struct ScheduleFormat {
+/// How the screens and widgets write times: in the app language's locale on the device's hour
+/// cycle, as `SentenceWriter` reads them aloud, and in the device's time zone.
+public struct ScheduleFormat: Sendable {
   /// The app language.
-  let language: GameLanguage
+  public let language: GameLanguage
   /// The time zone times are written in.
-  let timeZone: TimeZone
+  public let timeZone: TimeZone
+
+  public init(language: GameLanguage, timeZone: TimeZone) {
+    self.language = language
+    self.timeZone = timeZone
+  }
 
   /// A window's start and end, with the weekday for a Shift, which spans days.
-  func timeRange(of window: some TimeWindow, withWeekday: Bool = false) -> String {
+  public func timeRange(of window: some TimeWindow, withWeekday: Bool = false) -> String {
     let style: Date.IntervalFormatStyle = .interval.hour().minute()
     return range(of: window, in: withWeekday ? style.weekday() : style)
   }
@@ -31,7 +36,7 @@ struct ScheduleFormat {
   }
 
   /// An instant: its time on the day of `now`, else its weekday and time.
-  func time(_ instant: Date, relativeTo now: Date) -> String {
+  public func time(_ instant: Date, relativeTo now: Date) -> String {
     var calendar: Calendar = .init(identifier: .gregorian)
     calendar.timeZone = timeZone
     var style: Date.FormatStyle = .init(locale: locale, calendar: calendar, timeZone: timeZone).hour().minute()

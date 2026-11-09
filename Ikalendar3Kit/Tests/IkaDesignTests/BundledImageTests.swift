@@ -37,6 +37,16 @@ struct BundledImageTests {
     }
   }
 
+  @Test
+  func `A Rotation shows its Battle Mode's icon, and Splatfest Battle's in either form`() {
+    for battleMode in BattleMode.allCases {
+      #expect(ModeIcon(RotationMode.battle(battleMode)) == ModeIcon(Mode.battle(battleMode)))
+    }
+    for form in SplatfestBattleForm.allCases {
+      #expect(ModeIcon(RotationMode.splatfestBattle(form)) == .splatfestBattle)
+    }
+  }
+
   @Test(arguments: ModeIcon.allCases)
   func `Every Mode icon is bundled`(icon: ModeIcon) {
     #expect(BundledImage.baseNames[.mode]?[icon.rawValue] != nil)
