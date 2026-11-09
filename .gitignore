@@ -17,7 +17,15 @@ build/
 
 # Swift Package Manager
 .build/
+.swiftpm/
 SourcePackages/
+
+# Font files are never committed; the asset script writes them to a git-ignored folder
+*.ttf
+*.otf
+*.ttc
+*.woff
+*.woff2
 
 # App packaging
 *.ipa

@@ -1,0 +1,827 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		D10000000000000000000001 /* Ikalendar3Widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* Ikalendar3Widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D10000000000000000000002 /* Ikalendar3Watch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B20000000000000000000004 /* Ikalendar3Watch.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D10000000000000000000003 /* Ikalendar3WatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B20000000000000000000005 /* Ikalendar3WatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F10000000000000000000001 /* IkaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000001 /* IkaCore */; };
+		F10000000000000000000002 /* IkaDesign in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000002 /* IkaDesign */; };
+		F10000000000000000000003 /* IkaIntents in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000003 /* IkaIntents */; };
+		F10000000000000000000004 /* IkaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000004 /* IkaCore */; };
+		F10000000000000000000005 /* IkaDesign in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000005 /* IkaDesign */; };
+		F10000000000000000000006 /* IkaIntents in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000006 /* IkaIntents */; };
+		F10000000000000000000007 /* IkaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000007 /* IkaCore */; };
+		F10000000000000000000008 /* IkaDesign in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000008 /* IkaDesign */; };
+		F10000000000000000000009 /* IkaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000009 /* IkaCore */; };
+		F1000000000000000000000A /* IkaDesign in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000A /* IkaDesign */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		9B0000000000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000000000000000000003;
+			remoteInfo = Ikalendar3Widgets;
+		};
+		9B0000000000000000000002 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000000000000000000004;
+			remoteInfo = Ikalendar3Watch;
+		};
+		9B0000000000000000000003 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000000000000000000001;
+			remoteInfo = Ikalendar3;
+		};
+		9B0000000000000000000004 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000000000000000000005;
+			remoteInfo = Ikalendar3WatchWidgets;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		C10000000000000000000001 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D10000000000000000000001 /* Ikalendar3Widgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C10000000000000000000002 /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				D10000000000000000000002 /* Ikalendar3Watch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C10000000000000000000003 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				D10000000000000000000003 /* Ikalendar3WatchWidgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		AA0000000000000000000008 /* Ikalendar3Kit */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = Ikalendar3Kit; sourceTree = "<group>"; };
+		B20000000000000000000001 /* Ikalendar3.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ikalendar3.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000002 /* Ikalendar3Tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = Ikalendar3Tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000003 /* Ikalendar3Widgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Ikalendar3Widgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000004 /* Ikalendar3Watch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ikalendar3Watch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000005 /* Ikalendar3WatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Ikalendar3WatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AC0000000000000000000003 /* Exceptions for "Ikalendar3Widgets" folder in "Ikalendar3Widgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B10000000000000000000003 /* Ikalendar3Widgets */;
+		};
+		AC0000000000000000000005 /* Exceptions for "Ikalendar3WatchWidgets" folder in "Ikalendar3WatchWidgets" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = B10000000000000000000005 /* Ikalendar3WatchWidgets */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		AB0000000000000000000001 /* Ikalendar3 */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Ikalendar3; sourceTree = "<group>"; };
+		AB0000000000000000000002 /* Ikalendar3Tests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Ikalendar3Tests; sourceTree = "<group>"; };
+		AB0000000000000000000003 /* Ikalendar3Widgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AC0000000000000000000003 /* Exceptions for "Ikalendar3Widgets" folder in "Ikalendar3Widgets" target */, ); path = Ikalendar3Widgets; sourceTree = "<group>"; };
+		AB0000000000000000000004 /* Ikalendar3Watch */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Ikalendar3Watch; sourceTree = "<group>"; };
+		AB0000000000000000000005 /* Ikalendar3WatchWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AC0000000000000000000005 /* Exceptions for "Ikalendar3WatchWidgets" folder in "Ikalendar3WatchWidgets" target */, ); path = Ikalendar3WatchWidgets; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B70000000000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000000000000000000001 /* IkaCore in Frameworks */,
+				F10000000000000000000002 /* IkaDesign in Frameworks */,
+				F10000000000000000000003 /* IkaIntents in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B70000000000000000000002 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B70000000000000000000003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000000000000000000004 /* IkaCore in Frameworks */,
+				F10000000000000000000005 /* IkaDesign in Frameworks */,
+				F10000000000000000000006 /* IkaIntents in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B70000000000000000000004 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000000000000000000007 /* IkaCore in Frameworks */,
+				F10000000000000000000008 /* IkaDesign in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B70000000000000000000005 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F10000000000000000000009 /* IkaCore in Frameworks */,
+				F1000000000000000000000A /* IkaDesign in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		AA0000000000000000000002 = {
+			isa = PBXGroup;
+			children = (
+				AA0000000000000000000008 /* Ikalendar3Kit */,
+				AB0000000000000000000001 /* Ikalendar3 */,
+				AB0000000000000000000002 /* Ikalendar3Tests */,
+				AB0000000000000000000003 /* Ikalendar3Widgets */,
+				AB0000000000000000000004 /* Ikalendar3Watch */,
+				AB0000000000000000000005 /* Ikalendar3WatchWidgets */,
+				AA0000000000000000000003 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		AA0000000000000000000003 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000001 /* Ikalendar3.app */,
+				B20000000000000000000002 /* Ikalendar3Tests.xctest */,
+				B20000000000000000000003 /* Ikalendar3Widgets.appex */,
+				B20000000000000000000004 /* Ikalendar3Watch.app */,
+				B20000000000000000000005 /* Ikalendar3WatchWidgets.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B10000000000000000000001 /* Ikalendar3 */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B30000000000000000000001 /* Build configuration list for PBXNativeTarget "Ikalendar3" */;
+			buildPhases = (
+				B60000000000000000000001 /* Sources */,
+				B70000000000000000000001 /* Frameworks */,
+				B80000000000000000000001 /* Resources */,
+				C10000000000000000000001 /* Embed Foundation Extensions */,
+				C10000000000000000000002 /* Embed Watch Content */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9A0000000000000000000001 /* PBXTargetDependency */,
+				9A0000000000000000000002 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AB0000000000000000000001 /* Ikalendar3 */,
+			);
+			name = Ikalendar3;
+			packageProductDependencies = (
+				E10000000000000000000001 /* IkaCore */,
+				E10000000000000000000002 /* IkaDesign */,
+				E10000000000000000000003 /* IkaIntents */,
+			);
+			productName = Ikalendar3;
+			productReference = B20000000000000000000001 /* Ikalendar3.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B10000000000000000000002 /* Ikalendar3Tests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B30000000000000000000002 /* Build configuration list for PBXNativeTarget "Ikalendar3Tests" */;
+			buildPhases = (
+				B60000000000000000000002 /* Sources */,
+				B70000000000000000000002 /* Frameworks */,
+				B80000000000000000000002 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9A0000000000000000000003 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AB0000000000000000000002 /* Ikalendar3Tests */,
+			);
+			name = Ikalendar3Tests;
+			productName = Ikalendar3Tests;
+			productReference = B20000000000000000000002 /* Ikalendar3Tests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		B10000000000000000000003 /* Ikalendar3Widgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B30000000000000000000003 /* Build configuration list for PBXNativeTarget "Ikalendar3Widgets" */;
+			buildPhases = (
+				B60000000000000000000003 /* Sources */,
+				B70000000000000000000003 /* Frameworks */,
+				B80000000000000000000003 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AB0000000000000000000003 /* Ikalendar3Widgets */,
+			);
+			name = Ikalendar3Widgets;
+			packageProductDependencies = (
+				E10000000000000000000004 /* IkaCore */,
+				E10000000000000000000005 /* IkaDesign */,
+				E10000000000000000000006 /* IkaIntents */,
+			);
+			productName = Ikalendar3Widgets;
+			productReference = B20000000000000000000003 /* Ikalendar3Widgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		B10000000000000000000004 /* Ikalendar3Watch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B30000000000000000000004 /* Build configuration list for PBXNativeTarget "Ikalendar3Watch" */;
+			buildPhases = (
+				B60000000000000000000004 /* Sources */,
+				B70000000000000000000004 /* Frameworks */,
+				B80000000000000000000004 /* Resources */,
+				C10000000000000000000003 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				9A0000000000000000000004 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				AB0000000000000000000004 /* Ikalendar3Watch */,
+			);
+			name = Ikalendar3Watch;
+			packageProductDependencies = (
+				E10000000000000000000007 /* IkaCore */,
+				E10000000000000000000008 /* IkaDesign */,
+			);
+			productName = Ikalendar3Watch;
+			productReference = B20000000000000000000004 /* Ikalendar3Watch.app */;
+			productType = "com.apple.product-type.application";
+		};
+		B10000000000000000000005 /* Ikalendar3WatchWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B30000000000000000000005 /* Build configuration list for PBXNativeTarget "Ikalendar3WatchWidgets" */;
+			buildPhases = (
+				B60000000000000000000005 /* Sources */,
+				B70000000000000000000005 /* Frameworks */,
+				B80000000000000000000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AB0000000000000000000005 /* Ikalendar3WatchWidgets */,
+			);
+			name = Ikalendar3WatchWidgets;
+			packageProductDependencies = (
+				E10000000000000000000009 /* IkaCore */,
+				E1000000000000000000000A /* IkaDesign */,
+			);
+			productName = Ikalendar3WatchWidgets;
+			productReference = B20000000000000000000005 /* Ikalendar3WatchWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AA0000000000000000000001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2720;
+				LastUpgradeCheck = 2720;
+				TargetAttributes = {
+					B10000000000000000000001 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+					B10000000000000000000002 = {
+						CreatedOnToolsVersion = 27.2;
+						TestTargetID = B10000000000000000000001;
+					};
+					B10000000000000000000003 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+					B10000000000000000000004 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+					B10000000000000000000005 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+				};
+			};
+			buildConfigurationList = AA0000000000000000000004 /* Build configuration list for PBXProject "Ikalendar3" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = AA0000000000000000000002;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				AA0000000000000000000007 /* XCLocalSwiftPackageReference "Ikalendar3Kit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = AA0000000000000000000003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B10000000000000000000001 /* Ikalendar3 */,
+				B10000000000000000000002 /* Ikalendar3Tests */,
+				B10000000000000000000003 /* Ikalendar3Widgets */,
+				B10000000000000000000004 /* Ikalendar3Watch */,
+				B10000000000000000000005 /* Ikalendar3WatchWidgets */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B80000000000000000000001 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B80000000000000000000002 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B80000000000000000000003 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B80000000000000000000004 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B80000000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B60000000000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B60000000000000000000002 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B60000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B60000000000000000000004 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B60000000000000000000005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		9A0000000000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B10000000000000000000003 /* Ikalendar3Widgets */;
+			targetProxy = 9B0000000000000000000001 /* PBXContainerItemProxy */;
+		};
+		9A0000000000000000000002 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			platformFilter = ios;
+			target = B10000000000000000000004 /* Ikalendar3Watch */;
+			targetProxy = 9B0000000000000000000002 /* PBXContainerItemProxy */;
+		};
+		9A0000000000000000000003 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B10000000000000000000001 /* Ikalendar3 */;
+			targetProxy = 9B0000000000000000000003 /* PBXContainerItemProxy */;
+		};
+		9A0000000000000000000004 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B10000000000000000000005 /* Ikalendar3WatchWidgets */;
+			targetProxy = 9B0000000000000000000004 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		AA0000000000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0.0;
+				ONLY_ACTIVE_ARCH = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Debug;
+		};
+		AA0000000000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0.0;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 26.0;
+			};
+			name = Release;
+		};
+		B40000000000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Ikalendar3/Ikalendar3.entitlements;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphone*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphone*]" = YES;
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad[sdk=iphone*]" = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone[sdk=iphone*]" = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B50000000000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Ikalendar3/Ikalendar3.entitlements;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphone*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphone*]" = YES;
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad[sdk=iphone*]" = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				"INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone[sdk=iphone*]" = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B40000000000000000000002 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ikalendar3.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Ikalendar3";
+			};
+			name = Debug;
+		};
+		B50000000000000000000002 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Ikalendar3.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Ikalendar3";
+			};
+			name = Release;
+		};
+		B40000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Ikalendar3Widgets/Ikalendar3Widgets.entitlements;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Ikalendar3Widgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks @executable_path/../../Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B50000000000000000000003 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Ikalendar3Widgets/Ikalendar3Widgets.entitlements;
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Ikalendar3Widgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks @executable_path/../../Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks @executable_path/../../../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		B40000000000000000000004 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = io.tianwei.ikalendar3;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Debug;
+		};
+		B50000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				INFOPLIST_KEY_WKCompanionAppBundleIdentifier = io.tianwei.ikalendar3;
+				INFOPLIST_KEY_WKRunsIndependentlyOfCompanionApp = YES;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Release;
+		};
+		B40000000000000000000005 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Ikalendar3WatchWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Debug;
+		};
+		B50000000000000000000005 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Ikalendar3WatchWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks @executable_path/../../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3.watchkitapp.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = 4;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AA0000000000000000000004 /* Build configuration list for PBXProject "Ikalendar3" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA0000000000000000000005 /* Debug */,
+				AA0000000000000000000006 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B30000000000000000000001 /* Build configuration list for PBXNativeTarget "Ikalendar3" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B40000000000000000000001 /* Debug */,
+				B50000000000000000000001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B30000000000000000000002 /* Build configuration list for PBXNativeTarget "Ikalendar3Tests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B40000000000000000000002 /* Debug */,
+				B50000000000000000000002 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B30000000000000000000003 /* Build configuration list for PBXNativeTarget "Ikalendar3Widgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B40000000000000000000003 /* Debug */,
+				B50000000000000000000003 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B30000000000000000000004 /* Build configuration list for PBXNativeTarget "Ikalendar3Watch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B40000000000000000000004 /* Debug */,
+				B50000000000000000000004 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B30000000000000000000005 /* Build configuration list for PBXNativeTarget "Ikalendar3WatchWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B40000000000000000000005 /* Debug */,
+				B50000000000000000000005 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		AA0000000000000000000007 /* XCLocalSwiftPackageReference "Ikalendar3Kit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Ikalendar3Kit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E10000000000000000000001 /* IkaCore */ = {isa = XCSwiftPackageProductDependency; productName = IkaCore; };
+		E10000000000000000000002 /* IkaDesign */ = {isa = XCSwiftPackageProductDependency; productName = IkaDesign; };
+		E10000000000000000000003 /* IkaIntents */ = {isa = XCSwiftPackageProductDependency; productName = IkaIntents; };
+		E10000000000000000000004 /* IkaCore */ = {isa = XCSwiftPackageProductDependency; productName = IkaCore; };
+		E10000000000000000000005 /* IkaDesign */ = {isa = XCSwiftPackageProductDependency; productName = IkaDesign; };
+		E10000000000000000000006 /* IkaIntents */ = {isa = XCSwiftPackageProductDependency; productName = IkaIntents; };
+		E10000000000000000000007 /* IkaCore */ = {isa = XCSwiftPackageProductDependency; productName = IkaCore; };
+		E10000000000000000000008 /* IkaDesign */ = {isa = XCSwiftPackageProductDependency; productName = IkaDesign; };
+		E10000000000000000000009 /* IkaCore */ = {isa = XCSwiftPackageProductDependency; productName = IkaCore; };
+		E1000000000000000000000A /* IkaDesign */ = {isa = XCSwiftPackageProductDependency; productName = IkaDesign; };
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = AA0000000000000000000001 /* Project object */;
+}
