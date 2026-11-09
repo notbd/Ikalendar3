@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import IkaFixtures
 import Testing
 @testable import IkaCore
 
@@ -232,6 +233,74 @@ struct PreferenceStoreTests {
   @Test
   func `Five tabs in tab bar order`() {
     #expect(ModeTab.allCases == [.regularBattle, .anarchy, .xBattle, .challenge, .salmonRun])
+  }
+}
+
+// MARK: - ResetAllTests
+
+/// Reset All through the preferences store and the cache it must leave alone.
+@MainActor
+final class ResetAllTests {
+  private let testDefaults: TestDefaults
+  private var defaults: UserDefaults { testDefaults.defaults }
+  private let directory: URL
+  private let transport: ScriptedTransport = .init()
+  private let clock: SettableClock = .init(date("2026-10-20T12:05:00Z"))
+
+  init() throws {
+    testDefaults = try TestDefaults()
+    directory = try makeTestDirectory()
+  }
+
+  deinit {
+    try? FileManager.default.removeItem(at: directory)
+  }
+
+  /// Debug Options ship in Release builds, so Reset All must never reach the cache or its attempt
+  /// records: clearing a record would let anyone bypass splatoon3.ink's hourly limit.
+  @Test
+  func `Reset all restores every value and leaves the cache and its attempt records as they were`() async throws {
+    try transport.scriptFeeds()
+    await RefreshEngine(directory: directory, transport: transport, clock: clock).refresh()
+    let filesBefore = try storedFiles()
+    defaults.set("kept", forKey: "unrelated")
+    let store: PreferenceStore = .init(defaults: defaults)
+    store.setEveryValueAwayFromItsDefault()
+
+    store.resetAll()
+
+    for reread in [store, PreferenceStore(defaults: defaults)] {
+      #expect(reread.defaultMode == .regularBattle)
+      #expect(reread.colorScheme == .dark)
+      #expect(reread.style == .ink)
+      #expect(!reread.shouldMinimizeTabBar)
+      #expect(!reread.isBigRunReminderOn)
+      #expect(!reread.isEggstraWorkReminderOn)
+      #expect(!reread.isSplatfestReminderOn)
+      #expect(!reread.isChallengeReminderOn)
+      #expect(reread.macLayout == .columns)
+      #expect(reread.shouldShowOnboarding)
+      #expect(!reread.hasDiscoveredRating)
+    }
+    #expect(defaults.string(forKey: "unrelated") == "kept")
+    #expect(try storedFiles() == filesBefore)
+    // The attempt records still close the gate for the hour.
+    let again = await RefreshEngine(directory: directory, transport: transport, clock: clock).refresh()
+    #expect(transport.requests.count == 3)
+    #expect(again.outcomes == [.schedules: .gateClosed, .festivals: .gateClosed, .locale(.enUS): .gateClosed])
+  }
+
+  /// Every file in the test's directory by its relative path, with its bytes: the cache records,
+  /// the attempt records and their lock.
+  private func storedFiles() throws -> [String: Data] {
+    let root = directory.path(percentEncoded: false)
+    let files = FileManager.default
+      .enumerator(at: directory, includingPropertiesForKeys: nil)?
+      .compactMap { $0 as? URL }
+      .filter { !$0.hasDirectoryPath } ?? []
+    return try Dictionary(uniqueKeysWithValues: files.map { file in
+      try (String(file.path(percentEncoded: false).dropFirst(root.count)), Data(contentsOf: file))
+    })
   }
 }
 

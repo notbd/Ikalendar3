@@ -118,12 +118,16 @@ final class MacAppDelegate: NSObject, NSApplicationDelegate {
 }
 
 extension Ikalendar3App {
-  /// The app's name, as the menu bar and the window title show it; never translated.
-  static let name = "ikalendar3"
   /// The id of the app's one window, which `openWindow` brings to the front.
   static let mainWindowID = "main"
 }
 #endif
+
+extension Ikalendar3App {
+  /// The app's name, as the menu bar, the window title, About and the welcome screen show it;
+  /// never translated.
+  static let name = "ikalendar3"
+}
 
 // MARK: - AppIntentsPackageList
 

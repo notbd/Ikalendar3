@@ -198,9 +198,9 @@ public struct FeedClient: Sendable {
   }
 
   /// `ikalendar3/<version> (+https://ikalendar.app/3; ikalendar3@tianwei.io)`: the app, its
-  /// version and how to reach its developer, as splatoon3.ink asks of every client.
+  /// version and how to reach its developer (`AppContact`), as splatoon3.ink asks of every client.
   static func userAgent(appVersion: String) -> String {
-    "ikalendar3/\(appVersion) (+https://ikalendar.app/3; ikalendar3@tianwei.io)"
+    "ikalendar3/\(appVersion) (+\(AppContact.website.absoluteString); \(AppContact.email))"
   }
 }
 

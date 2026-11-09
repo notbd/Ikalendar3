@@ -14,7 +14,11 @@ import SwiftUI
 /// The app's root: the iPhone tabs, on iPad the layout its window's size and width class call for
 /// (`WindowLayout`), or on the Mac the view the player picked (`MacWindowView`), around them what
 /// every layout shares: Settings, the event sheet, the colour scheme, the refresh haptic and the
-/// failed-refresh toast.
+/// failed-refresh toast, and over them the welcome screen while the preferences ask for it.
+///
+/// The welcome screen covers the schedules while the first load runs silently behind it: no
+/// refresh haptic and no toast until Get Started. With no network and no cache, the shared empty
+/// state shows after it, and the next activation or a pull to refresh tries again.
 ///
 /// The layouts share one selection in `AppStatus`: a sidebar pick selects its tab and a tab or
 /// menu choice moves the sidebar, so a window that crosses a layout boundary shows the player's
@@ -27,11 +31,20 @@ struct AppRootView: View {
   var body: some View {
     @Bindable var status = status
 
-    layout
-      .settingsPresentation(isPresented: $status.isSettingsPresented)
-      .eventSheetPresentation(item: $status.presentedEvent)
-      .appColorScheme(preferences.colorScheme)
-      .refreshFeedback()
+    ZStack {
+      layout
+        .settingsPresentation(isPresented: $status.isSettingsPresented)
+        .eventSheetPresentation(item: $status.presentedEvent)
+        .refreshFeedback(isSilent: preferences.shouldShowOnboarding)
+
+      if preferences.shouldShowOnboarding {
+        OnboardingView()
+          .zIndex(1)
+          .transition(.opacity)
+      }
+    }
+    .animation(.default, value: preferences.shouldShowOnboarding)
+    .appColorScheme(preferences.colorScheme)
   }
 
   @ViewBuilder

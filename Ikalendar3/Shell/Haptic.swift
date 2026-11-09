@@ -16,6 +16,12 @@ import SwiftUI
 enum Haptic {
   /// A tab or Mode switch.
   static let modeSwitch: SensoryFeedback = .impact(flexibility: .soft)
+  /// The welcome screen's or About's icon bouncing.
+  static let iconBounce: SensoryFeedback = .impact(weight: .light)
+  /// The welcome screen's entrance landing.
+  static let onboardingLanded: SensoryFeedback = .impact(flexibility: .soft)
+  /// A step done for good: Get Started on the welcome screen, or a reset in Debug Options.
+  static let done: SensoryFeedback = .success
 
   /// The haptic of Settings being shown or dismissed: a rigid impact when it is shown.
   static func settingsPresentationChanged(to isPresented: Bool) -> SensoryFeedback? {

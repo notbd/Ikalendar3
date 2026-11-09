@@ -12,9 +12,10 @@ import SwiftUI
 extension View {
   /// What every layout shows as refreshes run, for the screens below: the haptic each run hands
   /// the status, and after each refresh that fails, the toast `refreshFailureToast()` shows for
-  /// three seconds while the screens keep their data.
-  func refreshFeedback() -> some View {
-    modifier(RefreshFeedback())
+  /// three seconds while the screens keep their data. While `isSilent`, as under the welcome
+  /// screen, neither plays.
+  func refreshFeedback(isSilent: Bool = false) -> some View {
+    modifier(RefreshFeedback(isSilent: isSilent))
   }
 
   /// Shows the failed-refresh toast over the bottom of this view while `refreshFeedback()` above
@@ -34,6 +35,9 @@ private struct RefreshFeedback: ViewModifier {
   @Environment(RefreshEngine.self) private var engine
   @Environment(AppStatus.self) private var status
 
+  /// Whether the haptic and the toast stay off.
+  let isSilent: Bool
+
   /// A new value for each failed refresh; the toast shows while it is set.
   @State private var failure: UUID?
 
@@ -41,10 +45,10 @@ private struct RefreshFeedback: ViewModifier {
     content
       .environment(\.showsRefreshFailureToast, failure != nil)
       .sensoryFeedback(trigger: status.refreshHaptic) { _, new in
-        new?.feedback
+        isSilent ? nil : new?.feedback
       }
       .onChange(of: engine.status) { old, new in
-        if old == .loading, new == .failed {
+        if old == .loading, new == .failed, !isSilent {
           withAnimation { failure = UUID() }
         }
       }
