@@ -9,7 +9,7 @@
 
 ## Verify
 
-`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, the wording check (`scripts/check-wording.sh`), the string catalog check, package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, each checked for fixture files and for one resource framework per app, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
+`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, the wording check (`scripts/check-wording.sh`), the string catalog check, the hosts check (`scripts/check-hosts.sh`: shipped code can contact only `splatoon3.ink` and `assets.splatoon3.ink`, and every other address is a listed link the player opens), package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, each checked for fixture files, for one resource framework per app and for a privacy manifest that declares each required-reason API its binaries use, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
 
 | Option | Environment variable | Default |
 |---|---|---|
