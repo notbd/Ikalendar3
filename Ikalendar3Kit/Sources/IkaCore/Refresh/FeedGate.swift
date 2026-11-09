@@ -25,6 +25,8 @@ import OSLog
 ///   request is in flight and its answer is committed; its outcome then sets the next eligible
 ///   time. A claim whose process was killed mid-request
 ///   frees the feed once its lease passes.
+/// - The gate fails closed: while the attempt records cannot be read or written, no feed is
+///   claimed. Only a missing file means a first use.
 struct FeedGate {
   /// The directory the attempt records share with the cache.
   let directory: URL
@@ -123,7 +125,9 @@ struct FeedGate {
   private var lockURL: URL { directory.appending(path: "attempts.lock") }
 
   /// Reads the attempt records, lets `body` change them and writes them back, all under the
-  /// exclusive lock of `attempts.lock`. Returns `nil`, logged, when the lock or the write fails.
+  /// exclusive lock of `attempts.lock`. Returns `nil`, logged, when the lock, the read or the
+  /// write fails; a file that cannot be read or decoded is left as it is, so no key's record is
+  /// lost and no gate reopens.
   ///
   /// The lock is `flock`'s, taken by `open` with `O_EXLOCK`: it belongs to the open file, so two
   /// engines in one process exclude each other as two processes do, which a POSIX record lock
@@ -139,8 +143,7 @@ struct FeedGate {
 
       defer { close(descriptor) }
 
-      let data = try? Data(contentsOf: recordsURL)
-      var records = data.flatMap { try? PropertyListDecoder().decode([String: AttemptRecord].self, from: $0) } ?? [:]
+      var records = try storedRecords()
       let before = records
       let result = body(&records)
       if records != before {
@@ -154,6 +157,19 @@ struct FeedGate {
       Logger.store.error("attempt records: \(error, privacy: .public)")
       return nil
     }
+  }
+
+  /// The stored attempt records, or none before the first claim writes the file. Any other read
+  /// error, and a file that does not decode, throws.
+  private func storedRecords() throws -> [String: AttemptRecord] {
+    let data: Data
+    do {
+      data = try Data(contentsOf: recordsURL)
+    }
+    catch CocoaError.fileReadNoSuchFile {
+      return [:]
+    }
+    return try PropertyListDecoder().decode([String: AttemptRecord].self, from: data)
   }
 }
 
@@ -202,6 +218,8 @@ extension FeedGate {
 // MARK: - AttemptRecord
 
 /// A feed's last attempt, kept apart from its fetch time.
+///
+/// Records that no longer decode keep every gate closed, so a field added later must be optional.
 struct AttemptRecord: Codable, Hashable {
   /// When the last request was claimed.
   var attemptTime: Date

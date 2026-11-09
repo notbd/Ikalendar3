@@ -134,6 +134,40 @@ final class RefreshGateTests {
     #expect(transport.requests.count == 3)
   }
 
+  /// The gate replaces the attempt file only by an atomic rename, so one that does not decode is
+  /// damage, not a first use. Every key's records are in it, so no gate may reopen.
+  @Test
+  func `An attempt file that does not decode keeps every gate closed and stays as it is`() throws {
+    let gate = makeClient().gate
+    try gate.settle(#require(gate.claim(.feed(.schedules)).granted), isAnswered: true)
+    let records = directory.appending(path: "attempts.plist")
+    try Data("corrupt".utf8).write(to: records)
+
+    let answered = gate.claim(.feed(.schedules))
+    let neverClaimed = gate.claim(.feed(.festivals))
+
+    #expect(answered.isClosed)
+    #expect(neverClaimed.isClosed)
+    #expect(try Data(contentsOf: records) == Data("corrupt".utf8))
+  }
+
+  /// A file nobody may read fails the read with an error other than a missing file, while the
+  /// folder still lets the gate replace it.
+  @Test
+  func `An attempt file that cannot be read keeps the gate closed and stays as it is`() throws {
+    let gate = makeClient().gate
+    try gate.settle(#require(gate.claim(.feed(.schedules)).granted), isAnswered: true)
+    let records = directory.appending(path: "attempts.plist")
+    let answered = try Data(contentsOf: records)
+    try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: records.path(percentEncoded: false))
+
+    let claim = gate.claim(.feed(.schedules))
+    try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: records.path(percentEncoded: false))
+
+    #expect(claim.isClosed)
+    #expect(try Data(contentsOf: records) == answered)
+  }
+
   // MARK: - Unanswered requests
 
   @Test
@@ -256,5 +290,18 @@ final class RefreshGateTests {
 
     #expect(transport.requests.count == 3)
     #expect(result.outcomes[.schedules] == .fetched(.updated))
+  }
+}
+
+// MARK: - FeedGate.Claim
+
+extension FeedGate.Claim {
+  /// The claimed attempt, or `nil` when the gate did not grant one.
+  fileprivate var granted: Granted? {
+    if case .claimed(let granted) = self { granted } else { nil }
+  }
+
+  fileprivate var isClosed: Bool {
+    if case .closed = self { true } else { false }
   }
 }
