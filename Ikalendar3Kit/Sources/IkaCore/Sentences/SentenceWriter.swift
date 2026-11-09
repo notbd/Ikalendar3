@@ -53,10 +53,12 @@ public struct SentenceWriter: Sendable {
     sentence(of: rotation.mode.name(in: language), playing: rotation.setting, in: rotation, at: nil)
   }
 
-  /// A Tracking item's sentence: a Rotation of `mode` reads as `sentence(for:at:)`, a pause as
-  /// `sentence(forPauseOf:returningAt:)` with the item's end, when the Battle Mode returns.
-  public func sentence(for item: TrackedRotation, of mode: BattleMode, at instant: Date) -> String {
-    sentence(of: mode.name(in: language), playing: item.setting, in: item, at: instant)
+  /// A Tracking item's sentence with no time left: a Rotation of `mode` reads as
+  /// `sentence(for:)`, a pause as `sentence(forPauseOf:returningAt:)` with the item's end, when
+  /// the Battle Mode returns. The system draws a Live Activity ahead of the moment VoiceOver reads
+  /// it, as it does widgets; its countdown is the system's timer text.
+  public func sentence(for item: TrackedRotation, of mode: BattleMode) -> String {
+    sentence(of: mode.name(in: language), playing: item.setting, in: item, at: nil)
   }
 
   /// The sentence of a Battle Mode a Splatfest pauses: the Battle Mode and when it comes back,
@@ -83,10 +85,10 @@ public struct SentenceWriter: Sendable {
     sentence(of: shift, at: nil)
   }
 
-  /// A Tracking item's sentence: the regular Shift or Big Run it stands for, read as
-  /// `sentence(for:at:)`.
-  public func sentence(for item: TrackedShift, at instant: Date) -> String {
-    sentence(of: item.isBigRun ? .bigRun : .salmonRun, on: item.stage, with: item.weapons, in: item, at: instant)
+  /// A Tracking item's sentence with no time left: the regular Shift or Big Run it stands for,
+  /// read as `sentence(for:)` reads a Shift.
+  public func sentence(for item: TrackedShift) -> String {
+    sentence(of: item.isBigRun ? .bigRun : .salmonRun, on: item.stage, with: item.weapons, in: item, at: nil)
   }
 
   /// A Challenge window's sentence: a Rotation's, with the Challenge's name in the Battle Mode's

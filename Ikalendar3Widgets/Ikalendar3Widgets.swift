@@ -15,7 +15,7 @@ import WidgetKit
 
 // MARK: - Ikalendar3Widgets
 
-/// The widget extension on iPhone, iPad and Mac.
+/// The widget extension on iPhone, iPad and Mac, with Tracking's Live Activity on iOS.
 @main
 struct Ikalendar3Widgets: WidgetBundle {
   /// Registers the fonts and points image lookups at the resource framework before anything draws.
@@ -27,6 +27,9 @@ struct Ikalendar3Widgets: WidgetBundle {
     BattleWidget()
     BattleOverviewWidget()
     SalmonRunWidget()
+    #if os(iOS)
+    TrackingLiveActivity()
+    #endif
   }
 }
 
@@ -54,8 +57,9 @@ enum WidgetKind: String {
 
 // MARK: - WidgetsIntentsPackage
 
-/// Adds `IkaIntents`' types, such as the Battle Mode parameter, to this extension's App Intents
-/// metadata, so the widget editor offers them.
+/// Adds `IkaIntents`' types, such as the Battle Mode parameter and the Live Activity's Refresh
+/// intent, to this extension's App Intents metadata, so the widget editor offers them and the
+/// activity's button finds its intent.
 struct WidgetsIntentsPackage: AppIntentsPackage {
   static var includedPackages: [any AppIntentsPackage.Type] { [IkaIntentsPackage.self] }
 }

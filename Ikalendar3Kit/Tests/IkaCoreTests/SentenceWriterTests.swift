@@ -190,7 +190,8 @@ struct SentenceWriterTests {
   // MARK: Tracking
 
   /// Tracking's items read as the Rotation, pause and Shift they stand for, so the Live
-  /// Activity's VoiceOver says what the screens and Siri say.
+  /// Activity's VoiceOver says what the screens and Siri say. As in widgets, they read no time
+  /// left: the system draws a Live Activity ahead of the moment VoiceOver reads it.
   @Test
   func `Tracking's items read the same sentences as the items they stand for`() async throws {
     let normalDay = try await ScheduleFeed.decode(from: Fixture.normalDay.data())
@@ -208,14 +209,13 @@ struct SentenceWriterTests {
 
     let writer: SentenceWriter = Self.writer()
 
-    #expect(try writer.sentence(for: #require(rotations.first), of: .x, at: instant) ==
-      "X Battle: Tower Control on Mahi-Mahi Resort and Robo ROM-en, "
-      + "from 5:00\u{202F}AM to 7:00\u{202F}AM, 1 hour left.")
-    #expect(try writer.sentence(for: #require(pauses.first), of: .regular, at: instant) ==
+    #expect(try writer.sentence(for: #require(rotations.first), of: .x) ==
+      "X Battle: Tower Control on Mahi-Mahi Resort and Robo ROM-en, from 5:00\u{202F}AM to 7:00\u{202F}AM.")
+    #expect(try writer.sentence(for: #require(pauses.first), of: .regular) ==
       "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM.")
-    #expect(try writer.sentence(for: #require(shifts.first), at: instant) ==
+    #expect(try writer.sentence(for: #require(shifts.first)) ==
       "Salmon Run: Jammin' Salmon Junction with S-BLAST '92, Splat Dualies, Splash-o-matic, and Goo Tuber, "
-      + "from Sunday 5:00\u{202F}PM to Tuesday 9:00\u{202F}AM, 3 hours left.")
+      + "from Sunday 5:00\u{202F}PM to Tuesday 9:00\u{202F}AM.")
   }
 
   @Test
@@ -227,7 +227,7 @@ struct SentenceWriterTests {
       stage: StageID("Q29vcFN0YWdlLTE="),
       weapons: [.random, .random, .random, .random])
 
-    #expect(Self.writer().sentence(for: bigRun, at: TestData.instant(hours: 0)) ==
+    #expect(Self.writer().sentence(for: bigRun) ==
       "Big Run: Spawning Grounds with Random, Random, Random, and Random, "
       + "from Thursday 8:00\u{202F}AM to Saturday 8:00\u{202F}AM.")
   }

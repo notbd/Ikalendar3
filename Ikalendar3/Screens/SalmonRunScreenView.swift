@@ -31,5 +31,6 @@ struct SalmonRunScreenView: View {
         case .timeline: TimelineSalmonRunScreenView(screen: screen, terms: terms, now: now, isStale: isStale)
       }
     }
+    .trackButton(for: .salmonRun, language: language)
   }
 }
