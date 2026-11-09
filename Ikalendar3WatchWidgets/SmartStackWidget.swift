@@ -16,7 +16,7 @@ import IkaFixtures
 // MARK: - SmartStackWidget
 
 /// The Smart Stack widget set to one Mode: the Mode heading with the stale mark, the current Rule
-/// or Shift's Stage with the countdown to its end, then the next one with its time range. A
+/// or Shift's Stage with the countdown to its end, then the next one with its start time. A
 /// Battle Mode shows Splatfest Battle while a Splatfest replaces it; a Big Run shows as one.
 ///
 /// It stays in the Smart Stack: the watch face takes `ModeComplication`'s rectangular form instead.
@@ -66,7 +66,7 @@ struct SmartStackView: View {
       }
       CurrentRow(entry: schedule, terms: terms)
       if let next = schedule.content.next(in: terms) {
-        NextRow(item: next, content: schedule.content, terms: terms)
+        NextRow(item: next, content: schedule.content, date: schedule.date, terms: terms)
       }
       Spacer(minLength: 0)
     }
@@ -108,22 +108,25 @@ private struct CurrentRow: View {
 
 // MARK: - NextRow
 
-/// The next Rotation's Rule or Shift's Stage after its time range. VoiceOver reads its sentence.
+/// The next Rotation's Rule or Shift's Stage after its start, with its weekday when that is not on
+/// the entry's day, as a Shift's often is. VoiceOver reads its sentence, with its time range.
 private struct NextRow: View {
   @TimeSettings private var time
 
   let item: WatchItem
   let content: WatchWidgetContent
+  let date: Date
   let terms: GameTerms
 
   var body: some View {
     HStack(spacing: 4) {
-      Text(verbatim: time.format(terms.language).timeRange(of: item))
+      Text(verbatim: time.format(terms.language).time(item.startTime, relativeTo: date))
         .inkFont(.caption)
         .foregroundStyle(.secondary)
         .monospacedDigit()
-        .fixedSize()
+        .scaledLimitedLine(minScaleFactor: 0.6)
       WatchItemLabel(item: item, terms: terms, style: .label)
+        .layoutPriority(1)
       Spacer(minLength: 0)
     }
     .accessibilityElement(children: .ignore)

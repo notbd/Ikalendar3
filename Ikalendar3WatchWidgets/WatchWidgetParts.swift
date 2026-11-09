@@ -14,7 +14,7 @@ import SwiftUI
 /// What a watch widget writes of a Rotation or Shift: its title, the Rotation's Rule or the
 /// Shift's Stage; the Rule whose icon goes beside it; and its window, which the countdown runs to
 /// the end of.
-struct WatchItem: TimeWindow {
+struct WatchItem {
   let title: String
   let rule: RuleID?
   let startTime: Date
