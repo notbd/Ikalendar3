@@ -7,7 +7,8 @@
 
 import SwiftUI
 
-/// The colours of Ink's decoration: the dots and the tape. They carry no information, so they
+/// The colours of Ink's decoration: the dots, the tape, the progress bar's track and the
+/// splat's shadow. They carry no information, so they
 /// have no contrast target, and every piece that draws them is hidden from VoiceOver. Text
 /// colours are `InkPair`'s.
 enum InkDecoration {
@@ -17,4 +18,8 @@ enum InkDecoration {
   static let ruleDot: Color = .init(SRGBColor(hex: 0x6A6A6A))
   /// Translucent masking tape.
   static let tape: Color = .init(.sRGB, red: 226 / 255, green: 220 / 255, blue: 200 / 255, opacity: 0.32)
+  /// The progress bar's empty track, darker than the panel.
+  static let progressTrack: Color = .init(SRGBColor(hex: 0x111111))
+  /// The shadow a splat casts on the background.
+  static let splatShadow: Color = .black.opacity(0.45)
 }

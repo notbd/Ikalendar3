@@ -16,7 +16,7 @@ struct InkPanelEntry<Item: TimeWindow & Hashable & Sendable>: Hashable, Identifi
   /// The Rotation or Shift.
   let item: Item
   /// Where it stands.
-  let place: Place
+  let place: InkPanelPlace
 
   /// The panel's identity: the item's start, which stays when the item moves from Next into
   /// Now, so its panel glides into the featured place instead of being replaced.
@@ -35,16 +35,19 @@ struct InkPanelEntry<Item: TimeWindow & Hashable & Sendable>: Hashable, Identifi
   }
 }
 
-// MARK: InkPanelEntry.Place
+// MARK: - InkPanelPlace
 
-extension InkPanelEntry {
-  /// Where a panel's item stands.
-  enum Place: Hashable {
-    /// On now, with how far it has run: the featured panel, tagged "Now!".
-    case now(WindowProgress)
-    /// The first after the current one, tagged "Next".
-    case next
-    /// After the next one, untagged.
-    case later
+/// Where a panel's Rotation or Shift stands.
+enum InkPanelPlace: Hashable {
+  /// On now, with how far it has run: the featured panel, taped and tagged "Now!".
+  case now(WindowProgress)
+  /// The first after the current one, tagged "Next".
+  case next
+  /// After the next one, untagged.
+  case later
+
+  /// How far the item has run, on the featured panel only.
+  var progress: WindowProgress? {
+    if case .now(let progress) = self { progress } else { nil }
   }
 }

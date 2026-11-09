@@ -13,7 +13,7 @@ import Testing
 /// Pins which of Ink's panels is featured and how each is tagged.
 struct InkPanelEntryTests {
   /// A two-hour window starting `hours` after the epoch.
-  struct Window: TimeWindow, Hashable, Sendable {
+  struct Window: TimeWindow, Hashable {
     let startTime: Date
     let endTime: Date
 
@@ -29,7 +29,7 @@ struct InkPanelEntryTests {
   func `The running item leads as Now, then Next, then the later items untagged`() {
     let current: Running<Window> = .init(item: Window(hours: 0), progress: Self.progress)
 
-    let entries = InkPanelEntry.entries(
+    let entries: [InkPanelEntry<Window>] = InkPanelEntry.entries(
       current: .running(current),
       next: Window(hours: 2),
       later: [Window(hours: 4), Window(hours: 6)])
@@ -40,15 +40,21 @@ struct InkPanelEntryTests {
 
   @Test(arguments: [OnNow<Window>.nothingCurrent, .paused(returnTime: Date(timeIntervalSince1970: 7200))])
   func `With nothing running, the next item still reads Next`(current: OnNow<Window>) {
-    let entries = InkPanelEntry.entries(current: current, next: Window(hours: 2), later: [Window(hours: 4)])
+    let entries: [InkPanelEntry<Window>] = InkPanelEntry.entries(
+      current: current,
+      next: Window(hours: 2),
+      later: [Window(hours: 4)])
 
     #expect(entries.map(\.place) == [.next, .later])
   }
 
   @Test
   func `An item keeps its panel's identity when it turns from Next into Now`() {
-    let before = InkPanelEntry.entries(current: .nothingCurrent, next: Window(hours: 2), later: [])
-    let after = InkPanelEntry.entries(
+    let before: [InkPanelEntry<Window>] = InkPanelEntry.entries(
+      current: .nothingCurrent,
+      next: Window(hours: 2),
+      later: [])
+    let after: [InkPanelEntry<Window>] = InkPanelEntry.entries(
       current: .running(Running(item: Window(hours: 2), progress: Self.progress)),
       next: nil,
       later: [])

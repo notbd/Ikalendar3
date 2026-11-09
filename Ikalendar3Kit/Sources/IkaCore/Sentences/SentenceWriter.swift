@@ -113,10 +113,11 @@ public struct SentenceWriter: Sendable {
     let seconds: Int = .init((progress.timeLeft / .seconds(1)).rounded(.up))
     let (hours, secondsPastHour) = seconds.quotientAndRemainder(dividingBy: 3600)
     let (minutes, secondsPastMinute) = secondsPastHour.quotientAndRemainder(dividingBy: 60)
-    let parts: [(unit: TimeUnit, count: Int)] = [(.hours, hours), (.minutes, minutes), (.seconds, secondsPastMinute)]
+    let parts: [(unit: TimeUnit, amount: Int)] = [(.hours, hours), (.minutes, minutes), (.seconds, secondsPastMinute)]
     let span = parts
-      .drop { $0.count == 0 && $0.unit != .seconds }
-      .map { $0.unit.abbreviated($0.count, in: language) }
+      .drop { $0.amount == 0 && $0.unit != .seconds }
+      .lazy
+      .map { $0.unit.abbreviated($0.amount, in: language) }
       .reduce(nil) { span, part in span.map { format("sentence.hoursAndMinutes", $0, part) } ?? part }
     return format("sentence.timeLeft", span ?? "")
   }
