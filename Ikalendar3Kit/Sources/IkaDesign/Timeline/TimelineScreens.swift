@@ -20,7 +20,6 @@ import SwiftUI
 /// refresh reaches its list through the `refreshable` action the shared screen sets. A finished
 /// Rotation leaves the axis as the app clock passes its end, and the next one becomes current.
 public struct TimelineBattleScreenView: View {
-  @Environment(\.timeZone) private var timeZone
   @TimeSettings private var time
 
   private let screen: BattleScreen
@@ -62,7 +61,7 @@ public struct TimelineBattleScreenView: View {
     } axis: { arrangement in
       TimelineAxis(
         entries: entries,
-        format: TimelineFormat(language: terms.language, timeZone: timeZone),
+        format: time.timelineFormat(terms.language),
         arrangement: arrangement)
       { entry in
         switch entry {
@@ -114,7 +113,7 @@ public struct TimelineBattleScreenView: View {
     }
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
+  private var format: ScheduleFormat { time.format(terms.language) }
 }
 
 // MARK: - TimelineSalmonRunScreenView
@@ -125,7 +124,6 @@ public struct TimelineBattleScreenView: View {
 /// inline where it falls and marked in its colour. It receives `IkaCore` values only and reads no
 /// store.
 public struct TimelineSalmonRunScreenView: View {
-  @Environment(\.timeZone) private var timeZone
   @TimeSettings private var time
 
   private let screen: SalmonRunScreen
@@ -147,7 +145,7 @@ public struct TimelineSalmonRunScreenView: View {
 
   public var body: some View {
     let entries: [TimelineEntry<Shift>] = TimelineEntry.entries(of: screen)
-    let format: TimelineFormat = .init(language: terms.language, timeZone: timeZone)
+    let format: TimelineFormat = time.timelineFormat(terms.language)
     let writer: SentenceWriter = time.writer(terms)
     let name: String = Mode.salmonRun.name(in: terms.language)
 

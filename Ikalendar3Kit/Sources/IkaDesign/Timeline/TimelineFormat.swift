@@ -78,4 +78,12 @@ struct TimelineFormat {
     return calendar
   }
 }
+
+extension TimeSettings {
+  /// How Timeline writes times in `language`: in the view's time zone, on a 24-hour clock
+  /// whatever its hour cycle.
+  func timelineFormat(_ language: GameLanguage) -> TimelineFormat {
+    TimelineFormat(language: language, timeZone: timeZone)
+  }
+}
 #endif

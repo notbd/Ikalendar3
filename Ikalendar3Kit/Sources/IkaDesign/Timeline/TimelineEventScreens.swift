@@ -15,7 +15,7 @@ import SwiftUI
 /// start times, a stand-in until ticket 31 draws SplatNet 3's schedule page. It receives
 /// `IkaCore` values only and reads no store.
 public struct TimelineChallengeScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: ChallengeScreen
   private let terms: GameTerms
@@ -91,7 +91,7 @@ public struct TimelineChallengeScreenView: View {
     .accessibilityElement(children: .combine)
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
+  private var format: ScheduleFormat { time.format(terms.language) }
 }
 
 // MARK: - TimelineSplatfestScreenView
@@ -101,7 +101,6 @@ public struct TimelineChallengeScreenView: View {
 /// times, a stand-in until ticket 31 draws SplatNet 3's schedule page. It receives `IkaCore`
 /// values only and reads no store.
 public struct TimelineSplatfestScreenView: View {
-  @Environment(\.timeZone) private var timeZone
   @TimeSettings private var time
 
   private let screen: SplatfestScreen
@@ -182,7 +181,7 @@ public struct TimelineSplatfestScreenView: View {
     .accessibilityLabel(writer.sentence(for: rotation, at: now))
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
+  private var format: ScheduleFormat { time.format(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 #endif
