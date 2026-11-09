@@ -42,6 +42,15 @@ public enum ModeIcon: String, CaseIterable, Sendable {
       case .splatfestBattle: self = .splatfestBattle
     }
   }
+
+  /// The icon of a Shift of `kind`: Salmon Run's for a regular Shift.
+  public init(_ kind: Shift.Kind) {
+    switch kind {
+      case .regular: self = .salmonRun
+      case .bigRun: self = .bigRun
+      case .eggstraWork: self = .eggstraWork
+    }
+  }
 }
 
 extension BundledImage {
