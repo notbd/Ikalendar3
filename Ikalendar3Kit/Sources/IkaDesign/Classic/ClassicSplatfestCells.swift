@@ -19,6 +19,8 @@ struct ClassicSplatfestCard: View {
 
   @Environment(\.timeZone) private var timeZone
 
+  @ScaledMetric(relativeTo: .title2) private var iconSize: CGFloat = Scoped.iconSize
+
   let splatfest: Splatfest
   /// Its stored art, or `nil` while none is downloaded: the team colours stand alone then.
   let art: URL?
@@ -32,7 +34,7 @@ struct ClassicSplatfestCard: View {
 
       HStack(spacing: ClassicMetrics.Header.tagPaddingH) {
         ClassicSplatfestIcon()
-          .frame(width: Scoped.iconSize, height: Scoped.iconSize)
+          .frame(width: iconSize, height: iconSize)
         Text(verbatim: terms.splatfest(splatfest.id).title)
           .fixedSize(horizontal: false, vertical: true)
           .ikaFont(.heavy, size: Scoped.titleFontSize, relativeTo: .title2)
@@ -114,6 +116,8 @@ struct ClassicTeamList: View {
 
   @Environment(\.colorScheme) private var colorScheme
 
+  @ScaledMetric(relativeTo: .headline) private var swatchSize: CGFloat = Scoped.teamSwatchSize
+
   let splatfest: Splatfest
   let terms: GameTerms
   let arrangement: CellArrangement
@@ -130,7 +134,7 @@ struct ClassicTeamList: View {
           Circle()
             .fill(Color(color))
             .overlay(Circle().strokeBorder(.primary.opacity(0.25), lineWidth: 1))
-            .frame(width: Scoped.teamSwatchSize, height: Scoped.teamSwatchSize)
+            .frame(width: swatchSize, height: swatchSize)
           if names.indices.contains(index) {
             Text(verbatim: names[index])
               .scaledLimitedLine(for: arrangement)
@@ -211,7 +215,8 @@ struct ClassicTricolorSection: View {
 // MARK: - ClassicProgressBar
 
 /// A running window's progress bar with its time left above the trailing end, as a running
-/// Shift shows it.
+/// Shift shows it. The time left is a text of its own rather than the bar's label, which keeps
+/// it to the bar's height and truncates it at the largest text sizes.
 struct ClassicProgressBar: View {
   let progress: WindowProgress
   let tint: Color
@@ -222,15 +227,18 @@ struct ClassicProgressBar: View {
   @Environment(\.timeZone) private var timeZone
 
   var body: some View {
-    ProgressView(value: progress.sharePassed) {
+    VStack(alignment: .trailing, spacing: ClassicMetrics.Header.progressSpacing) {
       Text(verbatim: ClassicText.timeLeft.text(in: terms.language, timeFormat.span(progress.timeLeft)))
         .countdownRoll(value: now)
         .scaledLimitedLine(for: arrangement)
+        .fixedSize(horizontal: false, vertical: true)
+        .multilineTextAlignment(.trailing)
         .foregroundStyle(.secondary)
         .ikaFont(.light, size: ClassicMetrics.BattlePrimary.remainingTimeFontSize, relativeTo: .headline)
-        .frame(maxWidth: .infinity, alignment: .trailing)
+      ProgressView(value: progress.sharePassed)
+        .tint(tint)
     }
-    .tint(tint)
+    .frame(maxWidth: .infinity, alignment: .trailing)
   }
 
   private var timeFormat: ClassicTimeFormat {

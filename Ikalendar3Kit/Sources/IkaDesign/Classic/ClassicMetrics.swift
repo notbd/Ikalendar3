@@ -31,6 +31,8 @@ enum ClassicMetrics {
     static let tagFontSize: CGFloat = 16
     static let tagPaddingH: CGFloat = 8
     static let contentFontSize: CGFloat = 16
+    /// Between a progress bar and its time left above it.
+    static let progressSpacing: CGFloat = 4
   }
 
   /// The current Rotation's featured cell.

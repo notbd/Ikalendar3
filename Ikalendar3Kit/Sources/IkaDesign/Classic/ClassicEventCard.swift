@@ -25,6 +25,9 @@ public struct ClassicEventCard: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @Environment(\.timeZone) private var timeZone
 
+  @ScaledMetric(relativeTo: .title3) private var iconSize: CGFloat = Scoped.iconSize
+  @ScaledMetric(relativeTo: .body) private var ruleIconSize: CGFloat = Scoped.ruleIconSize
+
   private let item: EventItem
   private let art: URL?
   private let terms: GameTerms
@@ -70,7 +73,7 @@ public struct ClassicEventCard: View {
             .shadow(radius: ClassicMetrics.shadowRadius)
         }
       }
-      .frame(width: Scoped.iconSize, height: Scoped.iconSize)
+      .frame(width: iconSize, height: iconSize)
 
       let name: String = kind.label.text(in: terms.language)
       if let color = kind.color {
@@ -92,7 +95,7 @@ public struct ClassicEventCard: View {
           .ikaFont(.heavy, size: Scoped.titleFontSize, relativeTo: .title3)
         HStack(spacing: Scoped.spacing) {
           ClassicPicture(name: BundledImage.name(for: window.challenge.rule, size: .medium))
-            .frame(width: Scoped.ruleIconSize, height: Scoped.ruleIconSize)
+            .frame(width: ruleIconSize, height: ruleIconSize)
           Text(verbatim: terms.name(of: window.challenge.rule))
             .scaledLimitedLine(for: arrangement)
             .ikaFont(.light, size: Scoped.detailFontSize, relativeTo: .body)
