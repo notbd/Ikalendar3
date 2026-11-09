@@ -56,6 +56,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
   ```
 
 - The background refresh task (`BackgroundRefresh` in `IkaIntents`) never runs in the Simulator: the system refuses every request there, which the app logs in the `background` category each time it moves to the background. How often it runs is checked on a device.
+- The watch app (`io.tianwei.ikalendar3.watchkitapp`) fetches on its own: its own refresh engine on the watch's App Group container, under the same gate. It refreshes each time it becomes active and from its background refresh task (`WatchBackgroundRefresh`), which asks for a run five minutes past the first Rotation boundary at least an hour away (`WatchRefreshSchedule` in `IkaCore`); watchOS grants those runs only within its budget, about four an hour while a complication of the app is on the active face. Each refresh that committed a feed reloads the complications, as the effects plan says. Requests and refusals are logged in its `background` category. How often it runs is checked on a device.
 - Debug builds read these launch options; Release builds ignore them. Pass them after `xcrun simctl launch <UDID> io.tianwei.ikalendar3`, after `--args` of `open` on the Mac, or in the scheme's arguments. A launch with a missing or malformed option stops with its reason instead of falling back to the network.
 
   | Option | Effect |
@@ -64,6 +65,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
   | `--fixture-rebase` | With the fixture options: moves every time in the payloads by now minus the instant, commits them to the shared cache and runs on the system clock, so widgets and the Live Activity show the fixture day too. The cache keeps them until a live refresh replaces them, which the gate allows from an hour after the launch; delete the app to drop them at once. |
   | `--event-cards` | Shows every event card at the app clock's instant, one under the other, instead of the tabs, so a fixture launch can screenshot them before the iPad event strip shows them. |
   | `--data-folder <path>` `--defaults-suite <name>` | Keeps the feed cache and its attempt records in `<path>` and the preferences in the suite `<name>` instead of the App Group. The two go together. |
+  | `--scroll-anchor top\|center\|bottom` | Watch app only: starts the Now page scrolled to its top, middle or bottom, so a fixture launch can screenshot every row; the watch simulator takes no scroll input from the command line. |
 
   ```sh
   # Regular Battle ten seconds before the 14:00 UTC Rotation boundary of the normal day
@@ -71,12 +73,20 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
     --fixture-folder "$PWD/Ikalendar3Kit/Fixtures" --fixture-instant 2026-10-20T13:59:50Z
   ```
 
+- The watch app takes the fixture options and `--scroll-anchor` on the worktree's own watch simulator, which needs no iPhone app running:
+
+  ```sh
+  # The Now page during the 2026-11-01 Splatfest, scrolled to its last rows
+  xcrun simctl launch <watch UDID> io.tianwei.ikalendar3.watchkitapp --fixture splatfestSecondHalf \
+    --fixture-folder "$PWD/Ikalendar3Kit/Fixtures" --fixture-instant 2026-11-01T05:23:00Z --scroll-anchor bottom
+  ```
+
 - Mac runs from a worktree pass the data options: an unsigned, unsandboxed Mac process gets the App Group folder that every worktree on the machine shares. Use a folder inside the worktree and a suite named after it, for example `--data-folder "$PWD/build/AppData" --defaults-suite "ikalendar3-$(basename "$PWD")"`.
 
 ## Project layout
 
 - `Ikalendar3/`: the app for iPhone, iPad and Mac (one target). `Ikalendar3Widgets/`: the widget extension for iOS and macOS. `Ikalendar3Watch/` and `Ikalendar3WatchWidgets/`: the watch app and its widget extension. `Ikalendar3Tests/`: the app's tests. `IkaResources/`: the framework that ships the fonts and the image catalog (below).
-- `Ikalendar3Kit/`: the local package with `IkaCore` (domain, data and every Surface's content), `IkaDesign` (design system) and `IkaIntents` (Siri, App Shortcuts and the effects shell; iOS and macOS, Live Activity parts behind `#if os(iOS)`). The app and the widget extension link all three, and also `IkaFixtures`: the app for its Debug launch options, the extension for its previews; both use it only under `#if DEBUG`. The watch targets link `IkaCore` and `IkaDesign`. All four link `IkaResources`.
+- `Ikalendar3Kit/`: the local package with `IkaCore` (domain, data and every Surface's content), `IkaDesign` (design system) and `IkaIntents` (Siri, App Shortcuts and the effects shell; iOS and macOS, Live Activity parts behind `#if os(iOS)`). The app and the widget extension link all three; the watch targets link `IkaCore` and `IkaDesign`. The app, the widget extension and the watch app also link `IkaFixtures`: the two apps for their Debug launch options, the extension for its previews; each uses it only under `#if DEBUG`. All four link `IkaResources`.
 - `Ikalendar3Kit/Fixtures/`: recorded splatoon3.ink payloads. Everything that needs one reads it by path, so there is one copy; no target lists the folder as a resource, so no product ships it.
 - `IkaFixtures`: the package's test support module, not a product module: the scripted transport, the settable clock and the `Fixture` loader for that folder. Package tests, Debug fixture launches and previews use it. Its code is compiled only in Debug (every file is `#if DEBUG`): a package product cannot be linked per configuration, so Release products link it empty, and code that uses it outside `#if DEBUG` fails the Release build. Verify fails when a Release binary names the module, a payload or a fixture launch option. It holds no fixture file. A temporary directory per test stays a test helper (`makeTestDirectory()`).
 - Every target folder is a synchronized folder: a Swift file or subfolder added inside it is compiled with no project file change. A non-source file there becomes a resource of the target unless the project lists an exception, as it does for the widget extensions' `Info.plist`.
