@@ -13,7 +13,8 @@ import SwiftUI
 
 /// The band over the iPad columns and the Mac's Columns and Overview: the card of each event the
 /// snapshot lists, in the strip's fixed order, each opening its Schedule in a sheet. Four cards
-/// share the band's width.
+/// share the band's width; a Mac card keeps a column's minimum width, so a narrow window scrolls
+/// them as it scrolls the columns.
 ///
 /// On iPad the refresh and Settings buttons the sidebar keeps in its toolbar follow the cards, so
 /// only they show while no event is listed. The Mac keeps both in its window's toolbar and app
@@ -67,12 +68,28 @@ struct EventStrip: View {
             EventCardView(item: item)
           }
           .buttonStyle(.plain)
-          .containerRelativeFrame(.horizontal, count: 4, spacing: Self.spacing)
+          .cardWidth(spacing: Self.spacing)
         }
       }
     }
     .scrollIndicators(.hidden)
     // As tall as the tallest card, so the columns take the rest.
     .fixedSize(horizontal: false, vertical: true)
+  }
+}
+
+// MARK: - Card width
+
+extension View {
+  /// Sets an event card's width: a quarter of the strip's, less the space between the cards, and
+  /// on the Mac at least a column's (`ColumnWidth`).
+  fileprivate func cardWidth(spacing: CGFloat) -> some View {
+    #if os(macOS)
+    containerRelativeFrame(.horizontal) { length, _ in
+      ColumnWidth.width(sharing: length - spacing * 3, count: 4)
+    }
+    #else
+    containerRelativeFrame(.horizontal, count: 4, spacing: spacing)
+    #endif
   }
 }

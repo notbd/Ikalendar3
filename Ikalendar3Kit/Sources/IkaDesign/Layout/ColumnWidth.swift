@@ -9,9 +9,9 @@ import CoreGraphics
 
 // MARK: - ColumnWidth
 
-/// The width of each column in the Mac's Columns view: an equal share of the width the columns
-/// share, never narrower than `minimum`, so a narrow window scrolls them sideways instead of
-/// squeezing the lists.
+/// The width of each column in the Mac's Columns view, and of each card on the event strip above
+/// it: an equal share of the width they share, never narrower than `minimum`, so a narrow window
+/// scrolls them sideways instead of squeezing the lists and cards.
 public enum ColumnWidth {
   /// The narrowest column, about an iPhone list's width.
   static public let minimum: CGFloat = 300
