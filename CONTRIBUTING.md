@@ -5,6 +5,7 @@
 - Xcode, SwiftFormat and SwiftLint at the versions pinned in `scripts/versions.env`. CI uses exactly these, and the verify script refuses other linter versions, because rule behaviour changes between releases.
 - Homebrew may carry newer linters. To install the pinned ones as CI does, download `swiftformat.zip` from the SwiftFormat release and `portable_swiftlint.zip` from the SwiftLint release with that version number, and put both binaries first on your `PATH`.
 - `jq`, `xmllint`, `perl` and `shasum` ship with macOS.
+- Only the asset script (see Bundled images) needs Python, at the version `scripts/versions.env` pins.
 
 ## Verify
 
@@ -57,6 +58,14 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 - The package folder is also a file reference in the project. Without it, `xcodebuild` silently skips the package's tests.
 - Signing: builds and macOS runs pass `CODE_SIGNING_ALLOWED=NO`. Simulator test runs keep automatic signing with no team (Xcode signs to run locally), so the test host carries its App Group entitlement.
 - Swift 6 language mode with Approachable Concurrency everywhere. The app and its tests run on the main actor by default; package modules stay nonisolated.
+
+## Bundled images
+
+- `scripts/assets.sh` builds every Stage, weapon, Rule, Mode and King Salmonid image from `scripts/assets/manifest.json`: it downloads each source, checks its sha256, renders the group's three pixel sizes into `IkaDesign`'s asset catalog and writes the Swift index of bundled ids (`BundledImage+Index.swift`). It needs network and the Python version pinned in `scripts/versions.env`; its packages are pinned with hashes in `scripts/assets/requirements.txt`, so a second run writes the same bytes. The built images are committed; CI never runs it.
+- A new Stage or weapon: add one line to its group with the id and image path as the feed writes them, and run the script. It stops with the file's sha256; add that to the line and run it again. Commit the manifest, the catalog and the index together.
+- Names are the decoded feed id, lowercased (`VsStage-1` gives `vsstage-1_small`); weapons and Mode icons carry their group (`weapon-<id>`, `mode-<name>`). The script refuses an id outside the namespaces its group lists, and two ids that give one name.
+- Stage art is JPEG (opaque photos, about a quarter of the size of PNG); everything else is PNG with alpha. Raster sources are scaled down to fit each size, never up.
+- An id with no bundled image, such as a Stage added after a release, shows its group's placeholder.
 
 ## Tests
 
