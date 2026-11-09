@@ -84,6 +84,10 @@ _Avoid_: extension (that is a build target), view
 Following one Battle Mode or Salmon Run in a Live Activity, from the moment the user starts it until it ends.
 _Avoid_: pinning, following, subscribing
 
+**Style**:
+One of three looks the user picks in Settings for the app's own screens: Classic, Ink or Timeline. Widgets, Live Activities and the watch always use Ink.
+_Avoid_: theme, skin, layout
+
 **Support site**:
 The public website shared by the ikalendar apps, carrying each app's home page, support page and privacy policy.
 _Avoid_: landing page, homepage (for the whole site), docs
