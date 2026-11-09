@@ -37,6 +37,8 @@ struct Ikalendar3App: App {
     Window(Text(verbatim: Self.name), id: Self.mainWindowID) {
       mainWindow
     }
+    .defaultSize(MacWindowMetrics.defaultSize)
+    .commands { MacWindowCommands(services: AppServices.isTestHost ? nil : services) }
     .runningEffects(AppServices.isTestHost ? nil : services, scenePhase: scenePhase)
 
     MenuBarExtra(isInserted: .constant(backgroundRefresh != nil)) {

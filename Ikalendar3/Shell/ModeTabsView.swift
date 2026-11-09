@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if os(iOS)
 import IkaCore
 import IkaDesign
 import IkaIntents
@@ -14,8 +15,7 @@ import SwiftUI
 
 /// The iPhone tabs in the native Liquid Glass tab bar: Regular Battle, Anarchy, X Battle,
 /// Challenge and Salmon Run, with the Splatfest tab in Regular Battle's place while a Splatfest
-/// runs. An iPad window of compact width shows them too (`WindowLayout.tabs`), and the Mac until
-/// its own window lands.
+/// runs. An iPad window of compact width shows them too (`WindowLayout.tabs`).
 ///
 /// It plays ikalendar 2's Mode switch haptic, shows the failed-refresh toast above the tab bar
 /// (`AppRootView` keeps it), and shows Settings from each tab's toolbar. A second tap on the
@@ -112,10 +112,7 @@ struct ModeTabsView: View {
 extension View {
   /// Minimizes the iPhone tab bar while a list scrolls down, when the player asks for it.
   fileprivate func minimizingTabBar(_ isOn: Bool) -> some View {
-    #if os(iOS)
     tabBarMinimizeBehavior(isOn ? .onScrollDown : .automatic)
-    #else
-    self
-    #endif
   }
 }
+#endif

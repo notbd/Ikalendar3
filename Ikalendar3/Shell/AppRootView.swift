@@ -11,9 +11,10 @@ import SwiftUI
 
 // MARK: - AppRootView
 
-/// The app's root: the iPhone tabs, or on iPad the layout its window's size and width class call
-/// for (`WindowLayout`), around them what every layout shares: Settings, the event sheet, the
-/// colour scheme, the refresh haptic and the failed-refresh toast.
+/// The app's root: the iPhone tabs, on iPad the layout its window's size and width class call for
+/// (`WindowLayout`), or on the Mac the view the player picked (`MacWindowView`), around them what
+/// every layout shares: Settings, the event sheet, the colour scheme, the refresh haptic and the
+/// failed-refresh toast.
 ///
 /// The layouts share one selection in `AppStatus`: a sidebar pick selects its tab and a tab or
 /// menu choice moves the sidebar, so a window that crosses a layout boundary shows the player's
@@ -54,7 +55,7 @@ struct AppRootView: View {
       ModeTabsView()
     }
     #else
-    ModeTabsView()
+    MacWindowView()
     #endif
   }
 }

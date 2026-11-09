@@ -89,7 +89,8 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
     --fixture-folder "$PWD/Ikalendar3Kit/Fixtures" --fixture-instant 2026-09-07T12:00:00Z --mode-page salmonRun --later-list
   ```
 
-- Mac runs start with `open -n <app> --args ...`: a Debug binary started directly from a shell runs but opens no window.
+- Mac runs start with `open -n <app> --args ...`: a Debug binary started directly from a shell runs but opens no window. macOS restores the window as the last run left it, so a run after one that quit with the window closed opens none; `-ApplePersistenceIgnoreState YES` after the app's options opens it anyway. `open -g` keeps the app behind the window in front.
+- The Mac window opens on the view stored in `pref.mac_layout` (`columns`, `sidebar` or `overview`) and the Style in `pref.style`, so a fixture launch picks both with `defaults write <suite> pref.mac_layout overview` before it starts.
 - Mac runs from a worktree pass the data options: an unsigned, unsandboxed Mac process gets the App Group folder that every worktree on the machine shares. Use a folder inside the worktree and a suite named after it, for example `--data-folder "$PWD/build/AppData" --defaults-suite "ikalendar3-$(basename "$PWD")"`.
 
 ## Project layout
@@ -146,7 +147,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 - Every key of every string catalog has a value in all 14, the source language included; `scripts/check-string-catalogs.sh` fails verify otherwise. Only keys marked Don't Translate are exempt. The same script fails when an App Shortcuts phrase, in its key or any language, lacks `${applicationName}`.
 - Game terms come from splatoon3.ink's locale files (shipped in `IkaCore`, looked up through `GameTerms`), Mode names and labels from its MIT-licensed site strings (`ModeLabel`). Strings written for this app use each language's in-game vocabulary; in es-ES, es-MX, fr-FR, fr-CA, de-DE, it-IT, nl-NL, ru-RU and ko-KR they carry the Needs Review state until a native speaker checks them.
 - Package modules look their strings up with `Bundle.module.localizedString(forKey:in:)` in the language the process passes in, never in the process locale.
-- Each Style and each feature area has its own string table, so parallel work never edits one catalog file: `Screens` (what every Style's screens share), `Classic`, `Ink`, `Timeline`, `Sidebar` (the iPad sidebar and its toolbar), `MenuBar` (the Mac menu bar window), `Settings`, `About` (About, Credits and onboarding), `Reminders`, `Widgets`, `LiveActivity`, `Controls` and `Watch`; Siri's phrases are the app target's `AppShortcuts`, the name the system reads. A table is a `<Name>.xcstrings` in the module or target whose code shows its strings, added by the first change that needs it. `Localizable` stays `IkaCore`'s shared vocabulary (Mode names, labels and sentences) and `IkaIntents`' Siri strings.
+- Each Style and each feature area has its own string table, so parallel work never edits one catalog file: `Screens` (what every Style's screens share), `Classic`, `Ink`, `Timeline`, `Sidebar` (the iPad sidebar and its toolbar), `MenuBar` (the Mac menu bar window), `MacWindow` (the Mac window's view switch and its View menu), `Settings`, `About` (About, Credits and onboarding), `Reminders`, `Widgets`, `LiveActivity`, `Controls` and `Watch`; Siri's phrases are the app target's `AppShortcuts`, the name the system reads. A table is a `<Name>.xcstrings` in the module or target whose code shows its strings, added by the first change that needs it. `Localizable` stays `IkaCore`'s shared vocabulary (Mode names, labels and sentences) and `IkaIntents`' Siri strings.
 
 ## Code and commits
 
