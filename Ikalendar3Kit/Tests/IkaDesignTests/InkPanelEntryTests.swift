@@ -61,4 +61,12 @@ struct InkPanelEntryTests {
 
     #expect(before[0].id == after[0].id)
   }
+
+  @Test
+  func `A Challenge window reads Now, Next or untagged, and an ended one has no place`() {
+    #expect(InkPanelPlace(ChallengeScreen.WindowMark.current(Self.progress)) == .now(Self.progress))
+    #expect(InkPanelPlace(ChallengeScreen.WindowMark.next) == .next)
+    #expect(InkPanelPlace(ChallengeScreen.WindowMark.later) == .later)
+    #expect(InkPanelPlace(ChallengeScreen.WindowMark.over) == nil)
+  }
 }

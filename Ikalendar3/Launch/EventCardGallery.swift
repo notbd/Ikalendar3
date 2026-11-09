@@ -14,8 +14,9 @@ import SwiftUI
 // MARK: - EventCardGallery
 
 /// The Debug launch's event card gallery (`--event-cards`): every event the snapshot lists at the
-/// app clock's instant as its Classic card, one under the other, so a fixture launch can show
-/// each card before the iPad event strip does. Ink's and Timeline's cards join it when they land.
+/// app clock's instant as the chosen Style's card, one under the other on that Style's
+/// background, so a fixture launch can show each card before the iPad event strip does. Timeline
+/// shows Classic's cards until its own land.
 struct EventCardGallery: View {
   @Environment(RefreshEngine.self) private var engine
   @Environment(\.effects) private var effects
@@ -31,18 +32,28 @@ struct EventCardGallery: View {
     ScrollView {
       VStack(spacing: 16) {
         ForEach(snapshot.eventItems(at: now) ?? [], id: \.self) { item in
-          ClassicEventCard(item: item, art: snapshot.splatfestArt, terms: terms, now: now)
+          switch preferences.style {
+            case .ink: InkEventCard(item: item, art: snapshot.splatfestArt, terms: terms, now: now)
+            case .classic,
+                 .timeline: ClassicEventCard(item: item, art: snapshot.splatfestArt, terms: terms, now: now)
+          }
         }
       }
       .padding(16)
     }
-    .background(background)
+    .background {
+      switch preferences.style {
+        case .ink: InkBackground().ignoresSafeArea()
+        case .classic,
+             .timeline: classicBackground.ignoresSafeArea()
+      }
+    }
     .appColorScheme(preferences.colorScheme)
     .task { await effects?.run() }
   }
 
   /// What a Classic list's cells sit on.
-  private var background: Color {
+  private var classicBackground: Color {
     #if os(iOS)
     Color(uiColor: .systemGroupedBackground)
     #else
