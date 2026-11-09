@@ -94,6 +94,7 @@ extension BattleWidgetFamily {
 
 // MARK: - Previews
 
+#if DEBUG
 #Preview("Small", as: .systemSmall, using: BattleWidgetIntent(battleMode: .anarchySeries)) {
   BattleWidget()
 } timelineProvider: {
@@ -123,3 +124,4 @@ extension BattleWidgetFamily {
 } timelineProvider: {
   BattleTimelineProvider { Snapshot() }
 }
+#endif

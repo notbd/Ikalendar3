@@ -7,8 +7,10 @@
 
 import Foundation
 import IkaCore
-import IkaFixtures
 import WidgetKit
+#if DEBUG
+import IkaFixtures
+#endif
 
 // MARK: - ScheduleWidgetEntry
 
@@ -64,9 +66,10 @@ enum WidgetData {
   }
 }
 
+#if DEBUG
 extension WidgetData {
   /// Previews: a loader of a recorded day, moved so that a moment of it is now: the normal day
-  /// mid-Rotation, or the Splatfest in its second half.
+  /// mid-Rotation, or the Splatfest in its second half. Debug only, as `IkaFixtures` is.
   static func fixture(_ schedules: Fixture) -> @Sendable () async -> Snapshot {
     let recordedAt =
       switch schedules {
@@ -80,3 +83,4 @@ extension WidgetData {
     }
   }
 }
+#endif

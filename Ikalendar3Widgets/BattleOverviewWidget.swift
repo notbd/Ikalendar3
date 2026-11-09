@@ -63,6 +63,7 @@ struct BattleOverviewTimelineProvider: TimelineProvider {
 
 // MARK: - Previews
 
+#if DEBUG
 #Preview("Extra large", as: .systemExtraLarge) {
   BattleOverviewWidget()
 } timelineProvider: {
@@ -74,3 +75,4 @@ struct BattleOverviewTimelineProvider: TimelineProvider {
 } timelineProvider: {
   BattleOverviewTimelineProvider(load: WidgetData.fixture(.splatfestSecondHalf))
 }
+#endif

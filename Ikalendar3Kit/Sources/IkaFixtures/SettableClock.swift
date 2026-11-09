@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if DEBUG
 import Foundation
 import IkaCore
 import Synchronization
@@ -113,3 +114,4 @@ final public class SettableClock: TimeSource {
     }
   }
 }
+#endif

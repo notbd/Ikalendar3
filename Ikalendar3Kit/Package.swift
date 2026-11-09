@@ -38,8 +38,9 @@ let package = Package(
       resources: [.process("Resources")],
       swiftSettings: swiftSettings),
     // Test support, not a product module: the scripted transport, the settable clock and the fixture
-    // loader for package tests, Debug fixture launches and previews. Release code never calls it,
-    // and it holds no fixture file.
+    // loader for package tests, Debug fixture launches and previews. Every file is `#if DEBUG`, so a
+    // Release product links an empty module and a Release reference to it does not compile; it
+    // holds no fixture file.
     .target(name: "IkaFixtures", dependencies: ["IkaCore"], swiftSettings: swiftSettings),
     .testTarget(name: "IkaCoreTests", dependencies: ["IkaCore", "IkaFixtures"], swiftSettings: swiftSettings),
     .testTarget(

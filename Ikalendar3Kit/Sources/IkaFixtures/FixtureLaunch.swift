@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if DEBUG
 import Foundation
 import IkaCore
 
@@ -196,3 +197,4 @@ extension FixtureLaunch {
     return FixtureRun(client: FeedClient(transport: transport, cache: sharedCache), timeSource: SystemTimeSource())
   }
 }
+#endif
