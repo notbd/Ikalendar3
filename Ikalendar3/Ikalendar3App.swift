@@ -7,6 +7,7 @@
 
 import IkaCore
 import IkaDesign
+import IkaResources
 import SwiftUI
 
 // MARK: - Ikalendar3App
@@ -35,7 +36,10 @@ struct Ikalendar3App: App {
     }
   }
 
+  /// Registers the fonts and points image lookups at the resource framework before anything draws,
+  /// then builds this launch's objects.
   init() {
+    BundledResources.load(from: IkaResources.bundle)
     _services = State(initialValue: AppServices.forThisLaunch())
   }
 }
