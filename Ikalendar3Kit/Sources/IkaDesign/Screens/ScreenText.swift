@@ -20,8 +20,6 @@ public enum ScreenText: String, CaseIterable, Sendable {
   case empty = "screen.empty"
   /// "Updated %@", with the fetch time.
   case fetchTime = "screen.fetchTime"
-  /// "Next": the next Challenge window.
-  case next = "screen.next"
   /// "Nothing on right now".
   case nothingCurrent = "screen.nothingCurrent"
   /// "Returns %@", with the time a paused Battle Mode returns.

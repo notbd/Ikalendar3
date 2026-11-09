@@ -17,10 +17,8 @@ import WidgetKit
 
 /// The strings the Live Activity writes itself, from this extension's `LiveActivity` string
 /// table. The raw value is the catalog key. The reminders are `IkaCore`'s, the Refresh button's
-/// word `IkaIntents`' (`TrackingText`).
+/// word `IkaIntents`' (`TrackingText`), the Next tag Ink's (`InkText`).
 enum LiveActivityText: String {
-  /// "Next", before the next item.
-  case next = "liveActivity.next"
   /// "Nothing later published yet".
   case nothingLater = "liveActivity.nothingLater"
 
@@ -330,7 +328,7 @@ struct TrackingNextLine: View {
 
   /// The next item after its tag, read by VoiceOver as the tag and the item's sentence.
   private func tagged(_ sentence: String, @ViewBuilder item: () -> some View) -> some View {
-    let tag = LiveActivityText.next.text(in: language)
+    let tag = InkText.next.text(in: language)
     return HStack(spacing: 6) {
       InkModeTag(Text(verbatim: tag), modeColor: ModeColor(render.mode))
       item()
