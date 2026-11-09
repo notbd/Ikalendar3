@@ -13,8 +13,8 @@ import Foundation
 /// reads it on every Surface and Siri's answers are built from it, so every Surface reads alike.
 ///
 /// Names come from the game's terms in their text set. Times are written in the time zone and
-/// the hour cycle passed in; Surfaces pass the device's own (`Locale.current.hourCycle`), so a
-/// sentence reads times as the device shows them.
+/// the hour cycle passed in; Surfaces pass the device's own (views through `IkaDesign`'s
+/// `TimeSettings`), so a sentence reads times as the device shows them.
 public struct SentenceWriter: Sendable {
   /// The game's names, which also fix the text set.
   public let terms: GameTerms

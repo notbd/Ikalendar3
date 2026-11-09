@@ -60,7 +60,7 @@ extension ModeHeading where Trailing == EmptyView {
 /// in every size a mark while it is stale.
 struct FreshnessLabel<Content: Hashable & Sendable>: View {
   @Environment(\.gameLanguage) private var language
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let entry: WidgetEntry<Content>
   let showsFetchTime: Bool
@@ -74,7 +74,7 @@ struct FreshnessLabel<Content: Hashable & Sendable>: View {
           .accessibilityLabel(WidgetText.stale.text(in: language))
       }
       if showsFetchTime {
-        let format: ScheduleFormat = .init(language: language, timeZone: timeZone)
+        let format = time.format(language)
         Text(verbatim: ScreenText.fetchTime.text(in: language, format.time(entry.fetchTime, relativeTo: entry.date)))
           .scaledLimitedLine()
       }
@@ -156,7 +156,7 @@ struct CurrentView: View {
 /// A Rotation's Rule, its two Stages as cards and, for the current one, the system's countdown to
 /// its end; else its time range. VoiceOver reads it as one element, the Rotation's sentence.
 struct RotationView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let rotation: Rotation
   let terms: GameTerms
@@ -174,14 +174,14 @@ struct RotationView: View {
         InkTimeTag(Text(timerInterval: rotation.startTime ... rotation.endTime))
       }
       else {
-        InkTimeTag(Text(verbatim: ScheduleFormat(language: terms.language, timeZone: timeZone).timeRange(of: rotation)))
+        InkTimeTag(Text(verbatim: time.format(terms.language).timeRange(of: rotation)))
       }
     }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(writer.sentence(for: rotation))
   }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - RotationRow
@@ -190,7 +190,7 @@ struct RotationView: View {
 /// Battle Mode's icon when that is not the widget's, as after a Splatfest. VoiceOver reads it as one
 /// element, the Rotation's sentence.
 struct RotationRow: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let rotation: Rotation
   let terms: GameTerms
@@ -199,7 +199,7 @@ struct RotationRow: View {
 
   var body: some View {
     HStack(spacing: 8) {
-      InkTimeTag(Text(verbatim: ScheduleFormat(language: terms.language, timeZone: timeZone).timeRange(of: rotation)))
+      InkTimeTag(Text(verbatim: time.format(terms.language).timeRange(of: rotation)))
       if rotation.mode != shownMode {
         ModeIconImage(mode: rotation.mode)
       }
@@ -218,14 +218,14 @@ struct RotationRow: View {
     .accessibilityLabel(writer.sentence(for: rotation))
   }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - PausedView
 
 /// A Battle Mode a Splatfest pauses, with when it returns. VoiceOver reads its pause sentence.
 struct PausedView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   let mode: BattleMode
   let returnTime: Date
@@ -233,7 +233,7 @@ struct PausedView: View {
   let terms: GameTerms
 
   var body: some View {
-    let format: ScheduleFormat = .init(language: terms.language, timeZone: timeZone)
+    let format = time.format(terms.language)
     Text(verbatim: ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: date)))
       .inkFont(.label)
       .scaledLimitedLine(lineLimit: 3)
@@ -242,7 +242,7 @@ struct PausedView: View {
       .accessibilityLabel(writer.sentence(forPauseOf: mode, returningAt: returnTime))
   }
 
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - RuleLabel

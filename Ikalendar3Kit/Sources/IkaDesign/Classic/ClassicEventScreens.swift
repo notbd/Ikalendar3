@@ -15,7 +15,7 @@ import SwiftUI
 /// grouped list, a stand-in until ticket 29 draws ikalendar 2's look. It receives `IkaCore`
 /// values only and reads no store.
 public struct ClassicChallengeScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: ChallengeScreen
   private let terms: GameTerms
@@ -91,8 +91,8 @@ public struct ClassicChallengeScreenView: View {
     .accessibilityElement(children: .combine)
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var format: ScheduleFormat { time.format(terms.language) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - ClassicSplatfestScreenView
@@ -102,7 +102,7 @@ public struct ClassicChallengeScreenView: View {
 /// list, a stand-in until ticket 29 draws ikalendar 2's look. It receives `IkaCore` values only
 /// and reads no store.
 public struct ClassicSplatfestScreenView: View {
-  @Environment(\.timeZone) private var timeZone
+  @TimeSettings private var time
 
   private let screen: SplatfestScreen
   private let terms: GameTerms
@@ -185,7 +185,7 @@ public struct ClassicSplatfestScreenView: View {
     .accessibilityLabel(writer.sentence(for: rotation, at: now))
   }
 
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
+  private var format: ScheduleFormat { time.format(terms.language) }
+  private var writer: SentenceWriter { time.writer(terms) }
 }
 #endif
