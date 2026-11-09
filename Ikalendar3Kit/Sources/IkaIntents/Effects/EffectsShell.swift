@@ -28,7 +28,7 @@ public struct EffectsShell {
   @discardableResult
   public func run() async -> RefreshResult {
     let result = await engine.refresh()
-    apply(EffectsPlan(after: result))
+    apply(EffectsPlan(after: result, at: Date()))
     return result
   }
 
