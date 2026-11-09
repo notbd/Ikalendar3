@@ -50,6 +50,16 @@ struct SentenceWriterTests {
       "X Battle: Splat Zones on Scorch Gorge and Eeltail Alley, from 8:00\u{202F}AM to 10:00\u{202F}AM.")
   }
 
+  /// Widgets are drawn ahead of the moment VoiceOver reads them, so their sentence carries no
+  /// time left; the system's timer text counts down instead.
+  @Test
+  func `A Rotation read without an instant reads no time left, even while it runs`() {
+    let sentence = Self.writer().sentence(for: Self.rotation)
+
+    #expect(sentence ==
+      "X Battle: Splat Zones on Scorch Gorge and Eeltail Alley, from 8:00\u{202F}AM to 10:00\u{202F}AM.")
+  }
+
   /// The recorded decision (ticket 08): a paused Battle Mode reads when it comes back, as the
   /// iPhone tabs do, never a paused window's own times.
   @Test

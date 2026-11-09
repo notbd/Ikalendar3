@@ -5,7 +5,9 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import AppIntents
 import IkaDesign
+import IkaIntents
 import IkaResources
 import SwiftUI
 import WidgetKit
@@ -21,59 +23,15 @@ struct Ikalendar3Widgets: WidgetBundle {
   }
 
   var body: some Widget {
-    PlaceholderWidget()
+    BattleWidget()
+    BattleOverviewWidget()
   }
 }
 
-// MARK: - PlaceholderWidget
+// MARK: - WidgetsIntentsPackage
 
-/// Stands in until the extension's first real widget; an extension must declare at least one.
-struct PlaceholderWidget: Widget {
-  var body: some WidgetConfiguration {
-    StaticConfiguration(kind: "placeholder", provider: PlaceholderProvider()) { entry in
-      PlaceholderView(date: entry.date)
-    }
-    .supportedFamilies([.systemSmall])
-  }
-}
-
-// MARK: - PlaceholderView
-
-/// Draws Ink's base components until the first real widget replaces it, so this extension builds
-/// them.
-struct PlaceholderView: View {
-  let date: Date
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 8) {
-      InkModeTag(Text(verbatim: "ikalendar3"), modeColor: .anarchy)
-      InkTimeTag(Text(date, style: .time))
-      InkDottedRule()
-    }
-    .containerBackground(for: .widget) {
-      InkBackground()
-    }
-  }
-}
-
-// MARK: - PlaceholderEntry
-
-struct PlaceholderEntry: TimelineEntry {
-  let date: Date
-}
-
-// MARK: - PlaceholderProvider
-
-struct PlaceholderProvider: TimelineProvider {
-  func placeholder(in _: Context) -> PlaceholderEntry {
-    PlaceholderEntry(date: .now)
-  }
-
-  func getSnapshot(in _: Context, completion: @escaping (PlaceholderEntry) -> Void) {
-    completion(PlaceholderEntry(date: .now))
-  }
-
-  func getTimeline(in _: Context, completion: @escaping (Timeline<PlaceholderEntry>) -> Void) {
-    completion(Timeline(entries: [PlaceholderEntry(date: .now)], policy: .never))
-  }
+/// Adds `IkaIntents`' types, such as the Battle Mode parameter, to this extension's App Intents
+/// metadata, so the widget editor offers them.
+struct WidgetsIntentsPackage: AppIntentsPackage {
+  static var includedPackages: [any AppIntentsPackage.Type] { [IkaIntentsPackage.self] }
 }
