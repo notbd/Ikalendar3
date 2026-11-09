@@ -37,7 +37,7 @@ struct Ikalendar3App: App {
           .environment(\.gameLanguage, AppServices.language)
       }
     }
-    .refreshingInBackground(services?.effects, scenePhase: scenePhase)
+    .runningEffects(AppServices.isTestHost ? nil : services, scenePhase: scenePhase)
 
     #if os(macOS)
     // The standard Settings window, which Command-comma opens.
@@ -69,26 +69,39 @@ private struct TestHostPlaceholder: View {
   }
 }
 
-// MARK: - Background refresh
+// MARK: - Effects
 
 extension Scene {
-  /// On iOS, runs the effects shell from the background refresh task and asks for the next run
-  /// each time the app moves to the background. Without a shell, as when the App Group container
+  /// Runs the effects shell on the app's transitions: each time it becomes active, launch included
+  /// (the gate decides whether a request goes out), handing how the run ended to the status; on
+  /// iOS, from the background refresh task, asking for the next run each time the app moves to
+  /// the background. Without services, as in the unit-test host or when the App Group container
   /// is missing, there is nothing to refresh. The Mac has no background refresh task.
-  fileprivate func refreshingInBackground(_ effects: EffectsShell?, scenePhase: ScenePhase) -> some Scene {
-    #if os(iOS)
-    onChange(of: scenePhase) { _, phase in
-      guard effects != nil, phase == .background else { return }
+  fileprivate func runningEffects(_ services: AppServices?, scenePhase: ScenePhase) -> some Scene {
+    let scene = onChange(of: scenePhase, initial: true) { _, phase in
+      guard let services else { return }
 
-      Task { await BackgroundRefresh.requestNextRun() }
+      switch phase {
+        case .active:
+          Task { await services.effects.run(isRequested: false, reportingTo: services.status) }
+
+        case .background:
+          #if os(iOS)
+          Task { await BackgroundRefresh.requestNextRun() }
+          #endif
+
+        default:
+          break
+      }
     }
-    .backgroundTask(.appRefresh(BackgroundRefresh.identifier)) {
-      guard let effects else { return }
+    #if os(iOS)
+    return scene.backgroundTask(.appRefresh(BackgroundRefresh.identifier)) {
+      guard let services else { return }
 
-      await BackgroundRefresh.perform(with: effects)
+      await BackgroundRefresh.perform(with: services.effects)
     }
     #else
-    self
+    return scene
     #endif
   }
 }

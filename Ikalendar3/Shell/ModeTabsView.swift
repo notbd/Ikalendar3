@@ -16,17 +16,15 @@ import SwiftUI
 /// Challenge and Salmon Run, with the Splatfest tab in Regular Battle's place while a Splatfest
 /// runs. iPad and Mac show them too until their own navigation lands.
 ///
-/// It runs the effects shell each time the app becomes active (the gate decides whether a request
-/// goes out), plays the haptics of ikalendar 2's table, reports a failed refresh in a toast while
-/// the screens keep their data, and shows Settings from each tab's toolbar.
+/// It plays the haptics of ikalendar 2's table, the refresh haptic as each run hands it to the
+/// status, reports a failed refresh in a toast while the screens keep their data, and shows
+/// Settings from each tab's toolbar.
 struct ModeTabsView: View {
   @Environment(RefreshEngine.self) private var engine
-  @Environment(\.effects) private var effects
   @Environment(AppClock.self) private var clock
   @Environment(AppStatus.self) private var status
   @Environment(PreferenceStore.self) private var preferences
   @Environment(\.gameLanguage) private var language
-  @Environment(\.scenePhase) private var scenePhase
 
   /// A new value for each failed refresh; the toast shows while it is set.
   @State private var failureToast: UUID?
@@ -57,8 +55,8 @@ struct ModeTabsView: View {
     .settingsPresentation(isPresented: $status.isSettingsPresented)
     .appColorScheme(preferences.colorScheme)
     .sensoryFeedback(Haptic.modeSwitch, trigger: status.selectedPlace)
-    .sensoryFeedback(trigger: engine.status) { old, new in
-      Haptic.refreshChanged(from: old, to: new)
+    .sensoryFeedback(trigger: status.refreshHaptic) { _, new in
+      new?.feedback
     }
     .onChange(of: engine.status) { old, new in
       if old == .loading, new == .failed {
@@ -69,9 +67,6 @@ struct ModeTabsView: View {
       guard failureToast != nil, await (try? Task.sleep(for: .seconds(3))) != nil else { return }
 
       withAnimation { failureToast = nil }
-    }
-    .task(id: scenePhase) {
-      if scenePhase == .active { await effects?.run() }
     }
   }
 
