@@ -11,33 +11,32 @@ import OSLog
 // MARK: - FeedGate
 
 /// The one network gate every engine on a directory shares, so the source sees at most one
-/// answered request per feed an hour, as splatoon3.ink asks. The Splatfest art's download passes
-/// it under a key of its own, so a failing download backs off like a feed.
+/// answered request per feed an hour, as splatoon3.ink asks. Each feed passes it under its own
+/// key, and so does the Splatfest art's download, so a failing download backs off like a feed.
 ///
-/// - A feed is requested only once its last answered request is an hour old. Any HTTP status
-///   is an answer, an undecodable 200 included.
+/// - A key is requested only once its last answered request is an hour old. Any HTTP status is
+///   an answer, an undecodable 200 included.
 /// - A request with no answer backs off instead: 30 s, doubling up to an hour. Any answer resets
 ///   the back-off.
-/// - Each feed's attempt record lives in the directory, apart from the cache, and is checked and
+/// - Each key's attempt record lives in the directory, apart from the cache, and is checked and
 ///   written under one file lock before the request goes out. Claiming an attempt is therefore
 ///   atomic across processes and within one.
-/// - A claim holds the feed for the lease, a little longer than the client's timeout, while its
+/// - A claim holds the key for the lease, a little longer than the client's timeout, while its
 ///   request is in flight and its answer is committed; its outcome then sets the next eligible
-///   time. A claim whose process was killed mid-request
-///   frees the feed once its lease passes.
-/// - The gate fails closed: while the attempt records cannot be read or written, no feed is
+///   time. A claim whose process was killed mid-request frees the key once its lease passes.
+/// - The gate fails closed: while the attempt records cannot be read or written, no key is
 ///   claimed. Only a missing file means a first use.
 struct FeedGate {
   /// The directory the attempt records share with the cache.
   let directory: URL
-  /// How long a claim holds the feed while its request is in flight and its answer is committed.
+  /// How long a claim holds the key while its request is in flight and its answer is committed.
   let lease: Duration
   /// The wall clock.
   let now: @Sendable () -> Date
 
-  /// Sends a feed's request through `send` when the gate is open and records its outcome.
+  /// Sends a key's request through `send` when the gate is open and records its outcome.
   ///
-  /// While another engine's request for the feed is in flight, waits for it: rereads the attempt
+  /// While another engine's request for the key is in flight, waits for it: rereads the attempt
   /// record at a short interval until that request's outcome is written, then reports the gate
   /// closed; if the lease passes with no outcome, claims the attempt itself. Runs off the main
   /// actor.
@@ -69,10 +68,10 @@ struct FeedGate {
 
   // MARK: Attempt records
 
-  /// Claims the next attempt at a feed if its gate is open. A gate whose records cannot be read
+  /// Claims the next attempt at a key if its gate is open. A gate whose records cannot be read
   /// and written stays closed, so no request goes out unrecorded.
   ///
-  /// A claim in flight holds the feed until its outcome is written or its lease passes; setting
+  /// A claim in flight holds the key until its outcome is written or its lease passes; setting
   /// the clock back never ends it.
   func claim(_ key: Key) -> Claim {
     let now = now()
@@ -81,7 +80,7 @@ struct FeedGate {
       if var record = records[name] {
         if record.lease != nil {
           // A clock set back restarts the lease from its new time, so a claim left by a killed
-          // process still frees the feed a lease later.
+          // process still frees the key a lease later.
           if now < record.attemptTime {
             record.attemptTime = now
             record.nextEligibleTime = now.addingTimeInterval(lease / .seconds(1))
@@ -192,7 +191,7 @@ struct FeedGate {
 
 extension FeedGate {
   /// What one attempt record gates.
-  enum Key: Hashable {
+  enum Key {
     /// A feed's requests.
     case feed(Feed)
     /// The current Splatfest art's download.
@@ -222,7 +221,7 @@ extension FeedGate {
 
     /// A claimed attempt, which only its own outcome may settle.
     struct Granted {
-      /// The feed's record name.
+      /// The key's record name.
       let key: String
       /// The lease written with the claim.
       let id: UUID = .init()
@@ -232,13 +231,13 @@ extension FeedGate {
 
 // MARK: - AttemptRecord
 
-/// A feed's last attempt, kept apart from its fetch time.
+/// A key's last attempt, kept apart from its fetch time.
 ///
 /// Records that no longer decode keep every gate closed, so a field added later must be optional.
 struct AttemptRecord: Codable, Hashable {
-  /// When the last request was claimed.
+  /// When the last request was claimed. A clock set back since moves it back with the clock.
   var attemptTime: Date
-  /// When the feed may be requested again.
+  /// When the key may be requested again.
   var nextEligibleTime: Date
   /// The wait the last unanswered request set, which the next one doubles; `nil` once a request
   /// is answered.
