@@ -50,7 +50,7 @@ public struct SplatfestCardView: View {
       if let artImage {
         artImage
           .resizable()
-          .aspectRatio(contentMode: .fit)
+          .scaledToFit()
           .clipShape(.rect(cornerRadius: 8))
       }
       Text(verbatim: texts.title)

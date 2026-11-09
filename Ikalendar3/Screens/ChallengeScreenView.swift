@@ -21,8 +21,9 @@ struct ChallengeScreenView: View {
   var body: some View {
     let snapshot = engine.snapshot
     let now = clock.now
+    let title = ModeLabel.challenges.text(in: language)
 
-    ScheduleScreen(title: ModeLabel.challenges.text(in: language), content: snapshot.challengeScreen(at: now)) { screen in
+    ScheduleScreen(title: title, content: snapshot.challengeScreen(at: now)) { screen in
       let terms = snapshot.terms(in: language)
       let isStale = snapshot.schedules?.isStale ?? false
       switch preferences.style {

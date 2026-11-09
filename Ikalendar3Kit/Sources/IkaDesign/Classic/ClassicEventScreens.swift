@@ -56,12 +56,13 @@ public struct ClassicChallengeScreenView: View {
 
   private func details(of challenge: Challenge) -> some View {
     let texts = terms.challenge(challenge.id)
+    let ruleAndStages = [terms.name(of: challenge.rule)] + challenge.stages.map(terms.name(of:))
     return VStack(alignment: .leading, spacing: 4) {
       Text(verbatim: texts.name)
         .font(.headline)
       Text(verbatim: texts.description)
         .font(.subheadline)
-      Text(verbatim: ([terms.name(of: challenge.rule)] + challenge.stages.map(terms.name(of:))).joined(separator: " · "))
+      Text(verbatim: ruleAndStages.joined(separator: " · "))
         .font(.subheadline.weight(.semibold))
       Text(verbatim: texts.rulesText)
         .font(.caption)

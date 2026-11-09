@@ -57,13 +57,14 @@ public struct InkChallengeScreenView: View {
   private func panel(_ listing: ChallengeScreen.Listing) -> some View {
     let challenge = listing.challenge
     let texts = terms.challenge(challenge.id)
+    let ruleAndStages = [terms.name(of: challenge.rule)] + challenge.stages.map(terms.name(of:))
     let isOn = listing.windows.contains { if case .current = $0.mark { true } else { false } }
     return VStack(alignment: .leading, spacing: 4) {
       Text(verbatim: texts.name)
         .inkFont(.headline)
       Text(verbatim: texts.description)
         .inkFont(.body)
-      Text(verbatim: ([terms.name(of: challenge.rule)] + challenge.stages.map(terms.name(of:))).joined(separator: " · "))
+      Text(verbatim: ruleAndStages.joined(separator: " · "))
         .inkFont(.label)
       Text(verbatim: texts.rulesText)
         .inkFont(.caption)
