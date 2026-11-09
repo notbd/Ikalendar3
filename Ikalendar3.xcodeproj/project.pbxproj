@@ -29,6 +29,8 @@
 		F1000000000000000000000B /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000B /* IkaFixtures */; };
 		F1000000000000000000000C /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000C /* IkaFixtures */; };
 		F1000000000000000000000D /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000D /* IkaFixtures */; };
+		F1000000000000000000000E /* IkaIntents in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000E /* IkaIntents */; };
+		F1000000000000000000000F /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000F /* IkaFixtures */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -241,6 +243,8 @@
 				D20000000000000000000004 /* IkaResources.framework in Frameworks */,
 				F10000000000000000000009 /* IkaCore in Frameworks */,
 				F1000000000000000000000A /* IkaDesign in Frameworks */,
+				F1000000000000000000000E /* IkaIntents in Frameworks */,
+				F1000000000000000000000F /* IkaFixtures in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -413,6 +417,8 @@
 			packageProductDependencies = (
 				E10000000000000000000009 /* IkaCore */,
 				E1000000000000000000000A /* IkaDesign */,
+				E1000000000000000000000E /* IkaIntents */,
+				E1000000000000000000000F /* IkaFixtures */,
 			);
 			productName = Ikalendar3WatchWidgets;
 			productReference = B20000000000000000000005 /* Ikalendar3WatchWidgets.appex */;
@@ -1058,6 +1064,8 @@
 		E1000000000000000000000B /* IkaFixtures */ = {isa = XCSwiftPackageProductDependency; productName = IkaFixtures; };
 		E1000000000000000000000C /* IkaFixtures */ = {isa = XCSwiftPackageProductDependency; productName = IkaFixtures; };
 		E1000000000000000000000D /* IkaFixtures */ = {isa = XCSwiftPackageProductDependency; productName = IkaFixtures; };
+		E1000000000000000000000E /* IkaIntents */ = {isa = XCSwiftPackageProductDependency; productName = IkaIntents; };
+		E1000000000000000000000F /* IkaFixtures */ = {isa = XCSwiftPackageProductDependency; productName = IkaFixtures; };
 /* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = AA0000000000000000000001 /* Project object */;
