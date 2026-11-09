@@ -98,12 +98,13 @@ struct EventItemTests {
   }
 
   static private func event(_ item: EventItem) -> Event {
-    let kind = switch item {
-      case .challenge: "challenge"
-      case .splatfest: "splatfest"
-      case .bigRun(let shift): shift.kind == .bigRun ? "bigRun" : "wrong kind"
-      case .eggstraWork(let shift): shift.kind == .eggstraWork ? "eggstraWork" : "wrong kind"
-    }
+    let kind =
+      switch item {
+        case .challenge: "challenge"
+        case .splatfest: "splatfest"
+        case .bigRun(let shift): shift.kind == .bigRun ? "bigRun" : "wrong kind"
+        case .eggstraWork(let shift): shift.kind == .eggstraWork ? "eggstraWork" : "wrong kind"
+      }
     return Event(kind: kind, start: item.startTime.ISO8601Format(), end: item.endTime.ISO8601Format())
   }
 }

@@ -110,7 +110,9 @@ struct SplatfestScreenTests {
   @Test
   func `The Splatfest card carries its art address from festivals json`() async throws {
     let snapshot = try await Snapshot(
-      schedules: .init(content: ScheduleFeed.decode(from: Fixture.splatfestSecondHalf.data()), fetchTime: TestData.epoch),
+      schedules: .init(
+        content: ScheduleFeed.decode(from: Fixture.splatfestSecondHalf.data()),
+        fetchTime: TestData.epoch),
       festivals: .init(content: FestivalFeed.decode(from: Fixture.festivals.data()), fetchTime: TestData.epoch))
 
     let screen = try #require(snapshot.splatfestScreen(of: .open, at: date("2026-11-01T05:23:00Z")))

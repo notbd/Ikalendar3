@@ -10,7 +10,7 @@ import Foundation
 // MARK: - EventItem
 
 /// One event the iPad event strip and the event sheets show: a Challenge, a Splatfest, a Big Run
-/// or an Eggstra Work, running or next, with its times. Ids and times only; names resolve at
+/// or an Eggstra Work, running or next, with its times. IDs and times only; names resolve at
 /// display time.
 public enum EventItem: TimeWindow, Hashable, Sendable {
   /// The Challenge window on now or next; the Challenge carries all its windows.

@@ -59,7 +59,8 @@ extension Snapshot {
   public func challengeScreen(at instant: Date) -> ChallengeScreen? {
     guard let schedules else { return nil }
 
-    let lineup = schedules.content.challengeLineup(at: instant)
+    let feed = schedules.content
+    let lineup = feed.challengeLineup(at: instant)
     func mark(of item: ChallengeWindow) -> ChallengeScreen.WindowMark {
       if item == lineup.current.item { .current(item.progress(at: instant)) }
       else if item == lineup.next { .next }
@@ -67,8 +68,8 @@ extension Snapshot {
       else { .later }
     }
 
-    let listings = schedules.content.challenges
-      .filter { $0.windows.contains { instant < $0.endTime } }
+    let listings = feed.challenges
+      .filter { challenge in challenge.windows.contains { instant < $0.endTime } }
       .map { challenge in
         ChallengeScreen.Listing(challenge: challenge, windows: challenge.windows.map { window in
           .init(window: window, mark: mark(of: ChallengeWindow(challenge: challenge, window: window)))
