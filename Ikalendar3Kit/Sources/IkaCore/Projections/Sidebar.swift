@@ -54,9 +54,8 @@ extension Snapshot {
   private func splatfestGroup(at instant: Date) -> SidebarGroup? {
     guard let splatfest, splatfest.isRunning(at: instant) else { return nil }
 
-    let forms: [SidebarRow] = SplatfestBattleForm.allCases.compactMap { form in
-      splatfestScreen(of: form, at: instant).map { .splatfestBattle(form, $0.current) }
-    }
+    let forms: [SidebarRow] = SplatfestBattleForm.allCases
+      .compactMap { summary(of: $0, at: instant).map(SidebarRow.mode) }
     let tricolorTurfWar = splatfest.tricolorTurfWar
     let tricolor: RunningOrNext<TricolorTurfWar> =
       tricolorTurfWar.isRunning(at: instant)
@@ -100,7 +99,8 @@ extension SidebarGroup {
 /// One sidebar row: a Mode, Challenges, an event or a form of Splatfest Battle, with its current
 /// item and how far it has run, or why none is on.
 public enum SidebarRow: Hashable, Sendable {
-  /// A Mode of the Mode value, as its summary reads: dimmed while a Splatfest pauses it.
+  /// A Mode of the Mode value or a form of Splatfest Battle, as its Mode summary reads: dimmed
+  /// while a Splatfest pauses it.
   case mode(ModeSummary)
   /// Challenges: the window on now, else the next one, or `nil` while none is announced.
   case challenge(RunningOrNext<ChallengeWindow>?)
@@ -108,8 +108,6 @@ public enum SidebarRow: Hashable, Sendable {
   case eggstraWork(Running<Shift>)
   /// The Splatfest running.
   case splatfest(Running<Splatfest>)
-  /// A form of Splatfest Battle: the current Rotation of its Splatfest screen, or nothing current.
-  case splatfestBattle(SplatfestBattleForm, OnNow<Rotation>)
   /// The Splatfest's Tricolor Turf War: on in the second half, still to come in the first, when it
   /// is dimmed.
   case tricolorTurfWar(RunningOrNext<TricolorTurfWar>)
@@ -117,11 +115,12 @@ public enum SidebarRow: Hashable, Sendable {
   /// The row's identity, which the selection holds.
   public var item: SidebarItem {
     switch self {
-      case .mode(let summary): .mode(summary.mode)
+      case .mode(.battle(let mode, _)): .mode(.battle(mode))
+      case .mode(.splatfestBattle(let form, _)): .splatfestBattle(form)
+      case .mode(.salmonRun): .mode(.salmonRun)
       case .challenge: .challenge
       case .eggstraWork: .eggstraWork
       case .splatfest: .splatfest
-      case .splatfestBattle(let form, _): .splatfestBattle(form)
       case .tricolorTurfWar: .tricolorTurfWar
     }
   }
@@ -136,7 +135,6 @@ public enum SidebarRow: Hashable, Sendable {
            .challenge,
            .eggstraWork,
            .splatfest,
-           .splatfestBattle,
            .tricolorTurfWar: false
     }
   }

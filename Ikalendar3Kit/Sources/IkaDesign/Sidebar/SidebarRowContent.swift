@@ -105,7 +105,7 @@ public struct SidebarRowContent: Equatable, Sendable {
         summary = line(terms.splatfest(running.item.id).title, running.progress)
         progress = running.progress
 
-      case .splatfestBattle(let form, let onNow):
+      case .mode(.splatfestBattle(let form, let onNow)):
         icon = .splatfestBattle
         color = nil
         name = form.label.text(in: language)

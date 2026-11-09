@@ -7,6 +7,7 @@
 
 import Foundation
 import IkaCore
+import IkaFixtures
 import Testing
 @testable import IkaDesign
 
@@ -105,13 +106,5 @@ struct TimelineFormatTests {
     let range = format.dateRange(from: date("2026-10-31T00:00:00Z"), to: date("2026-11-02T00:00:00Z"))
 
     #expect(range == "Sat, 10/31, 09:00 - Mon, 11/2, 09:00")
-  }
-
-  // MARK: Helpers
-
-  private func date(_ text: String) -> Date {
-    // A test literal: a malformed one should stop the test at once.
-    // swiftlint:disable:next force_try
-    try! Date(text, strategy: .iso8601)
   }
 }

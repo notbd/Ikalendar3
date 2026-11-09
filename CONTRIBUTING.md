@@ -9,7 +9,7 @@
 
 ## Verify
 
-`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, the string catalog check, package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, each checked for fixture files and for one resource framework per app, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
+`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, the wording check (`scripts/check-wording.sh`), the string catalog check, package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, each checked for fixture files and for one resource framework per app, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
 
 | Option | Environment variable | Default |
 |---|---|---|
@@ -66,7 +66,8 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
   | `--fixture-short-tracking <Mode>` | iOS app only: after each activation run, Tracks `<Mode>` (`regularBattle`, `anarchySeries`, `anarchyOpen`, `xBattle` or `salmonRun`, the Mode parameter's raw values) with the cached items, each two minutes long from now, so a recording crosses two Live Activity boundaries in four minutes. Opening the app again starts it over, and the activity's Refresh button re-arms it from the cache with the real times. |
   | `--event-cards` | Shows every event card at the app clock's instant, one under the other, instead of the tabs, so a fixture launch can screenshot them at an iPhone's width; the iPad event strip shows them side by side. |
   | `--data-folder <path>` `--defaults-suite <name>` | Keeps the feed cache and its attempt records in `<path>` and the preferences in the suite `<name>` instead of the App Group. The two go together. |
-  | `--scroll-anchor top\|center\|bottom` | Watch app only: starts the Now page scrolled to its top, middle or bottom, so a fixture launch can screenshot every row; the watch simulator takes no scroll input from the command line. |
+  | `--scroll-anchor top\|center\|bottom` | Watch app only: starts the Now page, or a later list, scrolled to its top, middle or bottom, so a fixture launch can screenshot every row; the watch simulator takes no scroll input from the command line. |
+  | `--mode-page <Mode>` `--later-list` | Watch app only: opens that Mode's page over the Now page (the Mode parameter's raw values, as `--fixture-short-tracking` takes them), and with `--later-list` its later Rotations or Shifts too, so a fixture launch can screenshot pages the simulator cannot tap to. |
 
   ```sh
   # Regular Battle ten seconds before the 14:00 UTC Rotation boundary of the normal day
@@ -75,12 +76,16 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
   ```
 
 - Tracking's Live Activity renders on the system clock, so fixture launches that show it pass `--fixture-rebase`. The Simulator has no lock button an automation can press; Notification Center, pulled down from the top edge, shows the activity as the Lock Screen does. Each start, update and end is logged at info level in the `tracking` category.
-- The watch app takes the fixture options and `--scroll-anchor` on the worktree's own watch simulator, which needs no iPhone app running:
+- The watch app takes the fixture options, `--scroll-anchor`, `--mode-page` and `--later-list` on the worktree's own watch simulator, which needs no iPhone app running:
 
   ```sh
   # The Now page during the 2026-11-01 Splatfest, scrolled to its last rows
   xcrun simctl launch <watch UDID> io.tianwei.ikalendar3.watchkitapp --fixture splatfestSecondHalf \
     --fixture-folder "$PWD/Ikalendar3Kit/Fixtures" --fixture-instant 2026-11-01T05:23:00Z --scroll-anchor bottom
+
+  # Salmon Run's later Shifts on the Big Run day
+  xcrun simctl launch <watch UDID> io.tianwei.ikalendar3.watchkitapp --fixture bigRun \
+    --fixture-folder "$PWD/Ikalendar3Kit/Fixtures" --fixture-instant 2026-09-07T12:00:00Z --mode-page salmonRun --later-list
   ```
 
 - Mac runs from a worktree pass the data options: an unsigned, unsandboxed Mac process gets the App Group folder that every worktree on the machine shares. Use a folder inside the worktree and a suite named after it, for example `--data-folder "$PWD/build/AppData" --defaults-suite "ikalendar3-$(basename "$PWD")"`.
@@ -88,11 +93,13 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 ## Project layout
 
 - `Ikalendar3/`: the app for iPhone, iPad and Mac (one target). `Ikalendar3Widgets/`: the widget extension for iOS and macOS. `Ikalendar3Watch/` and `Ikalendar3WatchWidgets/`: the watch app and its widget extension. `Ikalendar3Tests/`: the app's tests. `IkaResources/`: the framework that ships the fonts and the image catalog (below).
-- `Ikalendar3Kit/`: the local package with `IkaCore` (domain, data and every Surface's content), `IkaDesign` (design system) and `IkaIntents` (Siri, App Shortcuts and the effects shell on iOS and macOS, Live Activity parts behind `#if os(iOS)`; on watchOS only its parameter types). The app and the widget extension link all three; the watch app links `IkaCore` and `IkaDesign`, and the watch widget extension those two and `IkaIntents`, for the Mode its complications are set to. A watchOS build of `IkaIntents` holds no Live Activity, background task, effects shell or App Shortcuts code: each sits behind `#if os(iOS)` or `#if !os(watchOS)`. The app, both widget extensions and the watch app also link `IkaFixtures`: the two apps for their Debug launch options, the extensions for their previews; each uses it only under `#if DEBUG`. All four link `IkaResources`.
+- `Ikalendar3Kit/`: the local package with `IkaCore` (domain, data and every Surface's content), `IkaDesign` (design system) and `IkaIntents` (the Siri and Tracking intents and the effects shell on iOS and macOS, Live Activity and Siri parts behind `#if os(iOS)`; on watchOS only its parameter types). The app and the widget extension link all three; the watch app links `IkaCore` and `IkaDesign`, and the watch widget extension those two and `IkaIntents`, for the Mode its complications are set to. A watchOS build of `IkaIntents` holds no Live Activity, background task, effects shell or Siri code: each sits behind `#if os(iOS)` or `#if !os(watchOS)`. The app, both widget extensions and the watch app also link `IkaFixtures`: the two apps for their Debug launch options, the extensions for their previews; each uses it only under `#if DEBUG`. All four link `IkaResources`.
 - `Ikalendar3Kit/Fixtures/`: recorded splatoon3.ink payloads. Everything that needs one reads it by path, so there is one copy; no target lists the folder as a resource, so no product ships it.
 - `IkaFixtures`: the package's test support module, not a product module: the scripted transport, the settable clock and the `Fixture` loader for that folder. Package tests, Debug fixture launches and previews use it. Its code is compiled only in Debug (every file is `#if DEBUG`): a package product cannot be linked per configuration, so Release products link it empty, and code that uses it outside `#if DEBUG` fails the Release build. Verify fails when a Release binary names the module, a payload or a fixture launch option. It holds no fixture file. A temporary directory per test stays a test helper (`makeTestDirectory()`).
 - Every target folder is a synchronized folder: a Swift file or subfolder added inside it is compiled with no project file change. A non-source file there becomes a resource of the target unless the project lists an exception, as it does for the widget extensions' `Info.plist`.
 - Code that more than one target needs goes into a package module, never into two target folders.
+- The App Shortcuts provider and its phrase catalog live in the app target (`Ikalendar3/Siri/`), not in `IkaIntents`: the build leaves a package's App Shortcuts out of the app's `Metadata.appintents` (its intents and parameter types do reach it). iOS only.
+- The app also bundles `IkaIntents`' `Localizable.xcstrings` itself (the same file, listed in the app target's Resources). The App Intents metadata records each title and parameter name by key only, and Siri and Shortcuts look the key up in the app's own `Localizable` table, so without it they show the English keys in every language.
 - A target that uses `IkaIntents`' App Intents types, such as the Battle Mode a widget is set to, lists `IkaIntentsPackage` in an `AppIntentsPackage` of its own (`Ikalendar3Widgets.swift` and `Ikalendar3WatchWidgets.swift` show how). Without it the build leaves them out of the target's `Metadata.appintents`, and the system never offers them.
 - `IkaCore` imports no SwiftUI, UIKit, AppKit, WidgetKit, ActivityKit, App Intents, UserNotifications or BackgroundTasks; a SwiftLint rule fails the run if it does.
 - `Ikalendar3.xctestplan` must list the app's test target and every package test target, or `xcodebuild` never runs them; verify fails until it does.
@@ -134,10 +141,10 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 ## Strings
 
 - The app speaks the game's 14 text sets. Every target declares the same 14 localizations (`en`, `en-GB`, `es`, `es-419`, `fr`, `fr-CA`, `de`, `it`, `nl`, `ru`, `ja`, `ko`, `zh-Hans`, `zh-Hant`), so each process resolves the same text set with `GameLanguage(resolvedFor: .main)`.
-- Every key of every string catalog has a value in all 14, the source language included; `scripts/check-string-catalogs.sh` fails verify otherwise. Only keys marked Don't Translate are exempt.
+- Every key of every string catalog has a value in all 14, the source language included; `scripts/check-string-catalogs.sh` fails verify otherwise. Only keys marked Don't Translate are exempt. The same script fails when an App Shortcuts phrase, in its key or any language, lacks `${applicationName}`.
 - Game terms come from splatoon3.ink's locale files (shipped in `IkaCore`, looked up through `GameTerms`), Mode names and labels from its MIT-licensed site strings (`ModeLabel`). Strings written for this app use each language's in-game vocabulary; in es-ES, es-MX, fr-FR, fr-CA, de-DE, it-IT, nl-NL, ru-RU and ko-KR they carry the Needs Review state until a native speaker checks them.
 - Package modules look their strings up with `Bundle.module.localizedString(forKey:in:)` in the language the process passes in, never in the process locale.
-- Each Style and each feature area has its own string table, so parallel work never edits one catalog file: `Screens` (what every Style's screens share), `Classic`, `Ink`, `Timeline`, `Sidebar` (the iPad sidebar and its toolbar), `Settings`, `About` (About, Credits and onboarding), `Reminders`, `Widgets`, `LiveActivity`, `Controls` and `Watch`. A table is a `<Name>.xcstrings` in the module or target whose code shows its strings, added by the first change that needs it. `Localizable` stays `IkaCore`'s shared vocabulary (Mode names, labels and sentences) and `IkaIntents`' Siri strings.
+- Each Style and each feature area has its own string table, so parallel work never edits one catalog file: `Screens` (what every Style's screens share), `Classic`, `Ink`, `Timeline`, `Sidebar` (the iPad sidebar and its toolbar), `Settings`, `About` (About, Credits and onboarding), `Reminders`, `Widgets`, `LiveActivity`, `Controls` and `Watch`; Siri's phrases are the app target's `AppShortcuts`, the name the system reads. A table is a `<Name>.xcstrings` in the module or target whose code shows its strings, added by the first change that needs it. `Localizable` stays `IkaCore`'s shared vocabulary (Mode names, labels and sentences) and `IkaIntents`' Siri strings.
 
 ## Code and commits
 

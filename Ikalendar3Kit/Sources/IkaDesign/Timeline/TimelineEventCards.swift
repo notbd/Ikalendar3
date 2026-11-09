@@ -20,19 +20,16 @@ public struct TimelineEventCard: View {
   @TimeSettings private var time
 
   private let item: EventItem
-  private let art: URL?
   private let terms: GameTerms
   private let now: Date
 
   /// - Parameters:
-  ///   - item: The event.
-  ///   - art: A Splatfest's stored art file from the screen value, or `nil` while none is
-  ///     downloaded: the team colours stand alone then. Other events ignore it.
+  ///   - item: The event, a Splatfest with its stored art; its team colours stand alone while
+  ///     none is downloaded.
   ///   - terms: The game's names in the app language.
   ///   - now: The app clock's instant.
-  public init(item: EventItem, art: URL?, terms: GameTerms, now: Date) {
+  public init(item: EventItem, terms: GameTerms, now: Date) {
     self.item = item
-    self.art = art
     self.terms = terms
     self.now = now
   }
@@ -72,8 +69,8 @@ public struct TimelineEventCard: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(writer.sentence(for: item, at: now))
 
-      case .splatfest(let splatfest):
-        TimelineSplatfestCard(splatfest: splatfest, art: art, terms: terms, now: now)
+      case .splatfest(let card):
+        TimelineSplatfestCard(card: card, terms: terms, now: now)
 
       case .bigRun(let shift),
            .eggstraWork(let shift):
@@ -106,14 +103,15 @@ struct TimelineSplatfestCard: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @TimeSettings private var time
 
-  let splatfest: Splatfest
-  /// The stored art file, or `nil` while none is downloaded.
-  let art: URL?
+  /// The Splatfest with its stored art, `nil` while none is downloaded.
+  let card: SplatfestCard
   let terms: GameTerms
   let now: Date
 
   /// The decoded art, or `nil` while there is none.
   @State private var artImage: Image?
+
+  private var splatfest: Splatfest { card.splatfest }
 
   var body: some View {
     let texts = terms.splatfest(splatfest.id)
@@ -156,8 +154,8 @@ struct TimelineSplatfestCard: View {
         .padding(TimelineMetrics.cardPadding)
       }
     }
-    .task(id: art) {
-      artImage = art.flatMap(Image.init(contentsOf:))
+    .task(id: card.art) {
+      artImage = card.art.flatMap(Image.init(contentsOf:))
     }
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(time.writer(terms)

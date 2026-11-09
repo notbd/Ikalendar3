@@ -28,9 +28,9 @@ struct EventCardView: View {
     let terms = snapshot.terms(in: language)
 
     switch preferences.style {
-      case .classic: ClassicEventCard(item: item, art: snapshot.splatfestArt, terms: terms, now: now)
-      case .ink: InkEventCard(item: item, art: snapshot.splatfestArt, terms: terms, now: now)
-      case .timeline: TimelineEventCard(item: item, art: snapshot.splatfestArt, terms: terms, now: now)
+      case .classic: ClassicEventCard(item: item, terms: terms, now: now)
+      case .ink: InkEventCard(item: item, terms: terms, now: now)
+      case .timeline: TimelineEventCard(item: item, terms: terms, now: now)
     }
   }
 }

@@ -110,7 +110,7 @@ public struct InkSplatfestScreenView: View {
       now: now,
       isStale: isStale)
     { metrics in
-      InkEventCard(item: .splatfest(screen.splatfest), art: screen.art, terms: terms, now: now)
+      InkEventCard(item: .splatfest(screen.card), terms: terms, now: now)
       if let tricolor = screen.tricolorTurfWar {
         InkTricolorPanel(tricolor: tricolor, terms: terms, writer: writer, metrics: metrics)
           .accessibilityElement(children: .ignore)

@@ -99,17 +99,15 @@ final class AppStatus {
     }
   }
 
-  /// Switches the tab or column whose menu offers `mode` to it, and closes the menu. A sidebar
-  /// row picked in the menu's other form moves to `mode`'s.
-  ///
-  /// - Precondition: `mode` is one of a menu's modes.
-  func choose(_ mode: RotationMode) {
-    switch mode {
-      case .battle(let battleMode):
-        precondition(TabMenu.anarchy.modes.contains(mode), "No menu offers \(battleMode)")
-        anarchyMode = battleMode
+  /// Switches the tab or column whose menu offers `option` to its Battle Mode, and closes the
+  /// menu. A sidebar row picked in the menu's other form moves to the option's.
+  func choose(_ option: TabMenuOption) {
+    switch option.mode {
+      // Only the Anarchy menu offers continuous Battle Modes.
+      case .battle(let mode):
+        anarchyMode = mode
         if case .mode(.battle(let picked)) = sidebarChoice, TabMenu.anarchy.modes.contains(.battle(picked)) {
-          sidebarChoice = .mode(.battle(battleMode))
+          sidebarChoice = .mode(.battle(mode))
         }
 
       case .splatfestBattle(let form):

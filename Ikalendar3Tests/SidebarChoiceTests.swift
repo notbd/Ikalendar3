@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import Foundation
 import IkaCore
 import Testing
 @testable import Ikalendar3
@@ -59,12 +60,12 @@ struct SidebarChoiceTests {
   }
 
   @Test
-  func `Selecting another tab moves the sidebar to that tab's row, in the form its menu shows`() {
+  func `Selecting another tab moves the sidebar to that tab's row, in the form its menu shows`() throws {
     let status: AppStatus = .init(selectedPlace: .regularBattle)
     status.pick(.challenge)
 
     status.select(.mode(.anarchy))
-    status.choose(.battle(.anarchyOpen))
+    try status.choose(Self.option(.battle(.anarchyOpen)))
 
     #expect(status.sidebarItem(selectedTab: .mode(.anarchy)) == .mode(.battle(.anarchyOpen)))
   }
@@ -83,27 +84,35 @@ struct SidebarChoiceTests {
     _ picked: SidebarItem,
     _ chosen: RotationMode,
     _ shown: SidebarItem)
+    throws
   {
     let status: AppStatus = .init(selectedPlace: .regularBattle)
     status.pick(picked)
 
-    status.choose(chosen)
+    try status.choose(Self.option(chosen))
 
     #expect(status.sidebarItem(selectedTab: .mode(.regularBattle)) == shown)
   }
 
   @Test
-  func `The sidebar's row survives a round trip through the columns`() {
+  func `The sidebar's row survives a round trip through the columns`() throws {
     let status: AppStatus = .init(selectedPlace: .regularBattle)
     status.pick(.mode(.battle(.x)))
 
     // In the columns, the Anarchy header's menu picks Open, and an event's sheet opens and closes.
-    status.choose(.battle(.anarchyOpen))
+    try status.choose(Self.option(.battle(.anarchyOpen)))
     status.presentedEvent = .challenge
     status.presentedEvent = nil
 
     #expect(status.sidebarItem(selectedTab: .mode(.xBattle)) == .mode(.battle(.x)))
     #expect(status.selectedPlace == .xBattle)
     #expect(status.mode(of: .anarchy) == .battle(.anarchyOpen))
+  }
+
+  /// The menu option that picks `mode`, as its menu offers it.
+  static private func option(_ mode: RotationMode) throws -> TabMenuOption {
+    try #require([TabMenu.anarchy, .splatfestBattle]
+      .flatMap { Snapshot().options(of: $0, at: Date()) }
+      .first { $0.mode == mode })
   }
 }

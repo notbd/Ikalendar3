@@ -57,6 +57,22 @@ public struct EffectsShell {
 
 #if os(iOS)
 extension EffectsShell {
+  /// The shell an intent runs, a Siri question's or a Tracking one's: an engine of its own on the
+  /// App Group cache, which it shares with the app and every other engine through the gate's
+  /// attempt records, in the app language. No runtime registration: an intent builds it each time
+  /// it runs.
+  ///
+  /// - Throws: `TrackingError.noSchedule` with no App Group container (logged by `AppGroup`),
+  ///   where no cache can hold a schedule.
+  static func forIntents() throws -> EffectsShell {
+    guard let container = AppGroup.container() else { throw TrackingError.noSchedule }
+
+    let client: FeedClient = .init(
+      transport: URLSessionTransport(),
+      cache: FeedCache(directory: AppGroup.feedDirectory(in: container)))
+    return EffectsShell(engine: RefreshEngine(client: client, language: GameLanguage(resolvedFor: .main)))
+  }
+
   /// Starts Tracking `mode`: a run as every entry point makes, then the Live Activity from the
   /// cache it left, replacing any Tracking of that Mode already running.
   ///

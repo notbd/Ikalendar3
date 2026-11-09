@@ -27,7 +27,6 @@ public struct InkEventCard: View {
   @ScaledMetric(relativeTo: .title3) private var iconSize: CGFloat = InkScreenMetrics.eventIconSize
 
   private let item: EventItem
-  private let art: URL?
   private let terms: GameTerms
   private let now: Date
 
@@ -37,14 +36,12 @@ public struct InkEventCard: View {
   @State private var width: CGFloat = 0
 
   /// - Parameters:
-  ///   - item: The event.
-  ///   - art: A Splatfest's stored art (`SplatfestScreen.art`, `SplatfestCard.art`), or `nil`
-  ///     while none is downloaded: the team colours stand alone then. Other events have none.
+  ///   - item: The event, a Splatfest with its stored art; its team colours stand alone while
+  ///     none is downloaded.
   ///   - terms: The game's names in the app language.
   ///   - now: The app clock's instant.
-  public init(item: EventItem, art: URL?, terms: GameTerms, now: Date) {
+  public init(item: EventItem, terms: GameTerms, now: Date) {
     self.item = item
-    self.art = art
     self.terms = terms
     self.now = now
   }
@@ -116,15 +113,15 @@ public struct InkEventCard: View {
         InkRuleLabel(rule: challenge.rule, terms: terms, accent: kind.accent, arrangement: arrangement)
         InkStageRow(stages: challenge.stages, terms: terms, imageSize: .medium, arrangement: arrangement)
 
-      case .splatfest(let splatfest):
+      case .splatfest(let card):
         if let artImage {
           artImage
             .resizable()
             .scaledToFit()
             .clipShape(.rect(cornerRadius: InkMetrics.pictureCornerRadius))
         }
-        InkTitle(text: terms.splatfest(splatfest.id).title)
-        InkTeamList(splatfest: splatfest, terms: terms)
+        InkTitle(text: terms.splatfest(card.splatfest.id).title)
+        InkTeamList(splatfest: card.splatfest, terms: terms)
 
       case .bigRun(let shift),
            .eggstraWork(let shift):
@@ -150,9 +147,16 @@ public struct InkEventCard: View {
 
   /// A Splatfest's team names, which its sentence leaves out; the other events' sentences say all.
   private var teamNames: String {
-    guard case .splatfest(let splatfest) = item else { return "" }
+    guard case .splatfest(let card) = item else { return "" }
 
-    return InkTeamList.names(of: splatfest, terms: terms)
+    return InkTeamList.names(of: card.splatfest, terms: terms)
+  }
+
+  /// A Splatfest's stored art; the other events have none.
+  private var art: URL? {
+    guard case .splatfest(let card) = item else { return nil }
+
+    return card.art
   }
 
   private var arrangement: CellArrangement { dynamicTypeSize.isAccessibilitySize ? .stacked : .sideBySide }

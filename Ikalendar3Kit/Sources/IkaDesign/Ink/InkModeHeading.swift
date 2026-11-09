@@ -30,7 +30,7 @@ public struct InkModeHeading: Equatable, Sendable {
   }
 
   /// The heading of Splatfest Battle in `form`, over the Splatfest screen.
-  init(splatfestBattle form: SplatfestBattleForm) {
+  public init(splatfestBattle form: SplatfestBattleForm) {
     switch form {
       case .open: self.init(name: .splatfestBattle, form: .open)
       case .pro: self.init(name: .splatfestBattle, form: .pro)

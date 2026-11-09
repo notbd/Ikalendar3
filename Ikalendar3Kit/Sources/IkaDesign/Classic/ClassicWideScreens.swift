@@ -48,7 +48,7 @@ public struct ClassicWideBattleScreenView: View {
     { metrics in
       if let card = screen.announcedSplatfest {
         Section {
-          ClassicSplatfestCard(splatfest: card.splatfest, art: card.art, terms: terms, now: now, metrics: metrics)
+          ClassicSplatfestCard(card: card, terms: terms, now: now, metrics: metrics)
         }
       }
       ForEach(rows.filter { !$0.isUpcoming }) { row in

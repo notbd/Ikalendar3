@@ -34,17 +34,6 @@ extension SentenceWriter {
       case .splatfest(let running):
         sentence(for: running.item, at: instant)
 
-      case .splatfestBattle(_, .running(let running)):
-        sentence(for: running.item, at: instant)
-
-      case .splatfestBattle(let form, .paused(let returnTime)):
-        pauseSentence(
-          named: RotationMode.splatfestBattle(form).name(in: terms.language),
-          returningAt: returnTime)
-
-      case .splatfestBattle(let form, .nothingCurrent):
-        format("answer.notPublished.now", RotationMode.splatfestBattle(form).name(in: terms.language))
-
       case .tricolorTurfWar(.running(let running)):
         sentence(for: running.item, at: instant)
 

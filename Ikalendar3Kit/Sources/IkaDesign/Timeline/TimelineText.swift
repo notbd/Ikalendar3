@@ -18,8 +18,6 @@ enum TimelineText: String, CaseIterable {
   case now = "timeline.now"
   /// "%@ left", with the countdown of the time left.
   case timeLeft = "timeline.timeLeft"
-  /// "%1$@ - %2$@": a Shift's start and end.
-  case timeRange = "timeline.timeRange"
 
   /// The string in a text set, its placeholders filled in.
   func text(in language: GameLanguage, _ arguments: any CVarArg...) -> String {

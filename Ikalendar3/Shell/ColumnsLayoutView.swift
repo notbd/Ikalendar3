@@ -142,13 +142,17 @@ private struct ColumnMenuButton: View {
     }
     .accessibilityLabel(Text(verbatim: mode.name(in: language)))
     .popover(isPresented: $isPresented) {
-      TabMenuView(menu: menu, selection: mode) { chosen in
-        status.choose(chosen)
-        isPresented = false
-      }
-      .presentationCompactAdaptation(.popover)
-      // The menu draws its own glass panel.
-      .presentationBackground(.clear)
+      TabMenuView(
+        menu: menu,
+        selection: mode,
+        choose: { option in
+          status.choose(option)
+          isPresented = false
+        },
+        dismiss: { isPresented = false })
+        .presentationCompactAdaptation(.popover)
+        // The menu draws its own glass panel.
+        .presentationBackground(.clear)
     }
   }
 }
