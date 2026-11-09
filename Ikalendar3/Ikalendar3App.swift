@@ -22,6 +22,7 @@ struct Ikalendar3App: App {
   @State private var services: AppServices?
 
   #if os(macOS)
+  @NSApplicationDelegateAdaptor private var appDelegate: MacAppDelegate
   /// The periodic and after-wake runs that stand in for the background refresh task on the Mac;
   /// `nil` without services or in the unit-test host.
   @State private var backgroundRefresh: MacBackgroundRefresh?
@@ -103,6 +104,17 @@ struct Ikalendar3App: App {
 }
 
 #if os(macOS)
+
+// MARK: - MacAppDelegate
+
+/// Keeps the app running in the menu bar after its window closes, so the menu bar window and the
+/// periodic refresh stay; with a single `Window` scene, SwiftUI would quit the app instead.
+final class MacAppDelegate: NSObject, NSApplicationDelegate {
+  func applicationShouldTerminateAfterLastWindowClosed(_: NSApplication) -> Bool {
+    false
+  }
+}
+
 extension Ikalendar3App {
   /// The app's name, as the menu bar and the window title show it; never translated.
   static let name = "ikalendar3"
