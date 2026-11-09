@@ -109,6 +109,19 @@ struct TermTableDecodingTests {
     #expect(terms.stages[StageID("Q29vcFN0YWdlLTg=")] == "生筋子系统交流道遗址")
   }
 
+  @Test
+  func `A malformed table leaves the other tables of its language intact`() async throws {
+    var tables = try #require(try JSONSerialization.jsonObject(with: Fixture.localeEnUS.data()) as? [String: Any])
+    tables["festivals"] = 42
+
+    let terms = try await TermTable.decode(from: JSONSerialization.data(withJSONObject: tables))
+
+    #expect(terms.splatfests.isEmpty)
+    #expect(terms.stages[StageID("VnNTdGFnZS0x")] == "Scorch Gorge")
+    #expect(terms.challenges[ChallengeID("TGVhZ3VlTWF0Y2hFdmVudC1XZWFwb25MaW1pdGVkX01hbmV1dmVy")]?.name
+      == "Dualies at Ten Paces")
+  }
+
   // MARK: - Feed terms
 
   @Test

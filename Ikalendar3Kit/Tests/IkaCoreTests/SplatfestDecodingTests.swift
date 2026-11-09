@@ -66,6 +66,29 @@ struct SplatfestDecodingTests {
   }
 
   @Test
+  func `A malformed region of festivals json leaves the other regions' records intact`() async throws {
+    var regions = try #require(try JSONSerialization.jsonObject(with: Fixture.festivals.data()) as? [String: Any])
+    regions["EU"] = 42
+    let festivals = try await FestivalFeed.decode(from: JSONSerialization.data(withJSONObject: regions))
+    let schedules = try await ScheduleFeed.decode(from: Fixture.splatfestSecondHalf.data())
+    let fetchTime = date("2026-11-01T05:23:00Z")
+
+    let snapshot: Snapshot = .init(
+      schedules: .init(content: schedules, fetchTime: fetchTime),
+      festivals: .init(content: festivals, fetchTime: fetchTime))
+
+    #expect(snapshot.splatfest?.artURL != nil)
+    #expect(snapshot.feedTerms.splatfests[SplatfestID("JUEA-00108")]?.teamNames == ["Wizard", "Knight", "Ninja"])
+  }
+
+  @Test
+  func `A body in which no region decodes is not festivals json`() async {
+    await #expect(throws: DecodingError.self) {
+      try await FestivalFeed.decode(from: Data(#"{"errors": []}"#.utf8))
+    }
+  }
+
+  @Test
   func `A normal day has no Splatfest`() async throws {
     #expect(try await Self.snapshot(.normalDay).splatfest == nil)
   }

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import OSLog
 
 // MARK: - FestivalFeed
 
@@ -28,14 +29,27 @@ extension FestivalFeed {
     let artURL: URL?
   }
 
-  /// Decodes a `festivals.json` response body. Runs off the main actor. A record that fails
-  /// on its own is left out.
+  /// Decodes a `festivals.json` response body. Runs off the main actor. A region or a record
+  /// that fails on its own is left out.
   ///
-  /// - Throws: `DecodingError` when the body is not the festivals feed.
+  /// - Throws: `DecodingError` when the body is not the festivals feed: no region decodes.
   @concurrent
   static public func decode(from body: Data) async throws -> FestivalFeed {
-    let regions = try FeedJSON.decoder().decode([String: RegionDTO].self, from: body)
-    let records = regions.values
+    let parts = try FeedJSON.decoder().decode([String: Isolated<RegionDTO>].self, from: body)
+    let regions = parts.compactMap { name, part in
+      do {
+        return try part.result.get()
+      }
+      catch {
+        Logger.decode.error("festivals: region \(name, privacy: .public) failed: \(error, privacy: .public)")
+        return nil
+      }
+    }
+    if regions.isEmpty, case .failure(let error)? = parts.values.first?.result {
+      throw error
+    }
+
+    let records = regions
       .flatMap(\.data.festRecords.nodes)
       .compactMap { try? $0.result.get() }
       .map { record in
