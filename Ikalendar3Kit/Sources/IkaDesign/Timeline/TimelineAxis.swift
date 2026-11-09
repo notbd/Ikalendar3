@@ -155,7 +155,7 @@ struct TimelinePin: View {
 // MARK: - TimelineDayMark
 
 /// The weekday and date where the axis reaches a new day. VoiceOver reads it as a heading, since
-/// a Rotation's sentence carries no day.
+/// a Rotation's sentence carries no date.
 private struct TimelineDayMark: View {
   let text: String
   let color: TimelineTint

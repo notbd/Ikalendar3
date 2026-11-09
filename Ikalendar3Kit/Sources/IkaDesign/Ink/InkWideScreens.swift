@@ -128,7 +128,6 @@ public struct InkWideBattleScreenView: View {
 /// It receives `IkaCore` values only and reads no store.
 public struct InkWideSalmonRunScreenView: View {
   @TimeSettings private var time
-  @Environment(\.gameLanguage) private var language
 
   private let screen: SalmonRunScreen
   private let terms: GameTerms
@@ -226,7 +225,7 @@ public struct InkWideSalmonRunScreenView: View {
 
     return InkWideTags(timeRange: format.timeRange(of: entry.item, withWeekday: true)) {
       if let label = entry.item.kind.label {
-        InkModeTag(Text(verbatim: label.text(in: language)), accent: accent)
+        InkModeTag(Text(verbatim: label.text(in: terms.language)), accent: accent)
       }
       InkStateTag(place: entry.place, accent: accent)
     }
