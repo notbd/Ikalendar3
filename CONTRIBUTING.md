@@ -52,7 +52,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 - Every target folder is a synchronized folder: a Swift file or subfolder added inside it is compiled with no project file change. A non-source file there becomes a resource of the target unless the project lists an exception, as it does for the widget extensions' `Info.plist`.
 - Code that more than one target needs goes into a package module, never into two target folders.
 - `IkaCore` imports no SwiftUI, UIKit, AppKit, WidgetKit, ActivityKit or App Intents; a SwiftLint rule fails the run if it does.
-- A new package test target must be listed in `Ikalendar3.xctestplan`, or `xcodebuild` never runs it; verify fails until it is.
+- `Ikalendar3.xctestplan` must list the app's test target and every package test target, or `xcodebuild` never runs them; verify fails until it does.
 - A resource folder a package target declares must be committed, even if empty (a placeholder file keeps it). Font files are never committed, and no build step may need them.
 - The package folder is also a file reference in the project. Without it, `xcodebuild` silently skips the package's tests.
 - Signing: builds and macOS runs pass `CODE_SIGNING_ALLOWED=NO`. Simulator test runs keep automatic signing with no team (Xcode signs to run locally), so the test host carries its App Group entitlement.
