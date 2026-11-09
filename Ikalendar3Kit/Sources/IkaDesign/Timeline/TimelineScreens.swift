@@ -188,7 +188,8 @@ public struct TimelineSalmonRunScreenView: View {
 
 // MARK: - TimelineBackground
 
-/// SplatNet 3's dark page, behind every Timeline screen and the Debug event card gallery.
+/// SplatNet 3's dark page, which Timeline's screens draw under their lists, for a view that
+/// shows Timeline's parts outside them, such as the Debug event card gallery.
 public struct TimelineBackground: View {
   public init() { }
 
@@ -239,7 +240,8 @@ struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowVal
         }
         .listReflow(value: reflowValue)
       }
-      .background(TimelineBackground())
+      // A colour, not a view, so the page runs under the bars too.
+      .background(TimelinePalette.page)
       .environment(\.colorScheme, .dark)
       #if os(iOS)
       .modeStampDock(icon: icon, title: title, dockProgress: $dockProgress)
