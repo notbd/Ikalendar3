@@ -88,7 +88,7 @@ public struct SplatfestCardView: View {
 
 extension Image {
   /// A stored image file, or `nil` when it does not decode.
-  fileprivate init?(contentsOf file: URL) {
+  init?(contentsOf file: URL) {
     #if os(iOS)
     guard let image = UIImage(contentsOfFile: file.path(percentEncoded: false)) else { return nil }
 

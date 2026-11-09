@@ -24,16 +24,7 @@ struct TimelineRotationContent: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       TimelineHeadline(arrangement: arrangement) {
-        HStack(spacing: 8) {
-          Image(decorative: BundledImage.name(for: setting.rule, size: .medium), bundle: BundledImage.catalogBundle)
-            .resizable()
-            .scaledToFit()
-            .frame(width: TimelineMetrics.ruleIconSize, height: TimelineMetrics.ruleIconSize)
-          Text(verbatim: terms.name(of: setting.rule))
-            .ikaFont(.heavy, size: 18, relativeTo: .headline)
-            .scaledLimitedLine(for: arrangement)
-            .foregroundStyle(.white)
-        }
+        TimelineRuleLabel(rule: setting.rule, terms: terms, arrangement: arrangement)
       } trailing: {
         if let progress {
           TimelineNowTag(timeLeft: progress.timeLeft, color: color, language: terms.language, now: now)
@@ -59,7 +50,7 @@ struct TimelineShiftContent: View {
   var body: some View {
     VStack(alignment: .leading, spacing: 8) {
       if let label = shift.kind.label {
-        TimelineKindTag(label: label, kind: shift.kind, language: terms.language)
+        TimelineModeTag(icon: ModeIcon(shift.kind), label: label.text(in: terms.language), colors: ModeColor(shift.kind).asFill)
       }
       TimelineHeadline(arrangement: arrangement) {
         Text(verbatim: format.timeRange(from: shift.startTime, to: shift.endTime))
@@ -91,11 +82,33 @@ struct TimelineStatusContent: View {
   }
 }
 
+// MARK: - TimelineRuleLabel
+
+/// A Rule's icon and name.
+struct TimelineRuleLabel: View {
+  let rule: RuleID
+  let terms: GameTerms
+  let arrangement: CellArrangement
+
+  var body: some View {
+    HStack(spacing: 8) {
+      Image(decorative: BundledImage.name(for: rule, size: .medium), bundle: BundledImage.catalogBundle)
+        .resizable()
+        .scaledToFit()
+        .frame(width: TimelineMetrics.ruleIconSize, height: TimelineMetrics.ruleIconSize)
+      Text(verbatim: terms.name(of: rule))
+        .ikaFont(.heavy, size: 18, relativeTo: .headline)
+        .scaledLimitedLine(for: arrangement)
+        .foregroundStyle(.white)
+    }
+  }
+}
+
 // MARK: - TimelineHeadline
 
 /// A slot's first line: the leading part, with the trailing part at the far end side by side, or
 /// under it when stacked.
-private struct TimelineHeadline<Leading: View, Trailing: View>: View {
+struct TimelineHeadline<Leading: View, Trailing: View>: View {
   let arrangement: CellArrangement
   @ViewBuilder let leading: Leading
   @ViewBuilder let trailing: Trailing
@@ -121,7 +134,7 @@ private struct TimelineHeadline<Leading: View, Trailing: View>: View {
 // MARK: - TimelineNowTag
 
 /// "Now" in the Mode colour, with the time left counting down on whole seconds.
-private struct TimelineNowTag: View {
+struct TimelineNowTag: View {
   @Environment(\.colorScheme) private var colorScheme
 
   let timeLeft: Duration
@@ -145,19 +158,18 @@ private struct TimelineNowTag: View {
   }
 }
 
-// MARK: - TimelineKindTag
+// MARK: - TimelineModeTag
 
-/// The mark of a Big Run or an Eggstra Work: its icon and label on a tag in its colour.
-private struct TimelineKindTag: View {
-  let label: ModeLabel
-  let kind: Shift.Kind
-  let language: GameLanguage
+/// The mark of a Mode, an event or a kind of Shift: its icon, if any, and its label on a tag in
+/// its colour.
+struct TimelineModeTag: View {
+  let icon: ModeIcon?
+  let label: String
+  let colors: ColorPair
 
   var body: some View {
-    let colors: ColorPair = ModeColor(kind).asFill
-
     HStack(spacing: 4) {
-      if let icon = ModeIcon(kind) {
+      if let icon {
         // In the tag's text colour: the icon's own colour is the tag's.
         Image(decorative: BundledImage.name(for: icon, size: .small), bundle: BundledImage.catalogBundle)
           .renderingMode(.template)
@@ -165,7 +177,7 @@ private struct TimelineKindTag: View {
           .scaledToFit()
           .frame(width: 16, height: 16)
       }
-      Text(verbatim: label.text(in: language))
+      Text(verbatim: label)
         .ikaFont(.heavy, size: 13, relativeTo: .footnote)
         .lineLimit(1)
     }
@@ -182,7 +194,7 @@ private struct TimelineKindTag: View {
 /// Stage pictures joined in one strip with rounded outer corners, each name on a black tag
 /// centred at its bottom. Stacked, the pictures run one under the other and the names wrap below
 /// them.
-private struct TimelineStageStrip: View {
+struct TimelineStageStrip: View {
   let stages: [StageID]
   let terms: GameTerms
   let arrangement: CellArrangement

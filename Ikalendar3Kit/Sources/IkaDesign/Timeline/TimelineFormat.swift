@@ -44,6 +44,19 @@ struct TimelineFormat {
     return TimelineText.timeRange.text(in: language, start.formatted(style), end.formatted(style))
   }
 
+  /// A Splatfest's start and end with their weekdays and dates, since it is announced weeks
+  /// ahead: "Sat, 10/31, 09:00 - Mon, 11/2, 09:00".
+  func dateRange(from start: Date, to end: Date) -> String {
+    let style: Date.FormatStyle = style(Self.weekdayAndTime.month(.defaultDigits).day())
+    return TimelineText.timeRange.text(in: language, start.formatted(style), end.formatted(style))
+  }
+
+  /// A window's start and end on the 24-hour clock alone, where a day mark above gives its day:
+  /// "17:00 - 19:00".
+  func hourRange(from start: Date, to end: Date) -> String {
+    TimelineText.timeRange.text(in: language, pin(start), pin(end))
+  }
+
   /// The time left as a countdown on whole seconds, rounded up so a running window never reads
   /// zero, its hours running past a day: "1:09:59".
   static func countdown(_ timeLeft: Duration) -> String {

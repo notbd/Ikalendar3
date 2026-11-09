@@ -54,7 +54,7 @@ public struct TimelineBattleScreenView: View {
         TimelineFormStrip(shown: screen.mode, language: terms.language)
       }
       if let card = screen.announcedSplatfest {
-        SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .timeline, now: now)
+        TimelineSplatfestCard(splatfest: card.splatfest, art: card.art, terms: terms, now: now)
           .padding(.horizontal, TimelineMetrics.contentTrailing)
           .padding(.top, TimelineMetrics.axisTop)
       }
@@ -188,14 +188,14 @@ public struct TimelineSalmonRunScreenView: View {
 
 // MARK: - TimelineScheduleList
 
-/// What both Timeline screens share: SplatNet 3's dark page under the black header, the axis sized
+/// What every Timeline screen shares: SplatNet 3's dark page under the black header, the axis sized
 /// for the text size, entries moving into place as the clock changes them and, on iPhone and
 /// iPad, the header's stamp docking into the navigation bar badge, the inline title fading in
 /// with it.
 ///
 /// The page stays dark in light appearance until ticket 57 designs Timeline's light look, so the
 /// list and the navigation bar take the dark scheme.
-private struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowValue: Equatable>: View {
+struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowValue: Equatable>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   /// How far the header's stamp has docked into the navigation bar badge.
@@ -207,8 +207,7 @@ private struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, R
   /// The Mode's name in the header.
   let headerName: String
   let reflowValue: ReflowValue
-  /// What sits between the header and the axis: the Series and Open strip, an announced
-  /// Splatfest's card.
+  /// What sits between the header and the axis: the strip of forms, a Splatfest's card.
   @ViewBuilder let aboveAxis: () -> AboveAxis
   @ViewBuilder let axis: (CellArrangement) -> Axis
   @ViewBuilder let footer: () -> Footer

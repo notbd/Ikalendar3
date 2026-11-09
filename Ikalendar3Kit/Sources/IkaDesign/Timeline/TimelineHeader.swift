@@ -85,33 +85,50 @@ struct TimelineModeBadge: View {
 
 // MARK: - TimelineFormStrip
 
-/// The Series and Open strip under Anarchy's header, the form shown underlined in the Mode
-/// colour. It shows which form the screen holds; ticket 24's tab menu switches it.
+/// The strip of forms under the header, the form shown underlined in the Mode colour: Series and
+/// Open on Anarchy, Open and Pro on Splatfest Battle. It shows which form the screen holds; ticket
+/// 24's tab menu switches it.
 struct TimelineFormStrip: View {
-  /// The Anarchy form the screen shows.
-  let shown: BattleMode
+  /// Each form's label in the strip's order, and whether the screen shows it.
+  let forms: [(label: ModeLabel, isShown: Bool)]
+  /// The colour of the line under the shown form.
+  let color: ModeColor
   let language: GameLanguage
+
+  /// Anarchy Battle's strip, `shown` being the form the screen shows.
+  init(shown: BattleMode, language: GameLanguage) {
+    forms = [(.series, shown == .anarchySeries), (.open, shown == .anarchyOpen)]
+    color = .init(shown)
+    self.language = language
+  }
+
+  /// Splatfest Battle's strip, `shown` being the form the screen shows. Splatfest Battle is Turf
+  /// War, so it takes Regular Battle's colour.
+  init(shown: SplatfestBattleForm, language: GameLanguage) {
+    forms = [(.open, shown == .open), (.pro, shown == .pro)]
+    color = .regularBattle
+    self.language = language
+  }
 
   var body: some View {
     HStack(spacing: 28) {
-      form(.anarchySeries, label: .series)
-      form(.anarchyOpen, label: .open)
+      ForEach(forms, id: \.label) { form in
+        self.form(form.label, isShown: form.isShown)
+      }
     }
     .frame(maxWidth: .infinity, minHeight: TimelineMetrics.stripHeight)
     .background(TimelinePalette.strip)
   }
 
-  private func form(_ mode: BattleMode, label: ModeLabel) -> some View {
-    let isShown: Bool = mode == shown
-
-    return Text(verbatim: label.text(in: language))
+  private func form(_ label: ModeLabel, isShown: Bool) -> some View {
+    Text(verbatim: label.text(in: language))
       .ikaFont(.heavy, size: 14, relativeTo: .subheadline)
       .foregroundStyle(isShown ? .white : TimelinePalette.stripIdle)
       .padding(.vertical, 9)
       .overlay(alignment: .bottom) {
         if isShown {
           Rectangle()
-            .fill(Color(ModeColor(mode).base))
+            .fill(Color(color.base))
             .frame(height: TimelineMetrics.stripUnderline)
         }
       }
