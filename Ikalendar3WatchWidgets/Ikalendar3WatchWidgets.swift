@@ -5,15 +5,19 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import AppIntents
 import IkaCore
 import IkaDesign
+import IkaIntents
 import IkaResources
 import SwiftUI
 import WidgetKit
 
 // MARK: - Ikalendar3WatchWidgets
 
-/// The watch widget extension: complications and the Smart Stack.
+/// The watch widget extension: the complications in four families on the watch face, and the
+/// Smart Stack widget. Each is set to one Mode, which the system's editor offers as one choice
+/// per Mode, so the watch needs no settings screen of its own.
 @main
 struct Ikalendar3WatchWidgets: WidgetBundle {
   /// Registers the fonts and points image lookups at the resource framework before anything draws.
@@ -22,65 +26,32 @@ struct Ikalendar3WatchWidgets: WidgetBundle {
   }
 
   var body: some Widget {
-    PlaceholderWidget()
+    ModeComplication()
+    SmartStackWidget()
   }
 }
 
 extension Ikalendar3WatchWidgets {
   /// The app language, resolved for this extension's bundle. It declares the watch app's 14
   /// localizations, so it resolves the watch app's.
-  static let language: GameLanguage = .init(resolvedFor: .main)
+  nonisolated static let language: GameLanguage = .init(resolvedFor: .main)
 }
 
-// MARK: - PlaceholderWidget
+// MARK: - WatchWidgetKind
 
-/// Stands in until the extension's first real widget; an extension must declare at least one.
-struct PlaceholderWidget: Widget {
-  var body: some WidgetConfiguration {
-    StaticConfiguration(kind: "placeholder", provider: PlaceholderProvider()) { entry in
-      PlaceholderView(date: entry.date)
-        .environment(\.gameLanguage, Ikalendar3WatchWidgets.language)
-    }
-    .supportedFamilies([.accessoryRectangular])
-  }
+/// Each watch widget's kind, which WidgetKit stores with every placed complication: never rename
+/// a raw value.
+enum WatchWidgetKind: String {
+  /// The complication set to one Mode, in every family a watch face offers.
+  case complication
+  /// The Smart Stack widget set to one Mode.
+  case smartStack = "smart-stack"
 }
 
-// MARK: - PlaceholderView
+// MARK: - WatchWidgetsIntentsPackage
 
-/// Draws Ink's base components until the first real widget replaces it, so this extension builds
-/// them.
-struct PlaceholderView: View {
-  let date: Date
-
-  var body: some View {
-    VStack(alignment: .leading, spacing: 4) {
-      InkModeTag(Text(verbatim: "ikalendar3"), modeColor: .anarchy)
-      InkTimeTag(Text(date, style: .time))
-    }
-    .containerBackground(for: .widget) {
-      InkBackground()
-    }
-  }
-}
-
-// MARK: - PlaceholderEntry
-
-struct PlaceholderEntry: TimelineEntry {
-  let date: Date
-}
-
-// MARK: - PlaceholderProvider
-
-struct PlaceholderProvider: TimelineProvider {
-  func placeholder(in _: Context) -> PlaceholderEntry {
-    PlaceholderEntry(date: .now)
-  }
-
-  func getSnapshot(in _: Context, completion: @escaping (PlaceholderEntry) -> Void) {
-    completion(PlaceholderEntry(date: .now))
-  }
-
-  func getTimeline(in _: Context, completion: @escaping (Timeline<PlaceholderEntry>) -> Void) {
-    completion(Timeline(entries: [PlaceholderEntry(date: .now)], policy: .never))
-  }
+/// Adds `IkaIntents`' Mode parameter to this extension's App Intents metadata, so the
+/// complication editor and the Smart Stack offer it.
+struct WatchWidgetsIntentsPackage: AppIntentsPackage {
+  static var includedPackages: [any AppIntentsPackage.Type] { [IkaIntentsPackage.self] }
 }
