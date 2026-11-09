@@ -20,9 +20,10 @@ import Foundation
 ///   is cached yet, so the cache cannot tell.
 ///
 /// While a Splatfest pauses a Battle Mode, the now answer says when the Battle Mode comes back,
-/// as the iPhone tabs do. The next and Rule answers say so too from the last Rotation before the
-/// Splatfest on, since the feed publishes the paused windows, while no Rotation after the
-/// Splatfest is published yet.
+/// as the iPhone tabs do. The next and Rule answers do so from the last Rotation before the
+/// Splatfest on, since the feed publishes the paused windows: a Rotation after the Splatfest
+/// follows that pause sentence, whose weekday tells the Rotation's day; with none published yet,
+/// the pause sentence is the answer.
 public struct SiriAnswers: Sendable {
   private let snapshot: Snapshot
   private let writer: SentenceWriter
@@ -48,11 +49,11 @@ public struct SiriAnswers: Sendable {
     switch mode {
       case .battle(let battleMode):
         let lineup = battleLineup(battleMode, at: instant)
-        if lineup.next == nil, let returnTime = returnTime(ahead: lineup, of: battleMode) {
-          return writer.sentence(forPauseOf: battleMode, returningAt: returnTime)
+        guard let returnTime = returnTime(ahead: lineup, of: battleMode) else {
+          return next(in: mode, lineup) { writer.sentence(for: $0, at: instant) }
         }
 
-        return next(in: mode, lineup) { writer.sentence(for: $0, at: instant) }
+        return sentence(forPauseOf: battleMode, returningAt: returnTime, then: lineup.next, at: instant)
 
       case .salmonRun:
         return next(in: mode, feed.salmonRunLineup(at: instant)) { writer.sentence(for: $0, at: instant) }
@@ -64,10 +65,13 @@ public struct SiriAnswers: Sendable {
   /// plays is not published, unless a pause ahead leaves nothing after it published yet.
   public func next(_ rule: RuleID, in battleMode: BattleMode, at instant: Date) -> String {
     let lineup = battleLineup(battleMode, at: instant)
+    let returnTime = returnTime(ahead: lineup, of: battleMode)
     if let rotation = lineup.items.first(where: { $0.setting?.rule == rule }) {
-      return writer.sentence(for: rotation, at: instant)
+      guard let returnTime, returnTime <= rotation.startTime else { return writer.sentence(for: rotation, at: instant) }
+
+      return sentence(forPauseOf: battleMode, returningAt: returnTime, then: rotation, at: instant)
     }
-    if lineup.next == nil, let returnTime = returnTime(ahead: lineup, of: battleMode) {
+    if let returnTime, lineup.next == nil {
       return writer.sentence(forPauseOf: battleMode, returningAt: returnTime)
     }
 
@@ -123,6 +127,21 @@ public struct SiriAnswers: Sendable {
       current = battleLineup(battleMode, at: rotation.endTime).current
     }
     return if case .paused(let returnTime) = current { returnTime } else { nil }
+  }
+
+  /// The pause sentence, then the sentence of `rotation`, a Rotation after the pause, when there
+  /// is one: the pause's weekday tells the Rotation's day, which its own times leave out.
+  private func sentence(
+    forPauseOf battleMode: BattleMode,
+    returningAt returnTime: Date,
+    then rotation: Rotation?,
+    at instant: Date)
+    -> String
+  {
+    let pause = writer.sentence(forPauseOf: battleMode, returningAt: returnTime)
+    guard let rotation else { return pause }
+
+    return writer.format("answer.twoSentences", pause, writer.sentence(for: rotation, at: instant))
   }
 
   /// The Big Run on now or the next one Salmon Run's Schedule holds.

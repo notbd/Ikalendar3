@@ -108,14 +108,16 @@ struct SiriAnswersTests {
   // MARK: Splatfest pause
 
   /// The recorded decision: a Battle Mode a Splatfest pauses says when it comes back. Next and
-  /// a Rule read the first Rotation after the Splatfest once it is published.
+  /// a Rule read the first Rotation after the Splatfest once it is published, after the pause,
+  /// whose weekday tells the Rotation's day: asked Saturday night, its 4:00 PM is Sunday's.
   @Test
   func `A paused Battle Mode says when it comes back`() async throws {
     let secondHalf = try await Self.answers(.splatfestSecondHalf)
     let firstHalf = try await Self.answers(.splatfestFirstHalf)
     let comesBack = "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM."
-    let firstAfter =
-      "Regular Battle: Turf War on Mincemeat Metalworks and Inkblot Art Academy, from 4:00\u{202F}PM to 6:00\u{202F}PM."
+    let firstAfter = comesBack
+      + " Regular Battle: Turf War on Mincemeat Metalworks and Inkblot Art Academy,"
+      + " from 4:00\u{202F}PM to 6:00\u{202F}PM."
 
     #expect(secondHalf.now(in: .battle(.regular), at: date("2026-11-01T06:00:00Z")) == comesBack)
     #expect(secondHalf.next(in: .battle(.regular), at: date("2026-11-01T06:00:00Z")) == firstAfter)
