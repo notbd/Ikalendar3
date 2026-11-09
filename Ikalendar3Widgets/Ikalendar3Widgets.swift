@@ -5,6 +5,7 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import IkaDesign
 import SwiftUI
 import WidgetKit
 
@@ -23,11 +24,29 @@ struct Ikalendar3Widgets: WidgetBundle {
 /// Stands in until the extension's first real widget; an extension must declare at least one.
 struct PlaceholderWidget: Widget {
   var body: some WidgetConfiguration {
-    StaticConfiguration(kind: "placeholder", provider: PlaceholderProvider()) { _ in
-      Text(verbatim: "ikalendar3")
-        .containerBackground(.black, for: .widget)
+    StaticConfiguration(kind: "placeholder", provider: PlaceholderProvider()) { entry in
+      PlaceholderView(date: entry.date)
     }
     .supportedFamilies([.systemSmall])
+  }
+}
+
+// MARK: - PlaceholderView
+
+/// Draws Ink's base components until the first real widget replaces it, so this extension builds
+/// them.
+struct PlaceholderView: View {
+  let date: Date
+
+  var body: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      InkModeTag(Text(verbatim: "ikalendar3"), modeColor: .anarchy)
+      InkTimeTag(Text(date, style: .time))
+      InkDottedRule()
+    }
+    .containerBackground(for: .widget) {
+      InkBackground()
+    }
   }
 }
 
