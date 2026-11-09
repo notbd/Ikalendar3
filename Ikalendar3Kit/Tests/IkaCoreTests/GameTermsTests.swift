@@ -54,7 +54,7 @@ struct GameTermsTests {
 
     #expect(terms.name(of: Self.unknownStage) == "VnNTdGFnZS05OTk=")
     #expect(terms.challenge(ChallengeID("TGVhZ3VlTWF0Y2hFdmVudC1OZXc=")).name == "TGVhZ3VlTWF0Y2hFdmVudC1OZXc=")
-    #expect(terms.splatfest(SplatfestID("JUEA-99999")) == SplatfestTerms(title: "JUEA-99999", teamNames: []))
+    #expect(terms.splatfest(SplatfestID("JUEA-99999")) == SplatfestTerms(title: "JUEA-99999", teamNames: nil))
   }
 
   @Test
