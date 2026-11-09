@@ -55,17 +55,6 @@ extension Snapshot {
     modePage(of: mode, at: instant)?.summary
   }
 
-  /// The summaries of the Mode value's five Modes at `instant`, in its order: the four continuous
-  /// Battle Modes, then Salmon Run. The Surfaces that list every Mode read it: the Mac menu bar
-  /// window and Overview and the watch's Now page. A Battle Mode a Splatfest pauses stays listed
-  /// with its pause; Splatfest Battle never stands in for it. `nil` before the schedules feed's
-  /// first good response.
-  public func summaries(at instant: Date) -> [ModeSummary]? {
-    guard schedules != nil else { return nil }
-
-    return Mode.allCases.compactMap { summary(of: $0, at: instant) }
-  }
-
   /// The summary of `form` of Splatfest Battle at `instant`: the current item of its Splatfest
   /// screen, or `nil` whenever there is no Splatfest screen.
   public func summary(of form: SplatfestBattleForm, at instant: Date) -> ModeSummary? {

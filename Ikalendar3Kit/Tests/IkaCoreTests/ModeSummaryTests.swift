@@ -106,35 +106,37 @@ struct ModeSummaryTests {
   }
 
   @Test
-  func `The Mode value's summaries list its five Modes in its order`() async throws {
+  func `The Mode value's pages list its five Modes in its order, each with its summary`() async throws {
     let snapshot = try await Snapshot.schedules(.normalDay)
+    let instant = date("2026-10-20T13:30:00Z")
 
-    let summaries = try #require(snapshot.summaries(at: date("2026-10-20T13:30:00Z")))
+    let pages = try #require(snapshot.modePages(at: instant))
 
-    #expect(summaries.map(\.mode) == [
+    #expect(pages.map(\.mode) == [
       .battle(.regular),
       .battle(.anarchySeries),
       .battle(.anarchyOpen),
       .battle(.x),
       .salmonRun,
     ])
+    #expect(pages.map(\.summary) == Mode.allCases.compactMap { snapshot.summary(of: $0, at: instant) })
   }
 
   @Test
-  func `During the Splatfest the Mode value's summaries keep the paused Battle Modes, never Splatfest Battle`()
+  func `During the Splatfest the Mode value's pages keep the paused Battle Modes, never Splatfest Battle`()
     async throws
   {
     let snapshot = try await Snapshot.schedules(.splatfestSecondHalf)
 
-    let summaries = try #require(snapshot.summaries(at: date("2026-11-01T05:23:00Z")))
+    let pages = try #require(snapshot.modePages(at: date("2026-11-01T05:23:00Z")))
 
     let returnTime = date("2026-11-02T00:00:00Z")
-    #expect(Array(summaries.prefix(4)) == BattleMode.allCases.map { .battle($0, .paused(returnTime: returnTime)) })
-    #expect(summaries.count == 5)
+    #expect(pages.prefix(4).map(\.summary) == BattleMode.allCases.map { .battle($0, .paused(returnTime: returnTime)) })
+    #expect(pages.count == 5)
   }
 
   @Test
-  func `No list of the Mode value's summaries exists before the schedules feed's first good response`() {
-    #expect(Snapshot().summaries(at: TestData.epoch) == nil)
+  func `No list of the Mode value's pages exists before the schedules feed's first good response`() {
+    #expect(Snapshot().modePages(at: TestData.epoch) == nil)
   }
 }

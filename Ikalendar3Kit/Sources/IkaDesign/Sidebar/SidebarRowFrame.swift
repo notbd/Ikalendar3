@@ -10,22 +10,22 @@ import SwiftUI
 
 // MARK: - SidebarRowFrame
 
-/// The layout every Style's sidebar row shares: the Mode's icon in a ring of the share passed,
-/// beside its name over the summary line, or above them from the first accessibility text size.
-/// A Style passes its own fonts and colours. The row is one VoiceOver element, and fades while
-/// the Splatfest keeps its Mode from play.
-struct SidebarRowFrame<Name: View, Summary: View>: View {
+/// The layout every Style's sidebar row shares: the summary ring, beside the name over the line,
+/// or above them from the first accessibility text size. A Style passes its own fonts and
+/// colours. The row is one VoiceOver element, and fades while the Splatfest keeps its Mode from
+/// play.
+struct SidebarRowFrame<Name: View, Line: View>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   @ScaledMetric(relativeTo: .headline) private var ringSize: CGFloat = SidebarMetrics.ringSize
 
-  let content: SidebarRowContent
+  let content: SummaryRowContent
   /// The ring's colour.
   let ringColor: Color
   /// The name, in the Style's font.
   @ViewBuilder let name: (String) -> Name
-  /// The summary line, in the Style's font.
-  @ViewBuilder let summary: (String) -> Summary
+  /// The line under it, in the Style's font.
+  @ViewBuilder let line: (String) -> Line
 
   var body: some View {
     let layout: AnyLayout =
@@ -35,21 +35,16 @@ struct SidebarRowFrame<Name: View, Summary: View>: View {
       }
 
     layout {
-      ZStack {
-        ProgressRing(
-          share: content.progress?.sharePassed ?? 0,
-          color: ringColor,
-          lineWidth: ringSize * SidebarMetrics.lineWidthShare)
-        Image(decorative: BundledImage.name(for: content.icon, size: .small), bundle: BundledImage.catalogBundle)
-          .resizable()
-          .scaledToFit()
-          .padding(ringSize * SidebarMetrics.iconInsetShare)
-      }
-      .frame(width: ringSize, height: ringSize)
+      SummaryRing(
+        content,
+        color: ringColor,
+        lineWidth: ringSize * SidebarMetrics.lineWidthShare,
+        iconInset: ringSize * SidebarMetrics.iconInsetShare)
+        .frame(width: ringSize, height: ringSize)
 
       VStack(alignment: .leading, spacing: SidebarMetrics.textSpacing) {
         name(content.name)
-        summary(content.summary)
+        line(content.line)
       }
       .fixedSize(horizontal: false, vertical: true)
       .frame(maxWidth: .infinity, alignment: .leading)
@@ -75,7 +70,7 @@ enum SidebarMetrics {
   static let iconInsetShare: CGFloat = 0.2
   /// The space between the ring and the texts.
   static let spacing: CGFloat = 12
-  /// The space between the name and the summary line.
+  /// The space between the name and the line.
   static let textSpacing: CGFloat = 2
   /// The space above and below a row's content.
   static let verticalPadding: CGFloat = 4

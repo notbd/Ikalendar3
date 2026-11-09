@@ -24,7 +24,7 @@ public struct InkModeTag: View {
   }
 
   /// A tag reading `text` in `accent`.
-  init(_ text: Text, accent: InkAccent) {
+  public init(_ text: Text, accent: InkAccent) {
     self.text = text
     colors = accent.fill
   }

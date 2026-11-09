@@ -62,13 +62,12 @@ struct NowPageView: View {
           SplatfestTeamsPanel(splatfest: splatfest, terms: terms, now: now)
         }
         VStack(spacing: WatchMetrics.rowSpacing) {
-          ForEach(page.summaries, id: \.mode) { summary in
-            if summary.mode != page.summaries.first?.mode {
+          ForEach(page.modePages, id: \.mode) { modePage in
+            if modePage.mode != page.modePages.first?.mode {
               InkDottedRule()
             }
-            // Every row of the Now page is a Mode's; a summary with none would not open a page.
-            NavigationLink(value: summary.mode.map(WatchRoute.modePages)) {
-              NowRow(summary: summary, terms: terms, now: now)
+            NavigationLink(value: WatchRoute.modePages(modePage.mode)) {
+              NowRow(summary: modePage.summary, terms: terms, now: now)
             }
             .buttonStyle(.plain)
           }

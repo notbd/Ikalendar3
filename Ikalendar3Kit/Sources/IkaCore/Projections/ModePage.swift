@@ -36,6 +36,17 @@ public enum ModePage: Hashable, Sendable {
 }
 
 extension Snapshot {
+  /// The pages of the Mode value's five Modes at `instant`, in its order: the four continuous
+  /// Battle Modes, then Salmon Run. The Surfaces that list every Mode read their rows from it,
+  /// each keyed by its Mode and showing its summary: the Mac menu bar window and Overview and the
+  /// watch's Now page. A Battle Mode a Splatfest pauses stays listed with its pause; Splatfest
+  /// Battle never stands in for it. `nil` before the schedules feed's first good response.
+  public func modePages(at instant: Date) -> [ModePage]? {
+    guard schedules != nil else { return nil }
+
+    return Mode.allCases.compactMap { modePage(of: $0, at: instant) }
+  }
+
   /// `mode`'s page at `instant`, or `nil` before the schedules feed's first good response.
   public func modePage(of mode: Mode, at instant: Date) -> ModePage? {
     switch mode {

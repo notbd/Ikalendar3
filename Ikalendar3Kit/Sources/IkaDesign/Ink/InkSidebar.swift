@@ -12,26 +12,26 @@ import SwiftUI
 // MARK: - InkSidebarRow
 
 /// Ink's sidebar row on the dotted black background: the Mode's icon in a ring of its accent, the
-/// name in the heavy face and the summary in the light face. It receives a sidebar row's content
+/// name in the heavy face and the line in the light face. It receives a summary row's content
 /// only and reads no store.
 public struct InkSidebarRow: View {
   @Environment(\.colorScheme) private var colorScheme
 
-  private let content: SidebarRowContent
+  private let content: SummaryRowContent
 
-  public init(content: SidebarRowContent) {
+  public init(content: SummaryRowContent) {
     self.content = content
   }
 
   public var body: some View {
-    let accent: InkAccent = content.color.map(InkAccent.init) ?? .splatfest
+    let accent: InkAccent = .init(content.color)
 
     SidebarRowFrame(content: content, ringColor: Color(accent.base)) { name in
       Text(verbatim: name)
         .inkFont(.tag)
         .foregroundStyle(Color(InkPair.backgroundText.colors(in: colorScheme).foreground))
-    } summary: { summary in
-      Text(verbatim: summary)
+    } line: { line in
+      Text(verbatim: line)
         .inkFont(.caption)
         .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
     }

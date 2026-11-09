@@ -85,8 +85,9 @@ struct TabMenuView: View {
 
 // MARK: - TabMenuRow
 
-/// One option as a Mode summary: the Mode icon in a ring of the share passed, the Mode's name,
-/// the current Rule and time left, and a checkmark on the Battle Mode the tab shows.
+/// One option as its Mode summary's row (`SummaryRowContent`): the icon in a ring of the share
+/// passed, the name, the current Rule and time left, and a checkmark on the Battle Mode the tab
+/// shows. Before the Mode has a screen, only its icon and name.
 private struct TabMenuRow: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @TimeSettings private var time
@@ -99,6 +100,9 @@ private struct TabMenuRow: View {
   let now: Date
 
   var body: some View {
+    let content: SummaryRowContent? = option.summary.map {
+      SummaryRowContent($0, writer: time.writer(terms), format: time.format(terms.language), now: now)
+    }
     // From the first accessibility size the ring sits above the texts, which then have the row's
     // width to wrap in.
     let summaryLayout: AnyLayout =
@@ -109,22 +113,20 @@ private struct TabMenuRow: View {
 
     HStack(spacing: 16) {
       summaryLayout {
-        ZStack {
-          ProgressRing(share: option.summary?.progress?.sharePassed ?? 0, color: ringColor, lineWidth: 3)
-          Image(
-            decorative: BundledImage.name(for: ModeIcon(option.mode), size: .small),
-            bundle: BundledImage.catalogBundle)
-            .resizable()
-            .scaledToFit()
-            .padding(7)
-        }
-        .frame(width: ringSize, height: ringSize)
+        SummaryRing(
+          icon: content?.icon ?? ModeIcon(option.mode),
+          share: content?.progress?.sharePassed ?? 0,
+          // The Splatfest's forms have no Mode colour: the primary colour, as on Classic's rows.
+          color: content?.color.map { Color($0.base) } ?? .primary,
+          lineWidth: 3,
+          iconInset: 7)
+          .frame(width: ringSize, height: ringSize)
 
         VStack(alignment: .leading, spacing: 2) {
-          Text(verbatim: option.mode.name(in: terms.language))
+          Text(verbatim: content?.name ?? option.mode.name(in: terms.language))
             .font(.headline)
-          if let summary {
-            Text(verbatim: summary)
+          if let content {
+            Text(verbatim: content.line)
               .font(.subheadline)
               .foregroundStyle(.secondary)
           }
@@ -144,23 +146,5 @@ private struct TabMenuRow: View {
     .contentShape(.rect)
     .accessibilityElement(children: .combine)
     .accessibilityAddTraits(isSelected ? .isSelected : [])
-  }
-
-  /// The Mode colour; Splatfest Battle, which has none, takes the neutral tint its progress
-  /// shows in elsewhere.
-  private var ringColor: Color {
-    switch option.mode {
-      case .battle(let mode): Color(ModeColor(mode).base)
-      case .splatfestBattle: .primary
-    }
-  }
-
-  /// The summary's line, worded as the sidebar's: the current Rule and time left, the pause with
-  /// the return time, or nothing on; none before the Mode has a screen.
-  private var summary: String? {
-    option.summary.map { summary in
-      SidebarRowContent(row: .mode(summary), writer: time.writer(terms), format: time.format(terms.language), now: now)
-        .summary
-    }
   }
 }
