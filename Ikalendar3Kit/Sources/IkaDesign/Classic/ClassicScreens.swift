@@ -11,14 +11,15 @@ import SwiftUI
 
 // MARK: - ClassicBattleScreenView
 
-/// Classic's Battle Mode screen: plain rows in an inset grouped list, a stand-in until ticket 26
-/// draws ikalendar 2's look.
+/// Classic's Battle Mode screen, ikalendar 2's look with Splatoon 3's Mode colours, icons and
+/// fonts: the Mode stamp, the current Rotation featured under "Now:" with its progress, then the
+/// next and every later Rotation in secondary cells.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store. Pull to
-/// refresh reaches its list through the `refreshable` action the shared screen sets.
+/// refresh reaches its list through the `refreshable` action the shared screen sets. A finished
+/// Rotation leaves the list as the app clock passes its end, and the next one glides into the
+/// featured cell.
 public struct ClassicBattleScreenView: View {
-  @Environment(\.timeZone) private var timeZone
-
   private let screen: BattleScreen
   private let terms: GameTerms
   private let now: Date
@@ -37,58 +38,28 @@ public struct ClassicBattleScreenView: View {
   }
 
   public var body: some View {
-    List {
-      Section {
-        switch screen.current {
-          case .running(let running):
-            row(running.item)
-            ProgressView(value: running.progress.sharePassed) {
-              Text(verbatim: writer.timeLeft(running.progress))
-            }
-            .accessibilityHidden(true)
+    let rows: [ClassicBattleRow] = ClassicBattleRow.rows(of: screen)
 
-          case .paused(let returnTime):
-            Text(verbatim: ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now)))
-
-          case .nothingCurrent:
-            Text(verbatim: ScreenText.nothingCurrent.text(in: terms.language))
-        }
+    ClassicScheduleList(
+      icon: ModeIcon(Mode.battle(screen.mode)),
+      reflowValue: rows.map(\.id))
+    { metrics in
+      ForEach(rows) { row in
+        ClassicBattleSection(row: row, mode: screen.mode, terms: terms, now: now, metrics: metrics)
       }
-      ForEach([screen.next].compactMap(\.self) + screen.later, id: \.self) { rotation in
-        row(rotation)
-      }
-      Section { } footer: {
-        FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
-      }
+    } footer: {
+      FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
     }
-    .classicListStyle()
   }
-
-  private func row(_ rotation: Rotation) -> some View {
-    VStack(alignment: .leading, spacing: 2) {
-      Text(verbatim: format.timeRange(of: rotation))
-        .font(.caption)
-        .foregroundStyle(.secondary)
-      Text(verbatim: rotation.setting.map { terms.name(of: $0.rule) } ?? "")
-        .font(.headline)
-      Text(verbatim: rotation.setting?.stages.map(terms.name(of:)).joined(separator: " · ") ?? "")
-        .font(.subheadline)
-    }
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(writer.sentence(for: rotation, at: now))
-  }
-
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
 }
 
 // MARK: - ClassicSalmonRunScreenView
 
-/// Classic's Salmon Run screen: plain rows in an inset grouped list, a stand-in until ticket 26
-/// draws ikalendar 2's look. It receives `IkaCore` values only and reads no store.
+/// Classic's Salmon Run screen, ikalendar 2's look with Splatoon 3's Mode colours, icons and
+/// fonts: a running Eggstra Work on top, then one cell per Shift with its Stage, four weapons,
+/// King Salmonid and time range, a Big Run inline where it falls. It receives `IkaCore` values
+/// only and reads no store.
 public struct ClassicSalmonRunScreenView: View {
-  @Environment(\.timeZone) private var timeZone
-
   private let screen: SalmonRunScreen
   private let terms: GameTerms
   private let now: Date
@@ -107,60 +78,62 @@ public struct ClassicSalmonRunScreenView: View {
   }
 
   public var body: some View {
-    List {
-      if let eggstraWork = screen.eggstraWork {
-        Section { row(eggstraWork.item) }
-      }
-      Section {
-        switch screen.current {
-          case .running(let running):
-            row(running.item)
-            ProgressView(value: running.progress.sharePassed) {
-              Text(verbatim: writer.timeLeft(running.progress))
-            }
-            .accessibilityHidden(true)
+    let rows: [ClassicSalmonRunRow] = ClassicSalmonRunRow.rows(of: screen)
 
-          case .paused,
-               .nothingCurrent:
-            Text(verbatim: ScreenText.nothingCurrent.text(in: terms.language))
+    ClassicScheduleList(
+      icon: ModeIcon(.salmonRun),
+      reflowValue: rows.map(\.id))
+    { metrics in
+      ForEach(rows) { row in
+        switch row {
+          case .shift(let shift, let progress, let tag):
+            ClassicShiftSection(shift: shift, progress: progress, tag: tag, terms: terms, now: now, metrics: metrics)
+          case .nothingCurrent:
+            Section {
+              ClassicStatusCell(
+                text: ScreenText.nothingCurrent.text(in: terms.language),
+                arrangement: metrics.arrangement)
+            }
         }
       }
-      ForEach([screen.next].compactMap(\.self) + screen.later, id: \.self) { shift in
-        row(shift)
-      }
-      Section { } footer: {
-        FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
-      }
+    } footer: {
+      FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
     }
-    .classicListStyle()
   }
-
-  private func row(_ shift: Shift) -> some View {
-    VStack(alignment: .leading, spacing: 2) {
-      Text(verbatim: format.timeRange(of: shift, withWeekday: true))
-        .font(.caption)
-        .foregroundStyle(.secondary)
-      Text(verbatim: terms.name(of: shift.stage))
-        .font(.headline)
-      Text(verbatim: shift.weapons.map(terms.name(of:)).joined(separator: " · "))
-        .font(.subheadline)
-      if shift.kind != .regular || shift.kingSalmonid != nil {
-        Text(verbatim: [shift.kind.label?.text(in: terms.language), shift.kingSalmonid.map(terms.name(of:))]
-          .compactMap(\.self)
-          .joined(separator: " · "))
-          .font(.caption)
-          .foregroundStyle(.secondary)
-      }
-    }
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(writer.sentence(for: shift, at: now))
-  }
-
-  private var format: ScheduleFormat { .init(language: terms.language, timeZone: timeZone) }
-  private var writer: SentenceWriter { .init(terms: terms, timeZone: timeZone, hourCycle: Locale.current.hourCycle) }
 }
 
-// MARK: - List style
+// MARK: - ClassicScheduleList
+
+/// What both Classic screens share: ikalendar 2's inset grouped list with hidden row separators,
+/// its rows sized for the list's width and text size, rows moving into place as the clock changes
+/// them and, on iPhone and iPad, the Mode stamp docking into its badge.
+private struct ClassicScheduleList<Rows: View, Footer: View>: View {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+  let icon: ModeIcon
+  let reflowValue: [ClassicRowID]
+  @ViewBuilder let rows: (CellMetrics) -> Rows
+  @ViewBuilder let footer: () -> Footer
+
+  var body: some View {
+    GeometryReader { geometry in
+      List {
+        rows(CellMetrics(width: geometry.size.width, dynamicTypeSize: dynamicTypeSize))
+          .listRowSeparator(.hidden)
+        Section { } footer: {
+          footer()
+        }
+      }
+      .classicListStyle()
+      .listReflow(value: reflowValue)
+      #if os(iOS)
+      .classicModeStamp(icon)
+      #endif
+    }
+  }
+}
+
+// MARK: - View
 
 extension View {
   /// Classic's list: inset grouped on iPhone and iPad, inset on the Mac.
