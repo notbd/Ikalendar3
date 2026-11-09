@@ -5,23 +5,30 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+import Foundation
 import IkaCore
 import Testing
 @testable import Ikalendar3
 
 // MARK: - SidebarChoiceTests
 
-/// The iPad sidebar row the player picks, and the menus' choice it carries along.
+/// The one selection every iPad layout shares: a sidebar pick moves the tabs, a tab or menu
+/// choice moves the sidebar, so a window that crosses a layout boundary shows what the player
+/// chose last.
 struct SidebarChoiceTests {
-  @Test
-  func `The sidebar has no choice until the player picks a row, and then keeps it`() {
+  @Test(arguments: [
+    (SidebarItem.challenge, ModeTab.challenge),
+    (.mode(.battle(.anarchyOpen)), .anarchy),
+    (.eggstraWork, .salmonRun),
+    (.splatfestBattle(.pro), .regularBattle),
+  ])
+  func `Picking a sidebar row selects the tab that shows its screen`(_ item: SidebarItem, _ place: ModeTab) {
     let status: AppStatus = .init(selectedPlace: .xBattle)
-    #expect(status.sidebarChoice == nil)
 
-    status.pick(.challenge)
+    status.pick(item)
 
-    #expect(status.sidebarChoice == .challenge)
-    #expect(status.selectedPlace == .xBattle)
+    #expect(status.sidebarChoice == item)
+    #expect(status.selectedPlace == place)
   }
 
   @Test(arguments: [
@@ -41,5 +48,71 @@ struct SidebarChoiceTests {
 
     #expect(status.mode(of: .anarchy) == anarchy)
     #expect(status.mode(of: .splatfestBattle) == splatfestBattle)
+  }
+
+  @Test
+  func `Until the player picks a row, the sidebar shows the selected tab's`() {
+    let status: AppStatus = .init(selectedPlace: .salmonRun)
+
+    #expect(status.sidebarChoice == nil)
+    #expect(status.sidebarItem(selectedTab: .mode(.salmonRun)) == .mode(.salmonRun))
+    #expect(status.sidebarItem(selectedTab: .splatfest) == .splatfest)
+  }
+
+  @Test
+  func `Selecting another tab moves the sidebar to that tab's row, in the form its menu shows`() throws {
+    let status: AppStatus = .init(selectedPlace: .regularBattle)
+    status.pick(.challenge)
+
+    status.select(.mode(.anarchy))
+    try status.choose(Self.option(.battle(.anarchyOpen)))
+
+    #expect(status.sidebarItem(selectedTab: .mode(.anarchy)) == .mode(.battle(.anarchyOpen)))
+  }
+
+  @Test(arguments: [
+    (
+      SidebarItem.mode(.battle(.anarchySeries)),
+      RotationMode.battle(.anarchyOpen),
+      SidebarItem.mode(.battle(.anarchyOpen))),
+    (.splatfestBattle(.open), .splatfestBattle(.pro), .splatfestBattle(.pro)),
+    // A menu choice leaves a row of another Mode where it is.
+    (.mode(.battle(.x)), .battle(.anarchyOpen), .mode(.battle(.x))),
+    (.splatfest, .splatfestBattle(.pro), .splatfest),
+  ])
+  func `A menu choice moves the sidebar's row to the form it picks`(
+    _ picked: SidebarItem,
+    _ chosen: RotationMode,
+    _ shown: SidebarItem)
+    throws
+  {
+    let status: AppStatus = .init(selectedPlace: .regularBattle)
+    status.pick(picked)
+
+    try status.choose(Self.option(chosen))
+
+    #expect(status.sidebarItem(selectedTab: .mode(.regularBattle)) == shown)
+  }
+
+  @Test
+  func `The sidebar's row survives a round trip through the columns`() throws {
+    let status: AppStatus = .init(selectedPlace: .regularBattle)
+    status.pick(.mode(.battle(.x)))
+
+    // In the columns, the Anarchy header's menu picks Open, and an event's sheet opens and closes.
+    try status.choose(Self.option(.battle(.anarchyOpen)))
+    status.presentedEvent = .challenge
+    status.presentedEvent = nil
+
+    #expect(status.sidebarItem(selectedTab: .mode(.xBattle)) == .mode(.battle(.x)))
+    #expect(status.selectedPlace == .xBattle)
+    #expect(status.mode(of: .anarchy) == .battle(.anarchyOpen))
+  }
+
+  /// The menu option that picks `mode`, as its menu offers it.
+  static private func option(_ mode: RotationMode) throws -> TabMenuOption {
+    try #require([TabMenu.anarchy, .splatfestBattle]
+      .flatMap { Snapshot().options(of: $0, at: Date()) }
+      .first { $0.mode == mode })
   }
 }
