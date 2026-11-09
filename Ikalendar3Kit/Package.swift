@@ -23,8 +23,9 @@ let package = Package(
   targets: [
     // Domain, data and every Surface's content. Foundation only (a SwiftLint rule enforces it).
     .target(name: "IkaCore", resources: [.process("Resources")], swiftSettings: swiftSettings),
-    // Design system. Linked by every product target, the watch ones included. `Resources` holds the
-    // asset catalog that scripts/assets.sh builds.
+    // Design system. Linked by every product target, the watch ones included. The build copies its
+    // `Resources` into every product that links it, so they hold only string tables; the fonts and
+    // the image catalog ship once per app in the project's IkaResources framework.
     .target(
       name: "IkaDesign",
       dependencies: ["IkaCore"],

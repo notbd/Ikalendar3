@@ -10,6 +10,12 @@
 		D10000000000000000000001 /* Ikalendar3Widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* Ikalendar3Widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D10000000000000000000002 /* Ikalendar3Watch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = B20000000000000000000004 /* Ikalendar3Watch.app */; platformFilter = ios; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D10000000000000000000003 /* Ikalendar3WatchWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = B20000000000000000000005 /* Ikalendar3WatchWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		D10000000000000000000004 /* IkaResources.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B20000000000000000000006 /* IkaResources.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D10000000000000000000005 /* IkaResources.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = B20000000000000000000006 /* IkaResources.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		D20000000000000000000001 /* IkaResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B20000000000000000000006 /* IkaResources.framework */; };
+		D20000000000000000000002 /* IkaResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B20000000000000000000006 /* IkaResources.framework */; };
+		D20000000000000000000003 /* IkaResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B20000000000000000000006 /* IkaResources.framework */; };
+		D20000000000000000000004 /* IkaResources.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B20000000000000000000006 /* IkaResources.framework */; };
 		F10000000000000000000001 /* IkaCore in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000001 /* IkaCore */; };
 		F10000000000000000000002 /* IkaDesign in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000002 /* IkaDesign */; };
 		F10000000000000000000003 /* IkaIntents in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000003 /* IkaIntents */; };
@@ -52,6 +58,34 @@
 			remoteGlobalIDString = B10000000000000000000005;
 			remoteInfo = Ikalendar3WatchWidgets;
 		};
+		9B0000000000000000000005 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000000000000000000006;
+			remoteInfo = IkaResources;
+		};
+		9B0000000000000000000006 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000000000000000000006;
+			remoteInfo = IkaResources;
+		};
+		9B0000000000000000000007 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000000000000000000006;
+			remoteInfo = IkaResources;
+		};
+		9B0000000000000000000008 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AA0000000000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B10000000000000000000006;
+			remoteInfo = IkaResources;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -88,6 +122,28 @@
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C10000000000000000000004 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				D10000000000000000000004 /* IkaResources.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C10000000000000000000005 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				D10000000000000000000005 /* IkaResources.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -97,9 +153,17 @@
 		B20000000000000000000003 /* Ikalendar3Widgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Ikalendar3Widgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B20000000000000000000004 /* Ikalendar3Watch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Ikalendar3Watch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B20000000000000000000005 /* Ikalendar3WatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Ikalendar3WatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B20000000000000000000006 /* IkaResources.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = IkaResources.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		AC0000000000000000000001 /* Exceptions for "Ikalendar3" folder in "Ikalendar3" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Info-iOS.plist",
+			);
+			target = B10000000000000000000001 /* Ikalendar3 */;
+		};
 		AC0000000000000000000003 /* Exceptions for "Ikalendar3Widgets" folder in "Ikalendar3Widgets" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -117,11 +181,12 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		AB0000000000000000000001 /* Ikalendar3 */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Ikalendar3; sourceTree = "<group>"; };
+		AB0000000000000000000001 /* Ikalendar3 */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AC0000000000000000000001 /* Exceptions for "Ikalendar3" folder in "Ikalendar3" target */, ); path = Ikalendar3; sourceTree = "<group>"; };
 		AB0000000000000000000002 /* Ikalendar3Tests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Ikalendar3Tests; sourceTree = "<group>"; };
 		AB0000000000000000000003 /* Ikalendar3Widgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AC0000000000000000000003 /* Exceptions for "Ikalendar3Widgets" folder in "Ikalendar3Widgets" target */, ); path = Ikalendar3Widgets; sourceTree = "<group>"; };
 		AB0000000000000000000004 /* Ikalendar3Watch */ = {isa = PBXFileSystemSynchronizedRootGroup; path = Ikalendar3Watch; sourceTree = "<group>"; };
 		AB0000000000000000000005 /* Ikalendar3WatchWidgets */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (AC0000000000000000000005 /* Exceptions for "Ikalendar3WatchWidgets" folder in "Ikalendar3WatchWidgets" target */, ); path = Ikalendar3WatchWidgets; sourceTree = "<group>"; };
+		AB0000000000000000000006 /* IkaResources */ = {isa = PBXFileSystemSynchronizedRootGroup; path = IkaResources; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -129,6 +194,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D20000000000000000000001 /* IkaResources.framework in Frameworks */,
 				F10000000000000000000001 /* IkaCore in Frameworks */,
 				F10000000000000000000002 /* IkaDesign in Frameworks */,
 				F10000000000000000000003 /* IkaIntents in Frameworks */,
@@ -147,6 +213,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D20000000000000000000002 /* IkaResources.framework in Frameworks */,
 				F10000000000000000000004 /* IkaCore in Frameworks */,
 				F10000000000000000000005 /* IkaDesign in Frameworks */,
 				F10000000000000000000006 /* IkaIntents in Frameworks */,
@@ -157,6 +224,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D20000000000000000000003 /* IkaResources.framework in Frameworks */,
 				F10000000000000000000007 /* IkaCore in Frameworks */,
 				F10000000000000000000008 /* IkaDesign in Frameworks */,
 			);
@@ -166,8 +234,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D20000000000000000000004 /* IkaResources.framework in Frameworks */,
 				F10000000000000000000009 /* IkaCore in Frameworks */,
 				F1000000000000000000000A /* IkaDesign in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B70000000000000000000006 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -183,6 +259,7 @@
 				AB0000000000000000000003 /* Ikalendar3Widgets */,
 				AB0000000000000000000004 /* Ikalendar3Watch */,
 				AB0000000000000000000005 /* Ikalendar3WatchWidgets */,
+				AB0000000000000000000006 /* IkaResources */,
 				AA0000000000000000000003 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -195,6 +272,7 @@
 				B20000000000000000000003 /* Ikalendar3Widgets.appex */,
 				B20000000000000000000004 /* Ikalendar3Watch.app */,
 				B20000000000000000000005 /* Ikalendar3WatchWidgets.appex */,
+				B20000000000000000000006 /* IkaResources.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -211,12 +289,14 @@
 				B80000000000000000000001 /* Resources */,
 				C10000000000000000000001 /* Embed Foundation Extensions */,
 				C10000000000000000000002 /* Embed Watch Content */,
+				C10000000000000000000004 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				9A0000000000000000000001 /* PBXTargetDependency */,
 				9A0000000000000000000002 /* PBXTargetDependency */,
+				9A0000000000000000000005 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				AB0000000000000000000001 /* Ikalendar3 */,
@@ -264,6 +344,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				9A0000000000000000000006 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				AB0000000000000000000003 /* Ikalendar3Widgets */,
@@ -286,11 +367,13 @@
 				B70000000000000000000004 /* Frameworks */,
 				B80000000000000000000004 /* Resources */,
 				C10000000000000000000003 /* Embed Foundation Extensions */,
+				C10000000000000000000005 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				9A0000000000000000000004 /* PBXTargetDependency */,
+				9A0000000000000000000007 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				AB0000000000000000000004 /* Ikalendar3Watch */,
@@ -315,6 +398,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				9A0000000000000000000008 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				AB0000000000000000000005 /* Ikalendar3WatchWidgets */,
@@ -327,6 +411,26 @@
 			productName = Ikalendar3WatchWidgets;
 			productReference = B20000000000000000000005 /* Ikalendar3WatchWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		B10000000000000000000006 /* IkaResources */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B30000000000000000000006 /* Build configuration list for PBXNativeTarget "IkaResources" */;
+			buildPhases = (
+				B60000000000000000000006 /* Sources */,
+				B70000000000000000000006 /* Frameworks */,
+				B80000000000000000000006 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				AB0000000000000000000006 /* IkaResources */,
+			);
+			name = IkaResources;
+			productName = IkaResources;
+			productReference = B20000000000000000000006 /* IkaResources.framework */;
+			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
 
@@ -352,6 +456,9 @@
 						CreatedOnToolsVersion = 27.2;
 					};
 					B10000000000000000000005 = {
+						CreatedOnToolsVersion = 27.2;
+					};
+					B10000000000000000000006 = {
 						CreatedOnToolsVersion = 27.2;
 					};
 				};
@@ -391,6 +498,7 @@
 				B10000000000000000000003 /* Ikalendar3Widgets */,
 				B10000000000000000000004 /* Ikalendar3Watch */,
 				B10000000000000000000005 /* Ikalendar3WatchWidgets */,
+				B10000000000000000000006 /* IkaResources */,
 			);
 		};
 /* End PBXProject section */
@@ -425,6 +533,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		B80000000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B80000000000000000000006 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -469,6 +584,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		B60000000000000000000006 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -492,6 +614,26 @@
 			isa = PBXTargetDependency;
 			target = B10000000000000000000005 /* Ikalendar3WatchWidgets */;
 			targetProxy = 9B0000000000000000000004 /* PBXContainerItemProxy */;
+		};
+		9A0000000000000000000005 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B10000000000000000000006 /* IkaResources */;
+			targetProxy = 9B0000000000000000000005 /* PBXContainerItemProxy */;
+		};
+		9A0000000000000000000006 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B10000000000000000000006 /* IkaResources */;
+			targetProxy = 9B0000000000000000000006 /* PBXContainerItemProxy */;
+		};
+		9A0000000000000000000007 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B10000000000000000000006 /* IkaResources */;
+			targetProxy = 9B0000000000000000000007 /* PBXContainerItemProxy */;
+		};
+		9A0000000000000000000008 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B10000000000000000000006 /* IkaResources */;
+			targetProxy = 9B0000000000000000000008 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -565,6 +707,7 @@
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_FILE[sdk=iphone*]" = "Ikalendar3/Info-iOS.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphone*]" = YES;
@@ -595,6 +738,7 @@
 				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				"INFOPLIST_FILE[sdk=iphone*]" = "Ikalendar3/Info-iOS.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = ikalendar3;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphone*]" = YES;
@@ -764,6 +908,59 @@
 			};
 			name = Release;
 		};
+		B40000000000000000000006 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks @loader_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks @loader_path/Frameworks";
+				ONLY_ACTIVE_ARCH = NO;
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3.resources;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=watch*]" = io.tianwei.ikalendar3.watchkitapp.resources;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx watchos watchsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				"TARGETED_DEVICE_FAMILY[sdk=watch*]" = 4;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		B50000000000000000000006 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOLS = NO;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks @loader_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = io.tianwei.ikalendar3.resources;
+				"PRODUCT_BUNDLE_IDENTIFIER[sdk=watch*]" = io.tianwei.ikalendar3.watchkitapp.resources;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx watchos watchsimulator";
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				"TARGETED_DEVICE_FAMILY[sdk=watch*]" = 4;
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -817,6 +1014,15 @@
 			buildConfigurations = (
 				B40000000000000000000005 /* Debug */,
 				B50000000000000000000005 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B30000000000000000000006 /* Build configuration list for PBXNativeTarget "IkaResources" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B40000000000000000000006 /* Debug */,
+				B50000000000000000000006 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
