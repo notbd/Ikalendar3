@@ -86,10 +86,9 @@ extension Snapshot {
       timeZone: settings.timeZone,
       hourCycle: settings.hourCycle)
     var ids: Set<String> = []
-    return remindableEvents
+    let reminders = remindableEvents
       .filter { settings.kinds.contains($0.reminderKind) && $0.startTime > instant }
-      .sorted { $0.startTime < $1.startTime }
-      .compactMap { event in
+      .compactMap { event -> EventReminder? in
         let id: String = EventReminder.identifier(of: event.reminderKind, startingAt: event.startTime)
         guard ids.insert(id).inserted else { return nil }
 
@@ -100,8 +99,7 @@ extension Snapshot {
           title: ReminderText.startsNow.text(in: settings.language, event.name(in: writer.terms)),
           body: writer.sentence(for: event, at: event.startTime))
       }
-      .prefix(EventReminder.maximumCount)
-      .map(\.self)
+    return Array(reminders.sorted { $0.fireDate < $1.fireDate }.prefix(EventReminder.maximumCount))
   }
 
   /// Every published event a reminder can cover, each as it starts: every Big Run and Eggstra
