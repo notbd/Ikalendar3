@@ -26,7 +26,10 @@ public struct WidgetTimeline<Content: Hashable & Sendable>: Hashable, Sendable {
 ///
 /// Every system Surface shows when its data was fetched (ADR 0003): families with room (medium
 /// and larger widgets, and any watch family with room) write `fetchTime`, and every family marks
-/// `isStale`.
+/// `isStale`. The expanded Live Activity writes the schedules feed's fetch time too, with no
+/// three-hour mark: its stale date already marks a passed boundary (`TrackingContent.staleDate`).
+/// That time travels in ticket 37's content-state wrapper beside `TrackingContent`, taken from
+/// `snapshot.schedules.fetchTime` at each update, so `TrackingContent` stays as it is.
 public struct WidgetEntry<Content: Hashable & Sendable>: Hashable, Sendable {
   /// When the entry starts to show.
   public let date: Date

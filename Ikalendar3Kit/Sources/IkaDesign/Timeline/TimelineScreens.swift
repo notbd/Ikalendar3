@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - TimelineBattleScreenView
 
 /// Timeline's Battle Mode screen, after SplatNet 3's schedule page: a black header with the Mode,
-/// the Series and Open strip on Anarchy, then every Rotation top to bottom on a Mode-colour time
+/// the Series and Open strip on Anarchy, an announced Splatfest's card, then every Rotation top to bottom on a Mode-colour time
 /// axis with 24-hour pins, the current one's progress filled in along the axis.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store. Pull to
@@ -51,6 +51,11 @@ public struct TimelineBattleScreenView: View {
     {
       if isAnarchy {
         TimelineFormStrip(shown: screen.mode, language: terms.language)
+      }
+      if let card = screen.announcedSplatfest {
+        SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .timeline, now: now)
+          .padding(.horizontal, TimelineMetrics.contentTrailing)
+          .padding(.top, TimelineMetrics.axisTop)
       }
     } axis: { arrangement in
       TimelineAxis(
@@ -106,7 +111,8 @@ public struct TimelineBattleScreenView: View {
 
 // MARK: - TimelineSalmonRunScreenView
 
-/// Timeline's Salmon Run screen: the black header, then a running Eggstra Work on top and every
+/// Timeline's Salmon Run screen: the black header, then the running or announced Eggstra Work on
+/// top and every
 /// Shift on the time axis with its Stage, four weapons, King Salmonid and time range, a Big Run
 /// inline where it falls and marked in its colour. It receives `IkaCore` values only and reads no
 /// store.
@@ -182,7 +188,7 @@ public struct TimelineSalmonRunScreenView: View {
 ///
 /// The page stays dark in light appearance until ticket 57 designs Timeline's light look, so the
 /// list and the navigation bar take the dark scheme.
-private struct TimelineScheduleList<Strip: View, Axis: View, Footer: View, ReflowValue: Equatable>: View {
+private struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowValue: Equatable>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   /// How far the header's stamp has docked into the navigation bar badge.
@@ -194,7 +200,9 @@ private struct TimelineScheduleList<Strip: View, Axis: View, Footer: View, Reflo
   /// The Mode's name in the header.
   let headerName: String
   let reflowValue: ReflowValue
-  @ViewBuilder let strip: () -> Strip
+  /// What sits between the header and the axis: the Series and Open strip, an announced
+  /// Splatfest's card.
+  @ViewBuilder let aboveAxis: () -> AboveAxis
   @ViewBuilder let axis: (CellArrangement) -> Axis
   @ViewBuilder let footer: () -> Footer
 
@@ -206,7 +214,7 @@ private struct TimelineScheduleList<Strip: View, Axis: View, Footer: View, Reflo
       ScrollView {
         VStack(spacing: 0) {
           TimelineHeader(icon: icon, name: headerName, dockProgress: dockProgress, arrangement: arrangement)
-          strip()
+          aboveAxis()
           axis(arrangement)
           footer()
             .padding(.horizontal, TimelineMetrics.contentTrailing)

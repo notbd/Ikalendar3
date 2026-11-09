@@ -15,9 +15,9 @@ import Observation
 ///
 /// Each refresh publishes the cache first, so content shows at once and offline, then passes each
 /// feed through the shared `FeedGate`, then brings the Splatfest art in step and publishes the
-/// cache again, art included. A failed feed keeps its
-/// last good data and is marked stale; nothing a refresh does blanks content already shown. As
-/// in ikalendar 2, the in-flight `status` is kept apart from the `settledStatus` a screen shows.
+/// cache again, art included. A failed feed keeps its last good data and is marked stale; nothing
+/// a refresh does blanks content already shown. As in ikalendar 2, the in-flight `status` is kept
+/// apart from the `settledStatus` a screen shows.
 ///
 /// Surfaces observe it on the main actor; requests, decoding and file access run off it.
 @MainActor

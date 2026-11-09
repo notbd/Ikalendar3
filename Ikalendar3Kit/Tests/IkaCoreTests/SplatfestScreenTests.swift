@@ -107,18 +107,19 @@ struct SplatfestScreenTests {
     #expect(screen.afterwards.allSatisfy { $0.mode == .battle(.regular) && !$0.isPaused })
   }
 
+  /// The card holds the file the engine stored, so a view never loads the art past the gate.
   @Test
-  func `The Splatfest card carries its art address from festivals json`() async throws {
-    let snapshot = try await Snapshot(
-      schedules: .init(
-        content: ScheduleFeed.decode(from: Fixture.splatfestSecondHalf.data()),
-        fetchTime: TestData.epoch),
-      festivals: .init(content: FestivalFeed.decode(from: Fixture.festivals.data()), fetchTime: TestData.epoch))
+  func `The Splatfest card carries the stored art, and none while none is stored`() async throws {
+    var snapshot = try await Snapshot.schedules(.splatfestSecondHalf)
+    let instant: Date = date("2026-11-01T05:23:00Z")
+    let unstored = try #require(snapshot.splatfestScreen(of: .open, at: instant))
+    snapshot.splatfestArt = URL(filePath: "/cache/splatfest-JUEA-00108.png")
 
-    let screen = try #require(snapshot.splatfestScreen(of: .open, at: date("2026-11-01T05:23:00Z")))
+    let stored = try #require(snapshot.splatfestScreen(of: .open, at: instant))
 
-    #expect(screen.splatfest.artURL != nil)
-    #expect(screen.splatfest.teamColors.count == 3)
+    #expect(unstored.art == nil)
+    #expect(stored.art == snapshot.splatfestArt)
+    #expect(stored.splatfest.teamColors.count == 3)
   }
 
   @Test

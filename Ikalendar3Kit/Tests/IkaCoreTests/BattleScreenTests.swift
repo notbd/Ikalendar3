@@ -85,6 +85,48 @@ struct BattleScreenTests {
     #expect(screen.later.map(\.startTime) == everyTwoHours(from: "2026-11-02T02:00:00Z", count: 2))
   }
 
+  @Test(arguments: [
+    // Announced: on Regular Battle's screen, the tab the Splatfest takes when it starts.
+    ("2026-10-30T12:00:00Z", BattleMode.regular, true),
+    ("2026-10-30T23:59:59Z", BattleMode.regular, true),
+    ("2026-10-30T12:00:00Z", BattleMode.anarchySeries, false),
+    ("2026-10-30T12:00:00Z", BattleMode.x, false),
+    // Running: the Splatfest tab shows it instead.
+    ("2026-10-31T00:00:00Z", BattleMode.regular, false),
+  ])
+  func `Regular Battle's screen carries a Splatfest only while it is announced`(
+    _ instant: String,
+    _ mode: BattleMode,
+    _ carriesSplatfest: Bool)
+    async throws
+  {
+    let snapshot = try await Snapshot.schedules(.splatfestAnnounced)
+    let splatfest = try #require(snapshot.splatfest)
+
+    let screen = try #require(snapshot.battleScreen(of: mode, at: date(instant)))
+
+    #expect(screen.announcedSplatfest?.splatfest == (carriesSplatfest ? splatfest : nil))
+  }
+
+  @Test
+  func `An announced Splatfest's card carries its stored art`() async throws {
+    var snapshot = try await Snapshot.schedules(.splatfestAnnounced)
+    let instant = date("2026-10-30T12:00:00Z")
+    #expect(snapshot.battleScreen(of: .regular, at: instant)?.announcedSplatfest?.art == nil)
+
+    let art: URL = .init(filePath: "/art/splatfest.png")
+    snapshot.splatfestArt = art
+
+    #expect(snapshot.battleScreen(of: .regular, at: instant)?.announcedSplatfest?.art == art)
+  }
+
+  @Test
+  func `A Battle Mode screen carries no Splatfest when none is announced`() async throws {
+    let snapshot = try await Snapshot.schedules(.normalDay)
+
+    #expect(snapshot.battleScreen(of: .regular, at: date("2026-10-20T13:00:00Z"))?.announcedSplatfest == nil)
+  }
+
   @Test
   func `A Battle Mode screen carries the fetch time of the schedules feed`() async throws {
     let fetchTime = date("2026-10-20T12:03:00Z")

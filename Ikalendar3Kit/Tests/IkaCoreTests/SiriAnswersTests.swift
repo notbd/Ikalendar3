@@ -108,20 +108,47 @@ struct SiriAnswersTests {
   // MARK: Splatfest pause
 
   /// The recorded decision: a Battle Mode a Splatfest pauses says when it comes back. Next and
-  /// a Rule read the first Rotation after the Splatfest once it is published.
+  /// a Rule read the first Rotation after the Splatfest once it is published, after the pause,
+  /// whose weekday tells the Rotation's day: asked Saturday night, its 4:00 PM is Sunday's.
   @Test
   func `A paused Battle Mode says when it comes back`() async throws {
     let secondHalf = try await Self.answers(.splatfestSecondHalf)
     let firstHalf = try await Self.answers(.splatfestFirstHalf)
     let comesBack = "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM."
-    let firstAfter =
-      "Regular Battle: Turf War on Mincemeat Metalworks and Inkblot Art Academy, from 4:00\u{202F}PM to 6:00\u{202F}PM."
+    let firstAfter = comesBack
+      + " Regular Battle: Turf War on Mincemeat Metalworks and Inkblot Art Academy,"
+      + " from 4:00\u{202F}PM to 6:00\u{202F}PM."
 
     #expect(secondHalf.now(in: .battle(.regular), at: date("2026-11-01T06:00:00Z")) == comesBack)
     #expect(secondHalf.next(in: .battle(.regular), at: date("2026-11-01T06:00:00Z")) == firstAfter)
     #expect(secondHalf.next(Self.turfWar, in: .regular, at: date("2026-11-01T06:00:00Z")) == firstAfter)
     #expect(firstHalf.next(in: .battle(.regular), at: date("2026-10-31T13:00:00Z")) == comesBack)
     #expect(firstHalf.next(Self.turfWar, in: .regular, at: date("2026-10-31T13:00:00Z")) == comesBack)
+  }
+
+  /// Ticket 21: a Rule absent from the remaining Rotations is not published, a pause or not.
+  @Test
+  func `A Rule no published Rotation after the Splatfest plays is not in the published Schedule`() async throws {
+    let answers = try await Self.answers(.splatfestSecondHalf)
+    let instant: Date = date("2026-11-01T06:00:00Z")
+
+    #expect(answers.next(Self.rainmaker, in: .regular, at: instant) ==
+      "Regular Battle: Rainmaker is not in the published Schedule.")
+    #expect(answers.next(Self.turfWar, in: .x, at: instant) == "X Battle: Turf War is not in the published Schedule.")
+  }
+
+  /// The feed publishes the paused windows that follow, so the Schedule does reach that far.
+  @Test
+  func `In the last Rotation before a Splatfest, what comes next is the pause`() async throws {
+    let answers = try await Self.answers(.splatfestAnnounced)
+    let instant: Date = date("2026-10-30T23:00:00Z")
+
+    #expect(answers.next(in: .battle(.regular), at: instant) ==
+      "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM.")
+    #expect(answers.next(Self.rainmaker, in: .x, at: instant) ==
+      "X Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM.")
+    #expect(answers.next(Self.clamBlitz, in: .x, at: instant) ==
+      "X Battle: Clam Blitz on Um'ami Ruins and Sturgeon Shipyard, from 3:00\u{202F}PM to 5:00\u{202F}PM, 1 hour left.")
   }
 
   // MARK: Big Run and Splatfest

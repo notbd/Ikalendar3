@@ -75,10 +75,14 @@ extension TimelineEntry<Rotation> {
 }
 
 extension TimelineEntry<Shift> {
-  /// The axis of the Salmon Run screen: a running Eggstra Work on top, then the current Shift or
-  /// nothing current, then the next and every later Shift, with a Big Run where it falls.
+  /// The axis of the Salmon Run screen: the running or announced Eggstra Work on top, then the
+  /// current Shift or nothing current, then the next and every later Shift, with a Big Run where
+  /// it falls.
   static func entries(of screen: SalmonRunScreen) -> [TimelineEntry] {
-    let eggstraWork: [TimelineEntry] = screen.eggstraWork.map { [.item($0.item, progress: $0.progress)] } ?? []
+    let eggstraWork: [TimelineEntry] =
+      if let running = screen.eggstraWork { [.item(running.item, progress: running.progress)] }
+      else if let next = screen.nextEggstraWork { [.item(next, progress: nil)] }
+      else { [] }
     return eggstraWork + entries(current: screen.current, upcoming: [screen.next].compactMap(\.self) + screen.later)
   }
 }

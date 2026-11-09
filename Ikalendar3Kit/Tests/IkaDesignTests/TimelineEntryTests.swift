@@ -89,6 +89,24 @@ struct TimelineEntryTests {
   }
 
   @Test
+  func `An announced Eggstra Work waits on top of the current Shift`() async throws {
+    let snapshot = try await snapshot(.eggstraWork)
+    let screen = try #require(snapshot.salmonRunScreen(at: date("2026-08-28T12:00:00Z")))
+    let nextEggstraWork = try #require(screen.nextEggstraWork)
+    guard case .running(let current) = screen.current else {
+      Issue.record("No Shift runs before the Eggstra Work")
+      return
+    }
+
+    let entries: [TimelineEntry<Shift>] = TimelineEntry.entries(of: screen)
+
+    #expect(entries.prefix(2) == [
+      .item(nextEggstraWork, progress: nil),
+      .item(current.item, progress: current.progress),
+    ])
+  }
+
+  @Test
   func `A Big Run sits inline where it falls`() async throws {
     let snapshot = try await snapshot(.bigRun)
     let screen = try #require(snapshot.salmonRunScreen(at: date("2026-09-07T12:00:00Z")))

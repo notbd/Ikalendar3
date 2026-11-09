@@ -11,12 +11,15 @@ import Foundation
 
 /// What the Splatfest screen shows at an instant, in one form of Splatfest Battle: the Splatfest
 /// card, the form's current Rotation, or why none is, its next and later Rotations, Tricolor Turf
-/// War in the second half, then the Rotations that follow once the Splatfest ends. It holds ids
-/// and times only; the title and team names resolve at display time from the Splatfest's id, and
-/// downloaded art comes from the cache by the same id.
+/// War in the second half, then the Rotations that follow once the Splatfest ends. It holds ids,
+/// times and the stored art; the title and team names resolve at display time from the
+/// Splatfest's id.
 public struct SplatfestScreen: Hashable, Sendable {
-  /// The Splatfest the card shows: its times, team colours and art address.
+  /// The Splatfest the card shows: its times and team colours.
   public let splatfest: Splatfest
+  /// The card's art, a local image file the refresh engine stored, or `nil` while none is
+  /// stored: the card then shows the team colours.
+  public let art: URL?
   /// Where the Splatfest stands: announced, first half or second half.
   public let phase: Splatfest.Phase
   /// The form of Splatfest Battle shown, the app's Open or Pro choice.
@@ -70,6 +73,7 @@ extension Snapshot {
     let tricolorTurfWar = splatfest.tricolorTurfWar
     return SplatfestScreen(
       splatfest: splatfest,
+      art: splatfestArt,
       phase: phase,
       form: form,
       current: OnNow(lineup.current, at: instant),
