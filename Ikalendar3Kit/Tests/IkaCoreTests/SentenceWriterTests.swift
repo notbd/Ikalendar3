@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import IkaFixtures
 import Testing
 @testable import IkaCore
 
@@ -86,6 +87,49 @@ struct SentenceWriterTests {
 
     #expect(sentence == "Salmon Run: Spawning Grounds with Splattershot, Random, Splat Charger, and Rare Random, "
       + "from Thursday 8:00\u{202F}AM to Saturday 12:00\u{202F}AM, 2 hours left.")
+  }
+
+  // MARK: Tracking
+
+  /// Tracking's items read as the Rotation, pause and Shift they stand for, so the Live
+  /// Activity's VoiceOver says what the screens and Siri say.
+  @Test
+  func `Tracking's items read the same sentences as the items they stand for`() async throws {
+    let normalDay = try await ScheduleFeed.decode(from: Fixture.normalDay.data())
+    let splatfest = try await ScheduleFeed.decode(from: Fixture.splatfestSecondHalf.data())
+    let instant: Date = date("2026-10-20T13:00:00Z")
+
+    guard
+      case .battle(_, let rotations) = normalDay.trackingContent(of: .battle(.x), at: instant),
+      case .battle(_, let pauses) = splatfest.trackingContent(of: .battle(.regular), at: date("2026-11-01T06:00:00Z")),
+      case .salmonRun(let shifts) = normalDay.trackingContent(of: .salmonRun, at: instant)
+    else {
+      Issue.record("Tracking content of another Mode")
+      return
+    }
+    let writer = Self.writer()
+
+    #expect(try writer.sentence(for: #require(rotations.first), of: .x, at: instant) ==
+      "X Battle: Tower Control on Mahi-Mahi Resort and Robo ROM-en, from 5:00\u{202F}AM to 7:00\u{202F}AM, 1 hour left.")
+    #expect(try writer.sentence(for: #require(pauses.first), of: .regular, at: instant) ==
+      "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM.")
+    #expect(try writer.sentence(for: #require(shifts.first), at: instant) ==
+      "Salmon Run: Jammin' Salmon Junction with S-BLAST '92, Splat Dualies, Splash-o-matic, and Goo Tuber, "
+      + "from Sunday 5:00\u{202F}PM to Tuesday 9:00\u{202F}AM, 3 hours left.")
+  }
+
+  @Test
+  func `A tracked Big Run reads as a Big Run`() {
+    let bigRun: TrackedShift = .init(
+      startTime: TestData.instant(hours: 16),
+      endTime: TestData.instant(hours: 64),
+      isBigRun: true,
+      stage: StageID("Q29vcFN0YWdlLTE="),
+      weapons: [.random, .random, .random, .random])
+
+    #expect(Self.writer().sentence(for: bigRun, at: TestData.instant(hours: 0)) ==
+      "Big Run: Spawning Grounds with Random, Random, Random, and Random, "
+      + "from Thursday 8:00\u{202F}AM to Saturday 8:00\u{202F}AM.")
   }
 
   // MARK: Languages
