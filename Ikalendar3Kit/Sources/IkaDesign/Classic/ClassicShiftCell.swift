@@ -297,7 +297,7 @@ struct ClassicWeaponsCard: View {
 
 extension ModeIcon {
   /// The icon of a Shift of `kind`.
-  init(_ kind: Shift.Kind) {
+  fileprivate init(_ kind: Shift.Kind) {
     switch kind {
       case .regular: self = .salmonRun
       case .bigRun: self = .bigRun
