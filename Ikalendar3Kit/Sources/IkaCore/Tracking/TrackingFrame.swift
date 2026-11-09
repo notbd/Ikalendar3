@@ -45,13 +45,3 @@ extension TrackingFrame {
       reminder: boundariesPassed == 1 && isStale ? .nextSwitchNeedsRefresh : nil)
   }
 }
-
-// MARK: - TrackingReminder
-
-/// The reminder a Tracking view shows after a boundary no update covered.
-public enum TrackingReminder: Hashable, Sendable {
-  /// The view moved to the next item on its own, and the switch after it needs a Refresh.
-  case nextSwitchNeedsRefresh
-  /// The view is past a boundary no update covered: the schedule is out of date until a Refresh.
-  case scheduleOutOfDate
-}

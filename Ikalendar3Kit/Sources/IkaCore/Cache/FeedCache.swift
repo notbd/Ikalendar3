@@ -41,19 +41,22 @@ public struct FeedCache: Sendable {
     try data.write(to: recordURL(for: feed), options: .atomic)
   }
 
-  /// Every stored feed, decoded, with its fetch time: how widgets and other read-only processes
-  /// see the data. No feed is stale, because a cache records no failures. A feed with no record,
-  /// or one that no longer decodes, is left out. Runs off the main actor.
+  /// Every stored feed, decoded, with its fetch time and the current Splatfest's stored art: how
+  /// widgets and other read-only processes see the data. No feed is stale, because a cache
+  /// records no failures. A feed with no record, or one that no longer decodes, is left out.
+  /// Runs off the main actor.
   @concurrent
   public func snapshot() async -> Snapshot {
     var locales: [GameLanguage: Fetched<TermTable>] = [:]
     for language in GameLanguage.allCases {
       locales[language] = await fetched(.locale(language), decode: TermTable.decode)
     }
-    return await Snapshot(
+    var snapshot = await Snapshot(
       schedules: fetched(.schedules, decode: ScheduleFeed.decode),
       festivals: fetched(.festivals, decode: FestivalFeed.decode),
       locales: locales)
+    snapshot.splatfestArt = snapshot.splatfest.flatMap { splatfestArt(for: $0.id) }
+    return snapshot
   }
 
   /// A feed's stored content with its fetch time, or `nil` when it has no record that decodes.

@@ -451,96 +451,6 @@
         }
       }
     },
-    "answer.paused" : {
-      "comment" : "Siri's answer for a Battle Mode a running Splatfest pauses. %1$@: the Battle Mode. %2$@: when it comes back, a weekday and a time.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: pausiert während des Splatfests bis %2$@."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: paused during the Splatfest until %2$@."
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: paused during the Splatfest until %2$@."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: en pausa durante el Festival hasta el %2$@."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: en pausa durante el Festival hasta el %2$@."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@ : en pause pendant le Festival jusqu’à %2$@."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@ : en pause pendant le Festival jusqu’à %2$@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: in pausa durante lo Splatfest fino a %2$@."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：フェス開催中のため休止、%2$@に再開。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: 페스티벌 기간 중 일시 중지, %2$@에 재개."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: gepauzeerd tijdens de Splatfest tot %2$@."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: приостановлен на время Сплатфеста, возобновится: %2$@."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：祭典期间暂停，%2$@恢复。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：祭典期間暫停，%2$@恢復。"
-          }
-        }
-      }
-    },
     "answer.twoSentences" : {
       "comment" : "Two sentences of one Siri answer, as the language joins sentences: the Big Run's, then the Splatfest's.",
       "extractionState" : "manual",
@@ -1712,7 +1622,7 @@
       }
     },
     "mode.withForm" : {
-      "comment" : "A Battle Mode named with its form: %1$@ is the Battle Mode (Anarchy Battle), %2$@ the form (Series, Open). Written for this app.",
+      "comment" : "A Battle Mode named with its form: %1$@ is the Battle Mode (Anarchy Battle, Splatfest Battle), %2$@ the form (Series, Open, Pro). Written for this app.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
@@ -1981,7 +1891,7 @@
         }
       }
     },
-    "reminder.outOfDate" : {
+    "reminder.scheduleOutOfDate" : {
       "comment" : "The Live Activity's second missed-boundary reminder, also read by VoiceOver. Refresh is the button's name.",
       "extractionState" : "manual",
       "localizations" : {
@@ -2161,92 +2071,92 @@
         }
       }
     },
-    "sentence.modeWithForm" : {
-      "comment" : "A Battle Mode with its form, as in Anarchy Battle (Series) or Splatfest Battle (Pro). %1$@: the Battle Mode. %2$@: the form.",
+    "sentence.pause" : {
+      "comment" : "The sentence of a Battle Mode a running Splatfest pauses, read by VoiceOver, Tracking and Siri. %1$@: the Battle Mode. %2$@: when it comes back, a weekday and a time.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ (%2$@)"
+            "value" : "%1$@: pausiert während des Splatfests bis %2$@."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ (%2$@)"
+            "value" : "%1$@: paused during the Splatfest until %2$@."
           }
         },
         "en-GB" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ (%2$@)"
+            "value" : "%1$@: paused during the Splatfest until %2$@."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ (%2$@)"
+            "value" : "%1$@: en pausa durante el Festival hasta el %2$@."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ (%2$@)"
+            "value" : "%1$@: en pausa durante el Festival hasta el %2$@."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ (%2$@)"
+            "value" : "%1$@ : en pause pendant le Festival jusqu’à %2$@."
           }
         },
         "fr-CA" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ (%2$@)"
+            "value" : "%1$@ : en pause pendant le Festival jusqu’à %2$@."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ (%2$@)"
+            "value" : "%1$@: in pausa durante lo Splatfest fino a %2$@."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@（%2$@）"
+            "value" : "%1$@：フェス開催中のため休止、%2$@に再開。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ (%2$@)"
+            "value" : "%1$@: 페스티벌 기간 중 일시 중지, %2$@에 재개."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ (%2$@)"
+            "value" : "%1$@: gepauzeerd tijdens de Splatfest tot %2$@."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "needs_review",
-            "value" : "%1$@ (%2$@)"
+            "value" : "%1$@: приостановлен на время Сплатфеста, возобновится: %2$@."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@（%2$@）"
+            "value" : "%1$@：祭典期间暂停，%2$@恢复。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@（%2$@）"
+            "value" : "%1$@：祭典期間暫停，%2$@恢復。"
           }
         }
       }
@@ -2337,96 +2247,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@：在%3$@進行%2$@，%4$@。"
-          }
-        }
-      }
-    },
-    "sentence.rotation.paused" : {
-      "comment" : "The sentence of a Rotation a Splatfest pauses. %1$@: the Battle Mode. %2$@: the time range, with the time left while it runs.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: pausiert während des Splatfests, %2$@."
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: paused during the Splatfest, %2$@."
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@: paused during the Splatfest, %2$@."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: en pausa durante el Festival, %2$@."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: en pausa durante el Festival, %2$@."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@ : en pause pendant le Festival, %2$@."
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@ : en pause pendant le Festival, %2$@."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: in pausa durante lo Splatfest, %2$@."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：フェス開催中のため休止、%2$@。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: 페스티벌 기간 중 일시 중지, %2$@."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: gepauzeerd tijdens de Splatfest, %2$@."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "%1$@: приостановлен на время Сплатфеста, %2$@."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：祭典期间暂停，%2$@。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%1$@：祭典期間暫停，%2$@。"
           }
         }
       }
@@ -4214,7 +4034,7 @@
       }
     },
     "weapon.rareRandom" : {
-      "comment" : "The golden question mark: a random weapon that can be a rare Grizzco weapon. %@: the game's name for a random weapon.",
+      "comment" : "The golden question mark: a random weapon that can be a rare Grizzco weapon. %@: the game's name for a random weapon. The game shows the mark with no name, so every language's wording is the app's own; ja borrows the game's name for Grizzco weapons (クマサン印) and stays under review until a native speaker confirms it.",
       "extractionState" : "manual",
       "localizations" : {
         "de" : {

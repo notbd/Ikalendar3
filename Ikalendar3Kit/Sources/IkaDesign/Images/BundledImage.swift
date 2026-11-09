@@ -40,8 +40,8 @@ public enum BundledImage {
   }
 
   /// Where the build puts the catalog for now: this module's resource bundle. Where it ships is
-  /// still open (the build copies it into every product that links this module), so callers do
-  /// not rely on this yet.
+  /// still open (the build copies it into every product that links this module), so
+  /// `InkStageCard` is its one caller until ticket 16 settles it.
   static let catalogBundle: Bundle = .module
 
   /// The image name of a manifest id: `<base name>_<size>`.

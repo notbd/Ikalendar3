@@ -18,22 +18,28 @@ public struct Snapshot: Equatable, Sendable {
   public var festivals: Fetched<FestivalFeed>?
   /// The locale files fetched so far, by the text set each holds.
   public var locales: [GameLanguage: Fetched<TermTable>]
+  /// The stored art of the current Splatfest, a local image file, or `nil` while none is stored:
+  /// views then show the team colours.
+  public var splatfestArt: URL?
 
   /// A snapshot of the given feeds. Leave a feed out when it has no good response yet.
   public init(
     schedules: Fetched<ScheduleFeed>? = nil,
     festivals: Fetched<FestivalFeed>? = nil,
-    locales: [GameLanguage: Fetched<TermTable>] = [:])
+    locales: [GameLanguage: Fetched<TermTable>] = [:],
+    splatfestArt: URL? = nil)
   {
     self.schedules = schedules
     self.festivals = festivals
     self.locales = locales
+    self.splatfestArt = splatfestArt
   }
 }
 
 extension Snapshot {
-  /// The current Splatfest: the schedules feed's, completed with the art of its record in
-  /// `festivals.json`. `nil` while the schedules feed names none.
+  /// The current Splatfest: the schedules feed's, completed with the art address of its record in
+  /// `festivals.json`. `nil` while the schedules feed names none. `splatfestArt` is its stored
+  /// art.
   ///
   /// Region: the schedules feed's Splatfest is the one splatoon3.ink's US account sees. Every
   /// Splatfest since 2024-04-20 was shared by all four regions, so it is taken as shown, with no

@@ -24,16 +24,31 @@ extension BattleMode {
   public func name(in language: GameLanguage) -> String {
     switch self {
       case .regular: ModeLabel.regularBattle.text(in: language)
-      case .anarchySeries: Self.anarchyBattle(.series, in: language)
-      case .anarchyOpen: Self.anarchyBattle(.open, in: language)
+      case .anarchySeries: ModeLabel.anarchyBattle.withForm(.series, in: language)
+      case .anarchyOpen: ModeLabel.anarchyBattle.withForm(.open, in: language)
       case .x: ModeLabel.xBattle.text(in: language)
     }
   }
+}
 
-  static private func anarchyBattle(_ form: ModeLabel, in language: GameLanguage) -> String {
+extension RotationMode {
+  /// The name of a Rotation's Battle Mode in a text set: a continuous Battle Mode's, or
+  /// Splatfest Battle with its form, "Splatfest Battle (Pro)".
+  public func name(in language: GameLanguage) -> String {
+    switch self {
+      case .battle(let battleMode): battleMode.name(in: language)
+      case .splatfestBattle(.open): ModeLabel.splatfestBattle.withForm(.open, in: language)
+      case .splatfestBattle(.pro): ModeLabel.splatfestBattle.withForm(.pro, in: language)
+    }
+  }
+}
+
+extension ModeLabel {
+  /// A Battle Mode label with its form: "Anarchy Battle (Series)".
+  fileprivate func withForm(_ form: ModeLabel, in language: GameLanguage) -> String {
     String(
       format: Bundle.module.localizedString(forKey: "mode.withForm", in: language),
-      ModeLabel.anarchyBattle.text(in: language),
+      text(in: language),
       form.text(in: language))
   }
 }

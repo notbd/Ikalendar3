@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import IkaFixtures
 import Testing
 @testable import IkaCore
 
@@ -49,18 +50,28 @@ struct SentenceWriterTests {
       "X Battle: Splat Zones on Scorch Gorge and Eeltail Alley, from 8:00\u{202F}AM to 10:00\u{202F}AM.")
   }
 
+  /// The recorded decision (ticket 08): a paused Battle Mode reads when it comes back, as the
+  /// iPhone tabs do, never a paused window's own times.
   @Test
-  func `A paused Rotation reads its Battle Mode with its form and the Splatfest`() {
-    let paused: Rotation = .init(
-      mode: .battle(.anarchySeries),
-      startTime: TestData.instant(hours: 16),
-      endTime: TestData.instant(hours: 18),
-      setting: nil)
+  func `A Battle Mode a Splatfest pauses reads when it comes back`() {
+    let sentence = Self.writer().sentence(forPauseOf: .anarchySeries, returningAt: TestData.instant(hours: 4 * 24 + 17))
 
-    let sentence = Self.writer().sentence(for: paused, at: TestData.instant(hours: 17.5))
+    #expect(sentence == "Anarchy Battle (Series): paused during the Splatfest until Monday 9:00\u{202F}AM.")
+  }
 
-    #expect(sentence ==
-      "Anarchy Battle (Series): paused during the Splatfest, from 8:00\u{202F}AM to 10:00\u{202F}AM, 30 minutes left.")
+  @Test
+  func `A summary's pause gives the pause sentence its Battle Mode and return time`() async throws {
+    let snapshot: Snapshot = try await .schedules(.splatfestSecondHalf)
+
+    let summary = snapshot.summary(of: .battle(.regular), at: date("2026-11-01T06:00:00Z"))
+
+    guard case .battle(let mode, .paused(let returnTime)) = summary else {
+      Issue.record("\(String(describing: summary))")
+      return
+    }
+
+    #expect(Self.writer().sentence(forPauseOf: mode, returningAt: returnTime) ==
+      "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM.")
   }
 
   @Test
@@ -79,6 +90,51 @@ struct SentenceWriterTests {
       + "from Thursday 8:00\u{202F}AM to Saturday 12:00\u{202F}AM, 2 hours left.")
   }
 
+  // MARK: Tracking
+
+  /// Tracking's items read as the Rotation, pause and Shift they stand for, so the Live
+  /// Activity's VoiceOver says what the screens and Siri say.
+  @Test
+  func `Tracking's items read the same sentences as the items they stand for`() async throws {
+    let normalDay = try await ScheduleFeed.decode(from: Fixture.normalDay.data())
+    let splatfest = try await ScheduleFeed.decode(from: Fixture.splatfestSecondHalf.data())
+    let instant: Date = date("2026-10-20T13:00:00Z")
+
+    guard
+      case .battle(_, let rotations) = normalDay.trackingContent(of: .battle(.x), at: instant),
+      case .battle(_, let pauses) = splatfest.trackingContent(of: .battle(.regular), at: date("2026-11-01T06:00:00Z")),
+      case .salmonRun(let shifts) = normalDay.trackingContent(of: .salmonRun, at: instant)
+    else {
+      Issue.record("Tracking content of another Mode")
+      return
+    }
+
+    let writer: SentenceWriter = Self.writer()
+
+    #expect(try writer.sentence(for: #require(rotations.first), of: .x, at: instant) ==
+      "X Battle: Tower Control on Mahi-Mahi Resort and Robo ROM-en, "
+      + "from 5:00\u{202F}AM to 7:00\u{202F}AM, 1 hour left.")
+    #expect(try writer.sentence(for: #require(pauses.first), of: .regular, at: instant) ==
+      "Regular Battle: paused during the Splatfest until Sunday 4:00\u{202F}PM.")
+    #expect(try writer.sentence(for: #require(shifts.first), at: instant) ==
+      "Salmon Run: Jammin' Salmon Junction with S-BLAST '92, Splat Dualies, Splash-o-matic, and Goo Tuber, "
+      + "from Sunday 5:00\u{202F}PM to Tuesday 9:00\u{202F}AM, 3 hours left.")
+  }
+
+  @Test
+  func `A tracked Big Run reads as a Big Run`() {
+    let bigRun: TrackedShift = .init(
+      startTime: TestData.instant(hours: 16),
+      endTime: TestData.instant(hours: 64),
+      isBigRun: true,
+      stage: StageID("Q29vcFN0YWdlLTE="),
+      weapons: [.random, .random, .random, .random])
+
+    #expect(Self.writer().sentence(for: bigRun, at: TestData.instant(hours: 0)) ==
+      "Big Run: Spawning Grounds with Random, Random, Random, and Random, "
+      + "from Thursday 8:00\u{202F}AM to Saturday 8:00\u{202F}AM.")
+  }
+
   // MARK: Languages
 
   @Test(arguments: GameLanguage.allCases)
@@ -90,11 +146,6 @@ struct SentenceWriterTests {
       startTime: Self.rotation.startTime,
       endTime: Self.rotation.endTime,
       setting: Self.rotation.setting)
-    let paused: Rotation = .init(
-      mode: .splatfestBattle(.pro),
-      startTime: series.startTime,
-      endTime: series.endTime,
-      setting: nil)
     let bigRun: Shift = .init(
       kind: .bigRun,
       startTime: TestData.instant(hours: 16),
@@ -116,10 +167,10 @@ struct SentenceWriterTests {
     ]
     let texts = [
       writer.sentence(for: series, at: instant),
-      writer.sentence(for: paused, at: instant),
+      writer.sentence(forPauseOf: .anarchyOpen, returningAt: instant),
       writer.sentence(for: bigRun, at: instant),
       writer.timeLeft(WindowProgress(timeLeft: .seconds(4800), sharePassed: 0.5)),
-    ] + MissedBoundaryReminder.allCases.map { $0.text(in: language) }
+    ] + TrackingReminder.allCases.map { $0.text(in: language) }
 
     for text in texts {
       #expect(!text.isEmpty && !text.contains("%"), "\(language.rawValue): \(text)")
@@ -213,11 +264,11 @@ struct SentenceWriterTests {
     #expect(sentence.contains(range.range), "\(sentence)")
   }
 
-  // MARK: Missed boundaries
+  // MARK: Tracking reminders
 
   @Test
-  func `The missed-boundary reminders read in the Live Activity's two levels`() {
-    #expect(MissedBoundaryReminder.nextSwitchNeedsRefresh.text(in: .enUS) == "The next switch needs a Refresh.")
-    #expect(MissedBoundaryReminder.outOfDate.text(in: .enUS) == "Schedule out of date, tap Refresh.")
+  func `The Tracking reminders read in the Live Activity's two levels`() {
+    #expect(TrackingReminder.nextSwitchNeedsRefresh.text(in: .enUS) == "The next switch needs a Refresh.")
+    #expect(TrackingReminder.scheduleOutOfDate.text(in: .enUS) == "Schedule out of date, tap Refresh.")
   }
 }

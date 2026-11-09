@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import IkaFixtures
 import Observation
 import Synchronization
 import Testing
@@ -20,14 +21,14 @@ struct AppClockTests {
 
   @Test
   func `A new clock publishes the whole second its time source is in`() {
-    let clock: AppClock = .init(source: ManualTimeSource(now: boundary.addingTimeInterval(-2.75)))
+    let clock: AppClock = .init(source: SettableClock(boundary.addingTimeInterval(-2.75)))
 
     #expect(clock.now == boundary.addingTimeInterval(-3))
   }
 
   @Test
   func `Across a Rotation boundary the clock publishes every whole second once`() async {
-    let source: ManualTimeSource = .init(now: boundary.addingTimeInterval(-2.75))
+    let source: SettableClock = .init(boundary.addingTimeInterval(-2.75))
     let clock: AppClock = .init(source: source)
 
     var published = [clock.now]
@@ -36,7 +37,7 @@ struct AppClockTests {
     for lateness in [0, 0.04, 0.099, 0.001, 0.05] {
       #expect(deadline == clock.now.addingTimeInterval(1))
       let didPublish = await publishes(clock) {
-        source.wake(at: deadline.addingTimeInterval(lateness))
+        source.now = deadline.addingTimeInterval(lateness)
         deadline = await source.pendingSleep()
       }
       #expect(didPublish)
@@ -48,13 +49,13 @@ struct AppClockTests {
 
   @Test
   func `A sleep that ends early publishes nothing and sleeps again until the same second`() async {
-    let source: ManualTimeSource = .init(now: boundary.addingTimeInterval(-0.5))
+    let source: SettableClock = .init(boundary.addingTimeInterval(-0.5))
     let clock: AppClock = .init(source: source)
     #expect(await source.pendingSleep() == boundary)
 
     var deadline: Date?
     let didPublish = await publishes(clock) {
-      source.wake(at: boundary.addingTimeInterval(-0.02))
+      source.now = boundary.addingTimeInterval(-0.02)
       deadline = await source.pendingSleep()
     }
 
@@ -65,11 +66,11 @@ struct AppClockTests {
 
   @Test
   func `A wake after a long suspension publishes the second it woke in, not the missed ones`() async {
-    let source: ManualTimeSource = .init(now: boundary.addingTimeInterval(-0.5))
+    let source: SettableClock = .init(boundary.addingTimeInterval(-0.5))
     let clock: AppClock = .init(source: source)
     _ = await source.pendingSleep()
 
-    source.wake(at: boundary.addingTimeInterval(42.6))
+    source.now = boundary.addingTimeInterval(42.6)
     let deadline = await source.pendingSleep()
 
     #expect(clock.now == boundary.addingTimeInterval(42))
@@ -78,7 +79,7 @@ struct AppClockTests {
 
   @Test
   func `A released clock stops ticking`() async {
-    let source: ManualTimeSource = .init(now: boundary)
+    let source: SettableClock = .init(boundary)
     weak var released: AppClock?
     do {
       let clock: AppClock = .init(source: source)
