@@ -18,16 +18,23 @@ import WidgetKit
 /// of the result, deciding nothing itself. So a run that commits new data applies every effect,
 /// whichever entry point started it.
 ///
+/// It replaces the app's pending event reminders as the plan says, after a refresh that committed a
+/// feed and whenever a reminder switch changes (`rebuildReminders()`), with the switches read from
+/// the preferences as the run starts.
+///
 /// On iOS it also starts Tracking, and every run re-arms each running Tracking from the cache.
 /// Live Activities render on the system's clock, so their instant is the wall clock's. Not on
 /// watchOS: the watch app runs its own shell and links no `IkaIntents`.
 @MainActor
 public struct EffectsShell {
   private let engine: RefreshEngine
+  private let preferences: PreferenceStore
 
-  /// A shell that refreshes through an engine, whose snapshot the caller shows.
-  public init(engine: RefreshEngine) {
+  /// A shell that refreshes through an engine, whose snapshot the caller shows, with the reminder
+  /// switches of `preferences`.
+  public init(engine: RefreshEngine, preferences: PreferenceStore) {
     self.engine = engine
+    self.preferences = preferences
   }
 
   /// Refreshes under the hourly gate, then applies the effects the result calls for. A run that
@@ -36,16 +43,29 @@ public struct EffectsShell {
   public func run() async -> RefreshResult {
     let result = await engine.refresh()
     #if os(iOS)
-    await apply(EffectsPlan(after: result, tracking: TrackingActivities.running(), at: Date()))
+    await apply(EffectsPlan(
+      after: result,
+      tracking: TrackingActivities.running(),
+      reminders: reminderSettings,
+      at: Date()))
     #else
-    await apply(EffectsPlan(after: result, at: Date()))
+    await apply(EffectsPlan(after: result, reminders: reminderSettings, at: Date()))
     #endif
     return result
+  }
+
+  /// Replaces the pending reminders after a reminder switch changed, from the snapshot the engine
+  /// shows, with no refresh.
+  public func rebuildReminders() async {
+    await apply(EffectsPlan(remindersChangedTo: reminderSettings, in: engine.snapshot, at: Date()))
   }
 
   private func apply(_ plan: EffectsPlan) async {
     if plan.reloadsWidgetTimelines {
       WidgetCenter.shared.reloadAllTimelines()
+    }
+    if let reminders = plan.reminders {
+      await ReminderCenter.replace(with: reminders)
     }
     #if os(iOS)
     await TrackingActivities.apply(plan.tracking)
@@ -54,24 +74,38 @@ public struct EffectsShell {
     }
     #endif
   }
+
+  /// The switches as they are now, with the reminder text in the app language and the device's
+  /// time zone and hour cycle, read at each run so a change in the system's settings applies.
+  private var reminderSettings: ReminderSettings {
+    ReminderSettings(
+      kinds: preferences.reminderKinds,
+      language: GameLanguage(resolvedFor: .main),
+      timeZone: .current,
+      hourCycle: Locale.current.hourCycle)
+  }
 }
 
 #if os(iOS)
 extension EffectsShell {
   /// The shell an intent runs, a Siri question's or a Tracking one's: an engine of its own on the
   /// App Group cache, which it shares with the app and every other engine through the gate's
-  /// attempt records, in the app language. No runtime registration: an intent builds it each time
-  /// it runs.
+  /// attempt records, in the app language, with the reminder switches of the App Group's
+  /// preferences. No runtime registration: an intent builds it each time it runs.
   ///
-  /// - Throws: `TrackingError.noSchedule` with no App Group container (logged by `AppGroup`),
-  ///   where no cache can hold a schedule.
+  /// - Throws: `TrackingError.noSchedule` with no App Group container (logged by `AppGroup`) or
+  ///   suite, where no cache can hold a schedule.
   static func forIntents() throws -> EffectsShell {
-    guard let container = AppGroup.container() else { throw TrackingError.noSchedule }
+    guard let container = AppGroup.container(), let defaults = UserDefaults(suiteName: AppGroup.identifier) else {
+      throw TrackingError.noSchedule
+    }
 
     let client: FeedClient = .init(
       transport: URLSessionTransport(),
       cache: FeedCache(directory: AppGroup.feedDirectory(in: container)))
-    return EffectsShell(engine: RefreshEngine(client: client, language: GameLanguage(resolvedFor: .main)))
+    return EffectsShell(
+      engine: RefreshEngine(client: client, language: GameLanguage(resolvedFor: .main)),
+      preferences: PreferenceStore(defaults: defaults))
   }
 
   /// Starts Tracking `mode`: a run as every entry point makes, then the Live Activity from the

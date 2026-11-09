@@ -25,7 +25,9 @@ struct SiriShortcutsTests {
     let run = try FixtureLaunch(schedules: .normalDay, folder: Fixture.folder, instant: instant, isRebased: false)
       .prepare(sharedCache: FeedCache(directory: FileManager.default.temporaryDirectory), now: Date())
     let source: AnswerSource = try .init(
-      shell: EffectsShell(engine: RefreshEngine(client: run.client, language: .enUS)),
+      shell: EffectsShell(
+        engine: RefreshEngine(client: run.client, language: .enUS),
+        preferences: PreferenceStore(defaults: #require(UserDefaults(suiteName: "SiriShortcutsTests")))),
       language: .enUS,
       timeZone: #require(TimeZone(identifier: "America/Los_Angeles")),
       hourCycle: .oneToTwelve)

@@ -6,6 +6,7 @@
 //
 
 import IkaCore
+import IkaIntents
 import SwiftUI
 
 // MARK: - SettingsView
@@ -22,6 +23,12 @@ struct SettingsView: View {
   @Environment(\.gameLanguage) private var language
   @Environment(\.openURL) private var openURL
   @Environment(\.dismiss) private var dismiss
+  @Environment(\.effects) private var effects
+  @Environment(\.scenePhase) private var scenePhase
+
+  /// Whether the Reminders section says notifications are off: after a switch turned back off
+  /// because the system does not allow them, or while a switch is on and they are off.
+  @State private var areNotificationsOff = false
 
   var body: some View {
     NavigationStack {
@@ -133,15 +140,44 @@ struct SettingsView: View {
     }
   }
 
-  /// The four switches. Scheduling the reminders and asking for permission come with reminders
-  /// themselves; Settings only stores the switches.
+  /// The four switches, all off until the player turns one on. Turning one on asks for permission
+  /// to notify the first time; if the system does not allow notifications, it turns back off and
+  /// a note with a row to the app's notification settings shows. Every change rebuilds the
+  /// pending reminders from the cache.
   private var remindersSection: some View {
     @Bindable var preferences = preferences
-    return Section(text(.reminders)) {
+    return Section {
       Toggle(ModeLabel.bigRun.text(in: language), isOn: $preferences.isBigRunReminderOn)
       Toggle(ModeLabel.eggstraWork.text(in: language), isOn: $preferences.isEggstraWorkReminderOn)
       Toggle(ModeLabel.splatfest.text(in: language), isOn: $preferences.isSplatfestReminderOn)
       Toggle(ModeLabel.challenges.text(in: language), isOn: $preferences.isChallengeReminderOn)
+
+      if areNotificationsOff, let url = Self.notificationSettingsURL {
+        Button {
+          openURL(url)
+        } label: {
+          Label {
+            Text(ReminderText.notificationSettings.text(in: language))
+              .foregroundStyle(Color.primary)
+          } icon: {
+            Image(systemName: "bell.badge.slash.fill")
+          }
+        }
+      }
+    } header: {
+      Text(text(.reminders))
+    } footer: {
+      if areNotificationsOff {
+        Text(ReminderText.notificationsOff.text(in: language))
+      }
+    }
+    .onChange(of: preferences.reminderKinds) { old, new in
+      Task { await remindersChanged(from: old, to: new) }
+    }
+    // Again on return from the system's settings, where the player may have allowed them.
+    .task(id: scenePhase) {
+      let isDenied = await ReminderCenter.isDenied()
+      areNotificationsOff = isDenied && (areNotificationsOff || !preferences.reminderKinds.isEmpty)
     }
   }
 
@@ -163,6 +199,19 @@ struct SettingsView: View {
 
   // MARK: Helpers
 
+  /// Asks for permission when a switch turned on, then rebuilds the pending reminders. A switch
+  /// the system will not notify for turns back off, which comes back here and rebuilds.
+  private func remindersChanged(from old: Set<EventReminder.Kind>, to new: Set<EventReminder.Kind>) async {
+    let switchedOn = new.subtracting(old)
+    if !switchedOn.isEmpty, await !ReminderCenter.requestPermission() {
+      preferences.reminderKinds.subtract(switchedOn)
+      areNotificationsOff = true
+      return
+    }
+
+    await effects?.rebuildReminders()
+  }
+
   private func text(_ text: SettingsText) -> String {
     text.text(in: language)
   }
@@ -178,6 +227,16 @@ extension SettingsView {
     UIDevice.current.userInterfaceIdiom == .phone
     #else
     false
+    #endif
+  }
+
+  /// The app's notification settings, or `nil` if the system has no such page.
+  static private var notificationSettingsURL: URL? {
+    #if os(iOS)
+    URL(string: UIApplication.openNotificationSettingsURLString)
+    #else
+    let pane = "x-apple.systempreferences:com.apple.Notifications-Settings.extension"
+    return URL(string: "\(pane)?id=\(Bundle.main.bundleIdentifier ?? "")")
     #endif
   }
 
