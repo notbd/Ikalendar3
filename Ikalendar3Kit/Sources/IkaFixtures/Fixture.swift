@@ -12,7 +12,7 @@ import Foundation
 /// A recorded splatoon3.ink payload in the package's `Fixtures` folder, read by path so every
 /// target that needs one reads the same copy. The schedules feeds are byte for byte the hourly
 /// archive's snapshot (`data-archive.splatoon3.ink`) of the hour named, except the live one.
-enum Fixture: String, CaseIterable {
+public enum Fixture: String, CaseIterable, Sendable {
   /// A normal day: the archive's 2026-10-20 12:00 UTC.
   case normalDay = "schedules-2026-10-20-normal-day.json"
   /// A Splatfest in its second half, fetched live 2026-11-01 05:23 UTC.
@@ -37,13 +37,15 @@ enum Fixture: String, CaseIterable {
   case localeZhTW = "locale-2026-11-01-zh-TW.json"
 
   /// `Ikalendar3Kit/Fixtures`, found from this file's place in the package.
-  static let folder: URL = .init(filePath: #filePath)
-    .deletingLastPathComponent() // IkaCoreTests
-    .deletingLastPathComponent() // Tests
+  static public let folder: URL = .init(filePath: #filePath)
+    .deletingLastPathComponent() // IkaFixtures
+    .deletingLastPathComponent() // Sources
     .deletingLastPathComponent() // Ikalendar3Kit
     .appending(path: "Fixtures", directoryHint: .isDirectory)
 
-  var url: URL { Self.folder.appending(path: rawValue) }
+  /// The payload's file.
+  public var url: URL { Self.folder.appending(path: rawValue) }
 
-  func data() throws -> Data { try Data(contentsOf: url) }
+  /// The payload's bytes, as splatoon3.ink sent them.
+  public func data() throws -> Data { try Data(contentsOf: url) }
 }
