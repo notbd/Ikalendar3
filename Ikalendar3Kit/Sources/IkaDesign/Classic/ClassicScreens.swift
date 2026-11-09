@@ -45,10 +45,9 @@ public struct ClassicBattleScreenView: View {
       icon: ModeIcon(Mode.battle(screen.mode)),
       reflowValue: rows.map(\.id))
     { metrics in
-      if let splatfest = screen.announcedSplatfest {
+      if let card = screen.announcedSplatfest {
         Section {
-          // Team colours only: the screen value carries no art for an announced Splatfest yet.
-          SplatfestCardView(splatfest: splatfest, art: nil, terms: terms, style: .classic, now: now)
+          SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .classic, now: now)
         }
       }
       ForEach(rows) { row in

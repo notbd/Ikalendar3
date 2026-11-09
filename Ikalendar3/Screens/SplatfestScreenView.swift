@@ -31,12 +31,10 @@ struct SplatfestScreenView: View {
     ScheduleScreen(title: title, content: snapshot.splatfestScreen(of: form, at: now)) { screen in
       let terms = snapshot.terms(in: language)
       let isStale = snapshot.schedules?.isStale ?? false
-      // The art joins once the screen value carries it.
-      let art: URL? = nil
       switch preferences.style {
-        case .classic: ClassicSplatfestScreenView(screen: screen, art: art, terms: terms, now: now, isStale: isStale)
-        case .ink: InkSplatfestScreenView(screen: screen, art: art, terms: terms, now: now, isStale: isStale)
-        case .timeline: TimelineSplatfestScreenView(screen: screen, art: art, terms: terms, now: now, isStale: isStale)
+        case .classic: ClassicSplatfestScreenView(screen: screen, terms: terms, now: now, isStale: isStale)
+        case .ink: InkSplatfestScreenView(screen: screen, terms: terms, now: now, isStale: isStale)
+        case .timeline: TimelineSplatfestScreenView(screen: screen, terms: terms, now: now, isStale: isStale)
       }
     }
   }

@@ -38,9 +38,8 @@ public struct TimelineBattleScreenView: View {
 
   public var body: some View {
     List {
-      if let splatfest = screen.announcedSplatfest {
-        // Team colours only: the screen value carries no art for an announced Splatfest yet.
-        SplatfestCardView(splatfest: splatfest, art: nil, terms: terms, style: .timeline, now: now)
+      if let card = screen.announcedSplatfest {
+        SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .timeline, now: now)
       }
       switch screen.current {
         case .running(let running):

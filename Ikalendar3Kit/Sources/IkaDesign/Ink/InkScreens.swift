@@ -39,9 +39,8 @@ public struct InkBattleScreenView: View {
   public var body: some View {
     ScrollView {
       LazyVStack(spacing: 12) {
-        if let splatfest = screen.announcedSplatfest {
-          // Team colours only: the screen value carries no art for an announced Splatfest yet.
-          SplatfestCardView(splatfest: splatfest, art: nil, terms: terms, style: .ink, now: now)
+        if let card = screen.announcedSplatfest {
+          SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .ink, now: now)
             .inkPanel()
         }
         switch screen.current {

@@ -105,7 +105,19 @@ struct BattleScreenTests {
 
     let screen = try #require(snapshot.battleScreen(of: mode, at: date(instant)))
 
-    #expect(screen.announcedSplatfest == (carriesSplatfest ? splatfest : nil))
+    #expect(screen.announcedSplatfest?.splatfest == (carriesSplatfest ? splatfest : nil))
+  }
+
+  @Test
+  func `An announced Splatfest's card carries its stored art`() async throws {
+    var snapshot = try await Snapshot.schedules(.splatfestAnnounced)
+    let instant = date("2026-10-30T12:00:00Z")
+    #expect(snapshot.battleScreen(of: .regular, at: instant)?.announcedSplatfest?.art == nil)
+
+    let art: URL = .init(filePath: "/art/splatfest.png")
+    snapshot.splatfestArt = art
+
+    #expect(snapshot.battleScreen(of: .regular, at: instant)?.announcedSplatfest?.art == art)
   }
 
   @Test

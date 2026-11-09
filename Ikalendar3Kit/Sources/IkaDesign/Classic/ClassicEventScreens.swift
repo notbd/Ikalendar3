@@ -105,20 +105,17 @@ public struct ClassicSplatfestScreenView: View {
   @Environment(\.timeZone) private var timeZone
 
   private let screen: SplatfestScreen
-  private let art: URL?
   private let terms: GameTerms
   private let now: Date
   private let isStale: Bool
 
   /// - Parameters:
   ///   - screen: What the screen shows at `now`.
-  ///   - art: The Splatfest's stored art, or `nil` while none is downloaded.
   ///   - terms: The game's names in the app language.
   ///   - now: The app clock's instant.
   ///   - isStale: Whether the last refresh of the schedules feed failed.
-  public init(screen: SplatfestScreen, art: URL?, terms: GameTerms, now: Date, isStale: Bool) {
+  public init(screen: SplatfestScreen, terms: GameTerms, now: Date, isStale: Bool) {
     self.screen = screen
-    self.art = art
     self.terms = terms
     self.now = now
     self.isStale = isStale
@@ -127,7 +124,7 @@ public struct ClassicSplatfestScreenView: View {
   public var body: some View {
     List {
       Section {
-        SplatfestCardView(splatfest: screen.splatfest, art: art, terms: terms, style: .classic, now: now)
+        SplatfestCardView(splatfest: screen.splatfest, art: screen.art, terms: terms, style: .classic, now: now)
       }
       Section {
         switch screen.current {
