@@ -12,7 +12,7 @@ import Testing
 // MARK: - SquashBounceTests
 
 /// The shared squash-and-stretch bounce must replay the two hand-written curves it replaced,
-/// value for value. Both are kept below as a fixture, copied from the deleted code.
+/// value for value. Both are kept below as a fixture: ikalendar 2's hand-written curves.
 /// Carried over from ikalendar 2's `SquashBounceTests`.
 struct SquashBounceTests {
   /// One sample per frame of a 240 Hz display.
@@ -76,6 +76,37 @@ struct SquashBounceTests {
     #expect(oldSamples.count > Int(Self.samplesPerSecond))
     #expect(sharedSamples == oldSamples)
     #expect(sharedSamples.contains { $0.vTranslation < -10 })
+  }
+
+  // MARK: - Reduce Motion
+
+  @Test(arguments: [0, 1, 7])
+  func `Turning Reduce Motion on or off never changes the animator's trigger`(trigger: Int) {
+    let reduced: SquashBounce.AnimatorInput = .init(trigger: trigger, reduceMotion: true)
+    let full: SquashBounce.AnimatorInput = .init(trigger: trigger, reduceMotion: false)
+
+    #expect(reduced.trigger == trigger)
+    #expect(full.trigger == trigger)
+  }
+
+  @Test
+  func `Under Reduce Motion the content stays at rest through the whole bounce`() {
+    let timeline: KeyframeTimeline<SquashBounceValues> = sharedTimeline(.aboutIcon)
+    let rest: Sample = .init(scale: 1, vStretch: 1, vTranslation: 0)
+    let reduced: SquashBounce.AnimatorInput = .init(trigger: 1, reduceMotion: true)
+    let full: SquashBounce.AnimatorInput = .init(trigger: 1, reduceMotion: false)
+
+    let reducedSamples: [Sample] = samples(of: timeline) {
+      let values = reduced.drawn($0)
+      return .init(scale: values.scale, vStretch: values.vStretch, vTranslation: values.vTranslation)
+    }
+    let fullSamples: [Sample] = samples(of: timeline) {
+      let values = full.drawn($0)
+      return .init(scale: values.scale, vStretch: values.vStretch, vTranslation: values.vTranslation)
+    }
+
+    #expect(reducedSamples.allSatisfy { $0 == rest })
+    #expect(fullSamples.contains { $0 != rest })
   }
 }
 
