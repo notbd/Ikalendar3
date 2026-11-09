@@ -15,6 +15,18 @@ import IkaCore
 enum WatchText: String, CaseIterable {
   /// "Now": the Now page's title.
   case now = "watch.now"
+  /// "Lists the later Rotations": what tapping a Battle Mode's page does, for VoiceOver.
+  case listsLaterRotations = "watch.listsLaterRotations"
+  /// "Lists the later Shifts": what tapping Salmon Run's page does, for VoiceOver.
+  case listsLaterShifts = "watch.listsLaterShifts"
+
+  /// What tapping `mode`'s page does, for VoiceOver.
+  static func laterHint(of mode: Mode) -> Self {
+    switch mode {
+      case .battle: .listsLaterRotations
+      case .salmonRun: .listsLaterShifts
+    }
+  }
 
   /// The string in a text set.
   func text(in language: GameLanguage) -> String {

@@ -26,13 +26,13 @@ struct NowRow: View {
   let now: Date
 
   var body: some View {
-    let look: Look = .init(summary)
+    let look: SummaryLook = .init(summary)
     let heading = look.heading
 
-    VStack(alignment: .leading, spacing: NowMetrics.lineSpacing) {
-      HStack(spacing: NowMetrics.lineSpacing) {
+    VStack(alignment: .leading, spacing: WatchMetrics.lineSpacing) {
+      HStack(spacing: WatchMetrics.lineSpacing) {
         Text(verbatim: heading.name.text(in: terms.language))
-          .ikaFont(.heavy, size: NowMetrics.modeNameSize, relativeTo: .footnote)
+          .ikaFont(.heavy, size: WatchMetrics.modeNameSize, relativeTo: .footnote)
           .lineLimit(1)
           .minimumScaleFactor(0.7)
         if let form = heading.form {
@@ -40,23 +40,23 @@ struct NowRow: View {
         }
       }
 
-      HStack(spacing: NowMetrics.rowSpacing) {
+      HStack(spacing: WatchMetrics.rowSpacing) {
         ZStack {
           ProgressRing(
             share: look.share,
             color: Color(look.color.base),
-            lineWidth: NowMetrics.ringLineWidth,
+            lineWidth: WatchMetrics.ringLineWidth,
             timeLeft: look.progress.map(writer.timeLeft))
           Image(decorative: BundledImage.name(for: look.icon, size: .small), bundle: BundledImage.catalogBundle)
             .resizable()
             .scaledToFit()
-            .padding(NowMetrics.ringLineWidth + NowMetrics.iconInset)
+            .padding(WatchMetrics.ringLineWidth + WatchMetrics.iconInset)
         }
-        .frame(width: NowMetrics.ringSize, height: NowMetrics.ringSize)
+        .frame(width: WatchMetrics.ringSize, height: WatchMetrics.ringSize)
 
-        VStack(alignment: .leading, spacing: NowMetrics.lineSpacing / 2) {
-          Text(verbatim: detail)
-            .ikaFont(.heavy, size: NowMetrics.detailSize, relativeTo: .headline)
+        VStack(alignment: .leading, spacing: WatchMetrics.lineSpacing / 2) {
+          Text(verbatim: look.detail(of: summary, terms: terms, format: format, now: now))
+            .ikaFont(.heavy, size: WatchMetrics.detailSize, relativeTo: .headline)
             // The heavy face's tall line box leaves a gap between wrapped lines, as on Ink's
             // headings.
             .lineHeight(.tight)
@@ -64,7 +64,7 @@ struct NowRow: View {
             .minimumScaleFactor(0.8)
           if let progress = look.progress {
             Text(verbatim: writer.countdown(progress))
-              .ikaFont(.light, size: NowMetrics.countdownSize, relativeTo: .footnote)
+              .ikaFont(.light, size: WatchMetrics.countdownSize, relativeTo: .footnote)
               .monospacedDigit()
               .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
           }
@@ -77,68 +77,6 @@ struct NowRow: View {
     .accessibilityLabel(writer.sentence(for: summary, at: now))
   }
 
-  /// The current Rule or Shift Stage, when the Battle Mode returns, or that nothing is on.
-  private var detail: String {
-    switch summary {
-      case .battle(_, .running(let running)):
-        // A summary's Rotation always plays: a paused window reads as the pause instead.
-        running.item.setting.map { terms.name(of: $0.rule) } ?? ""
-      case .salmonRun(.running(let running)):
-        terms.name(of: running.item.stage)
-      case .battle(_, .paused(let returnTime)),
-           .salmonRun(.paused(let returnTime)):
-        ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now))
-      case .battle(_, .nothingCurrent),
-           .salmonRun(.nothingCurrent):
-        ScreenText.nothingCurrent.text(in: terms.language)
-    }
-  }
-
   private var format: ScheduleFormat { time.format(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
-}
-
-// MARK: NowRow.Look
-
-extension NowRow {
-  /// What a row draws for its summary besides the text: the icon, colour and heading of the Mode
-  /// or of the Shift kind on, and how far the current item has run.
-  struct Look {
-    let icon: ModeIcon
-    let color: ModeColor
-    let heading: InkModeHeading
-    /// The current item's progress, or `nil` while none is on.
-    let progress: WindowProgress?
-
-    init(_ summary: ModeSummary) {
-      switch summary {
-        case .battle(let mode, let current):
-          icon = ModeIcon(summary.mode)
-          color = ModeColor(mode)
-          heading = InkModeHeading(summary.mode)
-          progress = Self.progress(of: current)
-
-        case .salmonRun(.running(let running)):
-          icon = ModeIcon(running.item.kind)
-          color = ModeColor(running.item.kind)
-          heading = InkModeHeading(name: ModeLabel(running.item.kind), form: nil)
-          progress = running.progress
-
-        case .salmonRun(let current):
-          icon = ModeIcon(summary.mode)
-          color = ModeColor(summary.mode)
-          heading = InkModeHeading(summary.mode)
-          progress = Self.progress(of: current)
-      }
-    }
-
-    /// The share of the ring drawn: what the current item has run, or none.
-    var share: Double {
-      progress?.sharePassed ?? 0
-    }
-
-    static private func progress(of current: OnNow<some TimeWindow & Hashable & Sendable>) -> WindowProgress? {
-      if case .running(let running) = current { running.progress } else { nil }
-    }
-  }
 }

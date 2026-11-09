@@ -19,6 +19,8 @@ import SwiftUI
 struct Ikalendar3WatchApp: App {
   /// The objects every page reads, or `nil` when the App Group container is missing (logged).
   @State private var services: WatchServices?
+  /// The pages open over the Now page.
+  @State private var path: [WatchRoute]
 
   @Environment(\.scenePhase) private var scenePhase
 
@@ -26,10 +28,10 @@ struct Ikalendar3WatchApp: App {
     WindowGroup {
       Group {
         if let services {
-          NavigationStack {
+          NavigationStack(path: $path) {
             NowScreen()
-              .navigationDestination(for: Mode.self) { mode in
-                ModePagePlaceholder(mode: mode)
+              .navigationDestination(for: WatchRoute.self) { route in
+                route.destination
               }
           }
           .environment(services)
@@ -45,10 +47,15 @@ struct Ikalendar3WatchApp: App {
   }
 
   /// Registers the fonts and points image lookups at the resource framework before anything draws,
-  /// then builds this launch's objects.
+  /// then builds this launch's objects. A Debug launch may open pages over the Now page.
   init() {
     BundledResources.load(from: IkaResources.bundle)
     _services = State(initialValue: WatchServices.forThisLaunch())
+    #if DEBUG
+    _path = State(initialValue: WatchDebugLaunch.openPages())
+    #else
+    _path = State(initialValue: [])
+    #endif
   }
 }
 
