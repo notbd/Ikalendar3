@@ -11,9 +11,9 @@ import SwiftUI
 
 // MARK: - SplatfestCardView
 
-/// The plain Splatfest card every Style's stand-in screens share until tickets 29 to 31 draw
-/// their own: the art once downloaded, the title, the three teams in their colours with their
-/// names, and the times. It receives `IkaCore` values only and reads no store.
+/// The plain Splatfest card Timeline's stand-in screens show until ticket 31 draws its own: the
+/// art once downloaded, the title, the three teams in their colours with their names, and the
+/// times. It receives `IkaCore` values only and reads no store.
 public struct SplatfestCardView: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.timeZone) private var timeZone

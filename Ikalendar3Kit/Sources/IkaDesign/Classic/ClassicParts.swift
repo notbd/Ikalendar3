@@ -11,15 +11,15 @@ import SwiftUI
 
 // MARK: - ClassicTag
 
-/// ikalendar 2's grey glass tag that leads a row's header: "Now:", "Next:", "Open!", "Soon:".
+/// ikalendar 2's grey glass tag that leads a row's header: "Now:", "Next:", "Open!", "Soon:", or
+/// an event's name where it has no Mode colour, such as Tricolor Turf War.
 struct ClassicTag: View {
   @Environment(\.colorScheme) private var colorScheme
-  @Environment(\.gameLanguage) private var language
 
-  let text: ClassicText
+  let text: String
 
   var body: some View {
-    Text(verbatim: text.text(in: language))
+    Text(verbatim: text)
       .ikaFont(.heavy, size: ClassicMetrics.Header.tagFontSize, relativeTo: .title2)
       // The system background's colour: white on light, black on dark.
       .foregroundStyle(colorScheme == .dark ? Color.black : Color.white)
@@ -30,18 +30,16 @@ struct ClassicTag: View {
 
 // MARK: - ClassicKindTag
 
-/// The tag that marks a Big Run or an Eggstra Work among the Shifts: its name on its Mode colour,
-/// as ticket 11's fill pair draws it, beside its Mode icon in the cell.
+/// The tag that marks a kind by its name on its Mode colour, as ticket 11's fill pair draws it: a
+/// Big Run or an Eggstra Work among the Shifts, Regular Battle after a Splatfest, an event card.
 struct ClassicKindTag: View {
-  @Environment(\.gameLanguage) private var language
-
-  let label: ModeLabel
+  let text: String
   let color: ModeColor
 
   var body: some View {
     let pair: ColorPair = color.asFill
 
-    Text(verbatim: label.text(in: language))
+    Text(verbatim: text)
       .ikaFont(.heavy, size: ClassicMetrics.Header.tagFontSize, relativeTo: .title2)
       .foregroundStyle(Color(pair.foreground))
       .padding(.horizontal, ClassicMetrics.Header.tagPaddingH)

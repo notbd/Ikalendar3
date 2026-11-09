@@ -66,11 +66,12 @@ enum WidgetData {
 
 extension WidgetData {
   /// Previews: a loader of a recorded day, moved so that a moment of it is now: the normal day
-  /// mid-Rotation, or the Splatfest in its second half.
+  /// mid-Rotation, the Splatfest in its second half, or the Big Run with its random weapons.
   static func fixture(_ schedules: Fixture) -> @Sendable () async -> Snapshot {
     let recordedAt =
       switch schedules {
         case .splatfestSecondHalf: "2026-11-01T05:30:00Z"
+        case .bigRun: "2026-09-12T06:00:00Z"
         default: "2026-10-20T13:15:00Z"
       }
     return {

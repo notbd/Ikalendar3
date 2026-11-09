@@ -40,6 +40,15 @@ public enum ModeLabel: String, CaseIterable, Sendable {
   /// Splatfest.
   case splatfest = "mode.splatfest"
 
+  /// The name of a Shift of `kind`: Salmon Run, Big Run or Eggstra Work.
+  public init(_ kind: Shift.Kind) {
+    switch kind {
+      case .regular: self = .salmonRun
+      case .bigRun: self = .bigRun
+      case .eggstraWork: self = .eggstraWork
+    }
+  }
+
   /// The label in a text set.
   public func text(in language: GameLanguage) -> String {
     Bundle.module.localizedString(forKey: rawValue, in: language)

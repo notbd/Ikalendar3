@@ -47,11 +47,11 @@ public struct ClassicBattleScreenView: View {
     { metrics in
       if let card = screen.announcedSplatfest {
         Section {
-          SplatfestCardView(splatfest: card.splatfest, art: card.art, terms: terms, style: .classic, now: now)
+          ClassicSplatfestCard(splatfest: card.splatfest, art: card.art, terms: terms, now: now, metrics: metrics)
         }
       }
       ForEach(rows) { row in
-        ClassicBattleSection(row: row, mode: screen.mode, terms: terms, now: now, metrics: metrics)
+        ClassicBattleSection(row: row, mode: .battle(screen.mode), terms: terms, now: now, metrics: metrics)
       }
     } footer: {
       FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
@@ -110,14 +110,15 @@ public struct ClassicSalmonRunScreenView: View {
 
 // MARK: - ClassicScheduleList
 
-/// What both Classic screens share: ikalendar 2's inset grouped list with hidden row separators,
-/// its rows sized for the list's width and text size, rows moving into place as the clock changes
-/// them and, on iPhone and iPad, the Mode stamp docking into its badge.
-private struct ClassicScheduleList<Rows: View, Footer: View>: View {
+/// What every Classic screen shares: ikalendar 2's inset grouped list with hidden row
+/// separators, its rows sized for the list's width and text size, rows moving into place as the
+/// clock changes them and, on iPhone and iPad, the Mode stamp docking into its badge.
+struct ClassicScheduleList<ReflowValue: Equatable, Rows: View, Footer: View>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   let icon: ModeIcon
-  let reflowValue: [ClassicRowID]
+  /// The rows' identities: the rows move into place when it changes.
+  let reflowValue: ReflowValue
   @ViewBuilder let rows: (CellMetrics) -> Rows
   @ViewBuilder let footer: () -> Footer
 
