@@ -1,12 +1,12 @@
 # ikalendar 3
 
-ikalendar 3 shows Splatoon 3's public schedules: which battles and Salmon Run shifts are on now and next, on the iPhone, iPad, Mac and Apple Watch. These are the words its code, docs and tickets use.
+ikalendar 3 shows Splatoon 3's public schedules: which battles and Salmon Run Shifts are on now and next, on the iPhone, iPad, Mac and Apple Watch. These are the words its code, docs and tickets use.
 
 ## Game structure
 
-**Game Mode**:
-The top-level split of what the schedule covers: Battle or Salmon Run.
-_Avoid_: category, section
+**Mode**:
+A Battle Mode or Salmon Run, each with a Schedule of its own.
+_Avoid_: game mode, category, section
 
 **Battle Mode**:
 A battle matchmaking queue with its own schedule, such as Regular Battle, Anarchy Series, Anarchy Open or X Battle.
@@ -30,10 +30,10 @@ _Avoid_: event match, league
 
 **Rule**:
 The set of rules a battle is played under, which fixes its objective, how it plays and how its Stage is laid out: Turf War, Splat Zones, Tower Control, Rainmaker or Clam Blitz.
-_Avoid_: mode, game type
+_Avoid_: mode (for a Rule), game type
 
 **Stage**:
-A map that battles or Salmon Run shifts are played on.
+A map that battles or Salmon Run Shifts are played on.
 _Avoid_: map, arena, level
 
 **King Salmonid**:
