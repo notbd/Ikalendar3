@@ -207,7 +207,7 @@ extension TermTable {
       let title = splatfest.title, !title.isEmpty
     {
       add(splatfest.tricolorStages ?? [], to: \.stages)
-      splatfests[id] = SplatfestTerms(title: title, teamNames: [])
+      splatfests[id] = SplatfestTerms(title: title, teamNames: nil)
     }
   }
 

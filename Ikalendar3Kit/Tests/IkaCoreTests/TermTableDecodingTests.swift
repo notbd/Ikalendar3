@@ -157,7 +157,7 @@ struct TermTableDecodingTests {
       teamNames: ["Wizard", "Knight", "Ninja"]))
     #expect(Snapshot(schedules: schedules).feedTerms.splatfests[id] == SplatfestTerms(
       title: "What would you be in a fantasy world?",
-      teamNames: []))
+      teamNames: nil))
   }
 
   @Test
