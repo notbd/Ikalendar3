@@ -43,13 +43,24 @@ enum TimelineEntry<Item: TimeWindow & Hashable & Sendable>: Hashable, Identifiab
 
   /// The current entry for `current`, then one per item still to come.
   static private func entries(current: OnNow<Item>, upcoming: [Item]) -> [TimelineEntry] {
+    entries(current: current, upcoming: upcoming, as: \.self)
+  }
+
+  /// The current entry for `current`, then one per item still to come, each source item made
+  /// the axis's `item`.
+  static private func entries<Source>(
+    current: OnNow<Source>,
+    upcoming: [Source],
+    as item: (Source) -> Item)
+    -> [TimelineEntry]
+  {
     let first: TimelineEntry =
       switch current {
-        case .running(let running): .item(running.item, progress: running.progress)
+        case .running(let running): .item(item(running.item), progress: running.progress)
         case .paused(let returnTime): .paused(returnTime: returnTime)
         case .nothingCurrent: .nothingCurrent
       }
-    return [first] + upcoming.map { .item($0, progress: nil) }
+    return [first] + upcoming.map { .item(item($0), progress: nil) }
   }
 }
 
@@ -84,6 +95,53 @@ extension TimelineEntry<Shift> {
       else if let next = screen.nextEggstraWork { [.item(next, progress: nil)] }
       else { [] }
     return eggstraWork + entries(current: screen.current, upcoming: [screen.next].compactMap(\.self) + screen.later)
+  }
+}
+
+extension TimelineEntry<ChallengeWindow> {
+  /// The axis of one Challenge: all its windows, past ones included, the current one with its
+  /// progress.
+  static func entries(of listing: ChallengeScreen.Listing) -> [TimelineEntry] {
+    listing.windows.map { marked in
+      let window: ChallengeWindow = .init(challenge: listing.challenge, window: marked.window)
+      return if case .current(let progress) = marked.mark { .item(window, progress: progress) }
+      else { .item(window, progress: nil) }
+    }
+  }
+}
+
+extension TimelineEntry<TimelineSplatfestItem> {
+  /// The axis of the Splatfest screen: Tricolor Turf War on top in the second half, then the
+  /// form's current Rotation or nothing current, its next and later Rotations, and Regular
+  /// Battle's Rotations from the Splatfest's end.
+  static func entries(of screen: SplatfestScreen) -> [TimelineEntry] {
+    let tricolorTurfWar: [TimelineEntry] = screen.tricolorTurfWar
+      .map { [.item(.tricolorTurfWar($0.item), progress: $0.progress)] } ?? []
+    let upcoming: [Rotation] = [screen.next].compactMap(\.self) + screen.later + screen.afterwards
+    return tricolorTurfWar + entries(current: screen.current, upcoming: upcoming, as: TimelineSplatfestItem.rotation)
+  }
+}
+
+// MARK: - TimelineSplatfestItem
+
+/// What the Splatfest screen's axis holds: Rotations, of the form and of Regular Battle after
+/// the end, and Tricolor Turf War.
+enum TimelineSplatfestItem: TimeWindow, Hashable, Sendable {
+  case rotation(Rotation)
+  case tricolorTurfWar(TricolorTurfWar)
+
+  var startTime: Date {
+    switch self {
+      case .rotation(let rotation): rotation.startTime
+      case .tricolorTurfWar(let tricolorTurfWar): tricolorTurfWar.startTime
+    }
+  }
+
+  var endTime: Date {
+    switch self {
+      case .rotation(let rotation): rotation.endTime
+      case .tricolorTurfWar(let tricolorTurfWar): tricolorTurfWar.endTime
+    }
   }
 }
 #endif
