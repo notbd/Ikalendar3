@@ -12,14 +12,23 @@ import WidgetKit
 
 // MARK: - BattleWidgetView
 
-/// The battle widget in Ink, in the size the system draws it at.
+/// The battle widget in Ink, in the size or Lock Screen family the system draws it at.
 struct BattleWidgetView: View {
   @Environment(\.widgetFamily) private var family
 
   let entry: ScheduleWidgetEntry<BattleWidgetContent>
 
   var body: some View {
-    BattleWidgetLayout(entry: entry, family: family)
+    switch family {
+      #if os(iOS)
+      case .accessoryCircular,
+             .accessoryRectangular,
+             .accessoryInline:
+        LockScreenBattleView(entry: entry, family: family)
+      #endif
+      default:
+        BattleWidgetLayout(entry: entry, family: family)
+    }
   }
 }
 
@@ -56,7 +65,7 @@ struct BattleWidgetLayout: View {
       terms: entry.terms)
 
     return VStack(alignment: .leading, spacing: 8) {
-      ModeHeading(mode: content.shownMode) {
+      ModeHeading(mode: content.shownMode, in: entry.terms.language) {
         FreshnessLabel(entry: schedule, showsFetchTime: family != .systemSmall)
       }
       switch family {
