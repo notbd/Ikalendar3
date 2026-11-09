@@ -15,4 +15,7 @@ extension Logger {
 
   /// Fonts: where each process registered faces from, and which ones.
   static let fonts: Logger = .init(subsystem: subsystem, category: "fonts")
+
+  /// Images: which bundle's asset catalog the bundled images load from.
+  static let images: Logger = .init(subsystem: subsystem, category: "images")
 }

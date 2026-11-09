@@ -24,6 +24,7 @@ __pycache__/
 SourcePackages/
 
 # Font files are never committed; the asset script writes them to a git-ignored folder
+/IkaResources/Fonts/
 *.ttf
 *.otf
 *.ttc
