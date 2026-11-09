@@ -144,7 +144,10 @@ public struct SentenceWriter: Sendable {
   /// The time left in a window, which is how a progress bar or ring reads: whole hours and
   /// minutes, rounded up to the minute so a running window never reads zero.
   public func timeLeft(_ progress: WindowProgress) -> String {
-    let minutes: Int = .init((progress.timeLeft / .seconds(60)).rounded(.up))
+    // From the countdown's whole parts, as it is for seconds: a division through `Double` reads
+    // some whole minutes a hair above them.
+    let countdown: Countdown = .init(progress.timeLeft)
+    let minutes: Int = countdown.hours * 60 + countdown.minutes + (countdown.seconds > 0 ? 1 : 0)
     let (hours, minutesPastHour) = minutes.quotientAndRemainder(dividingBy: 60)
     let span =
       switch (hours, minutesPastHour) {

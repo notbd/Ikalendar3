@@ -304,6 +304,9 @@ struct SentenceWriterTests {
     TimeLeftCase(seconds: 59 * 60 + 1, language: .enUS, text: "1 hour left"),
     TimeLeftCase(seconds: 1, language: .enUS, text: "1 minute left"),
     TimeLeftCase(seconds: 39 * 3600 + 5 * 60, language: .enUS, text: "39 hours 5 minutes left"),
+    // Whole minutes whose seconds divide to a hair above them through `Double`.
+    TimeLeftCase(seconds: 161 * 60, language: .enUS, text: "2 hours 41 minutes left"),
+    TimeLeftCase(seconds: 165 * 60, language: .enUS, text: "2 hours 45 minutes left"),
     TimeLeftCase(seconds: 4800, language: .jaJP, text: "残り1時間20分"),
     TimeLeftCase(seconds: 4800, language: .zhCN, text: "剩余1小时20分钟"),
     TimeLeftCase(seconds: 2 * 3600 + 22 * 60, language: .ruRU, text: "осталось: 2 часа 22 минуты"),
