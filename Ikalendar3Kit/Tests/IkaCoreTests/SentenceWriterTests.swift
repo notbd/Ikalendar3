@@ -119,7 +119,7 @@ struct SentenceWriterTests {
       writer.sentence(for: paused, at: instant),
       writer.sentence(for: bigRun, at: instant),
       writer.timeLeft(WindowProgress(timeLeft: .seconds(4800), sharePassed: 0.5)),
-    ] + MissedBoundaryReminder.allCases.map { $0.text(in: language) }
+    ] + TrackingReminder.allCases.map { $0.text(in: language) }
 
     for text in texts {
       #expect(!text.isEmpty && !text.contains("%"), "\(language.rawValue): \(text)")
@@ -213,11 +213,11 @@ struct SentenceWriterTests {
     #expect(sentence.contains(range.range), "\(sentence)")
   }
 
-  // MARK: Missed boundaries
+  // MARK: Tracking reminders
 
   @Test
-  func `The missed-boundary reminders read in the Live Activity's two levels`() {
-    #expect(MissedBoundaryReminder.nextSwitchNeedsRefresh.text(in: .enUS) == "The next switch needs a Refresh.")
-    #expect(MissedBoundaryReminder.outOfDate.text(in: .enUS) == "Schedule out of date, tap Refresh.")
+  func `The Tracking reminders read in the Live Activity's two levels`() {
+    #expect(TrackingReminder.nextSwitchNeedsRefresh.text(in: .enUS) == "The next switch needs a Refresh.")
+    #expect(TrackingReminder.scheduleOutOfDate.text(in: .enUS) == "Schedule out of date, tap Refresh.")
   }
 }

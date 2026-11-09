@@ -1981,7 +1981,7 @@
         }
       }
     },
-    "reminder.outOfDate" : {
+    "reminder.scheduleOutOfDate" : {
       "comment" : "The Live Activity's second missed-boundary reminder, also read by VoiceOver. Refresh is the button's name.",
       "extractionState" : "manual",
       "localizations" : {
