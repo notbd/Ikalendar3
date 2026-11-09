@@ -23,7 +23,7 @@ import IkaIntents
 ///   worktree passes a folder inside it and a suite named after it. It is an explicit option,
 ///   never a fallback.
 /// - The event card gallery: `--event-cards` shows every event card at the app clock's instant
-///   instead of the tabs, for screenshots until the iPad event strip shows them.
+///   instead of the tabs, for screenshots of each card at an iPhone's width.
 /// - The short-item Tracking, on iOS: `--fixture-short-tracking <Mode>` Tracks the Mode with
 ///   items two minutes long after each activation run (`restartShortTracking(with:)`). An
 ///   unrebased fixture launch hides the track button (`hidesTrackButton`).

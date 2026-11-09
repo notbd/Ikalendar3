@@ -11,10 +11,13 @@ import SwiftUI
 
 // MARK: - SidebarLayoutView
 
-/// The iPad's layout in portrait or a narrow window: a sidebar of Modes beside one detail column,
-/// which shows the selected row's screen. The screens pick the wide detail or the iPhone list by
-/// their own width (`DetailLayout`). The sidebar's toolbar holds the refresh and Settings buttons;
-/// pull to refresh stays on iPhone.
+/// The iPad's layout in portrait or a narrow window of regular width: a sidebar of Modes beside
+/// one detail column, which shows the selected row's screen. The screens pick the wide detail or
+/// the iPhone list by their own width (`DetailLayout`). The sidebar's toolbar holds the refresh
+/// and Settings buttons; pull to refresh stays on iPhone.
+///
+/// The split view never collapses into one stack, where a row would have to push its detail: a
+/// window of compact width shows the tabs instead (`WindowLayout`).
 struct SidebarLayoutView: View {
   @Environment(RefreshEngine.self) private var engine
   @Environment(AppClock.self) private var clock
@@ -26,8 +29,7 @@ struct SidebarLayoutView: View {
     let snapshot = engine.snapshot
     let now = clock.now
     let sidebar = snapshot.sidebar(at: now)
-    let opening: SidebarItem = .init(snapshot.tab(in: status.selectedPlace, at: now), anarchyMode: status.anarchyMode)
-    let shown = (status.sidebarChoice ?? opening).shown(in: sidebar)
+    let shown = status.sidebarItem(selectedTab: snapshot.tab(in: status.selectedPlace, at: now)).shown(in: sidebar)
 
     NavigationSplitView(columnVisibility: .constant(.all)) {
       SidebarList(sidebar: sidebar, now: now, selection: .init(get: { shown }, set: { $0.map(status.pick) }))

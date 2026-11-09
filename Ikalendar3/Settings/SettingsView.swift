@@ -191,18 +191,29 @@ extension SettingsView {
   }
 }
 
-// MARK: - Presentation
+// MARK: - SettingsButton
+
+/// The button that shows Settings on iPhone and iPad, as in ikalendar 2: in a screen's or the
+/// sidebar's toolbar, and beside the iPad event strip.
+struct SettingsButton: View {
+  @Binding var isPresented: Bool
+  let language: GameLanguage
+
+  var body: some View {
+    Button(SettingsText.title.text(in: language), systemImage: "gear") {
+      isPresented = true
+    }
+  }
+}
 
 extension View {
-  /// The toolbar button that shows Settings on iPhone and iPad, as in ikalendar 2. The Mac opens
-  /// its Settings window from the app menu or with Command-comma instead, so it has none.
+  /// Puts `SettingsButton` in the toolbar on iPhone and iPad. The Mac opens its Settings window
+  /// from the app menu or with Command-comma instead, so it has none.
   func settingsButton(isPresented: Binding<Bool>, language: GameLanguage) -> some View {
     #if os(iOS)
     toolbar {
       ToolbarItem(placement: .topBarTrailing) {
-        Button(SettingsText.title.text(in: language), systemImage: "gear") {
-          isPresented.wrappedValue = true
-        }
+        SettingsButton(isPresented: isPresented, language: language)
       }
     }
     #else
