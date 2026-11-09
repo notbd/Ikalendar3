@@ -292,17 +292,4 @@ struct ClassicWeaponsCard: View {
     }
   }
 }
-
-// MARK: - ModeIcon
-
-extension ModeIcon {
-  /// The icon of a Shift of `kind`.
-  fileprivate init(_ kind: Shift.Kind) {
-    switch kind {
-      case .regular: self = .salmonRun
-      case .bigRun: self = .bigRun
-      case .eggstraWork: self = .eggstraWork
-    }
-  }
-}
 #endif

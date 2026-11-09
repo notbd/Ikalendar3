@@ -120,6 +120,24 @@ struct SentenceWriterTests {
       + "from Thursday 7:00\u{202F}PM to Thursday 9:00\u{202F}PM.")
   }
 
+  /// The Salmon Run widget reads it, for the reason the battle widgets read a Rotation without
+  /// an instant.
+  @Test
+  func `A Shift read without an instant reads no time left, even while it runs`() {
+    let shift: Shift = .init(
+      kind: .bigRun,
+      startTime: TestData.instant(hours: 16),
+      endTime: TestData.instant(hours: 64),
+      stage: StageID("VnNTdGFnZS0x"),
+      weapons: [.random, .random, .random, .random],
+      kingSalmonid: KingSalmonidID("Q29vcEVuZW15LTIz"))
+
+    let sentence = Self.writer().sentence(for: shift)
+
+    #expect(sentence == "Big Run: Scorch Gorge with Random, Random, Random, and Random, "
+      + "from Thursday 8:00\u{202F}AM to Saturday 8:00\u{202F}AM.")
+  }
+
   // MARK: Tracking
 
   /// Tracking's items read as the Rotation, pause and Shift they stand for, so the Live

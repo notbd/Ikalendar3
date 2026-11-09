@@ -70,13 +70,14 @@ public struct SentenceWriter: Sendable {
   ///
   /// A Shift spans days, so its times carry the weekday.
   public func sentence(for shift: Shift, at instant: Date) -> String {
-    let kind: ModeLabel =
-      switch shift.kind {
-        case .regular: .salmonRun
-        case .bigRun: .bigRun
-        case .eggstraWork: .eggstraWork
-      }
-    return sentence(of: kind, on: shift.stage, with: shift.weapons, in: shift, at: instant)
+    sentence(of: shift, at: instant)
+  }
+
+  /// A Shift's sentence with no time left: Salmon Run, Big Run or Eggstra Work, its Stage, four
+  /// weapons and time range. The Salmon Run widget reads it, as the battle widgets read
+  /// `sentence(for:)` of a Rotation.
+  public func sentence(for shift: Shift) -> String {
+    sentence(of: shift, at: nil)
   }
 
   /// A Tracking item's sentence: the regular Shift or Big Run it stands for, read as
@@ -172,13 +173,18 @@ public struct SentenceWriter: Sendable {
       when(window, at: instant, times: .init().hour().minute()))
   }
 
-  /// The sentence of a Shift of `kind` over `window`.
+  /// A Shift's sentence. With no `instant`, it reads no time left.
+  private func sentence(of shift: Shift, at instant: Date?) -> String {
+    sentence(of: ModeLabel(shift.kind), on: shift.stage, with: shift.weapons, in: shift, at: instant)
+  }
+
+  /// The sentence of a Shift of `kind` over `window`. With no `instant`, it reads no time left.
   private func sentence(
     of kind: ModeLabel,
     on stage: StageID,
     with weapons: [WeaponID],
     in window: some TimeWindow,
-    at instant: Date)
+    at instant: Date?)
     -> String
   {
     format(
