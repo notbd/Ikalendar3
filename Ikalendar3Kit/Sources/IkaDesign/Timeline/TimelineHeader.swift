@@ -85,40 +85,52 @@ struct TimelineModeBadge: View {
 
 // MARK: - TimelineFormStrip
 
-/// The Series and Open strip under Anarchy's header, the form shown underlined in the Mode
-/// colour. It shows which form the screen holds and takes no tap: ticket 24's tab menu switches
-/// it. VoiceOver reads it as one text naming the shown form, not as a selector.
+/// The strip of forms under the header, the form shown underlined in the Mode colour: Series and
+/// Open on Anarchy, Open and Pro on Splatfest Battle. It shows which form the screen holds and
+/// takes no tap: ticket 24's tab menu switches it. VoiceOver reads it as one text naming the shown
+/// form, not as a selector.
 struct TimelineFormStrip: View {
-  /// The Anarchy form the screen shows.
-  let shown: BattleMode
+  /// Each form's label in the strip's order, and whether the screen shows it.
+  let forms: [(label: ModeLabel, isShown: Bool)]
+  /// The colour of the line under the shown form.
+  let color: TimelineTint
   let language: GameLanguage
+
+  /// Anarchy Battle's strip, `shown` being the form the screen shows.
+  init(shown: BattleMode, language: GameLanguage) {
+    forms = [(.series, shown == .anarchySeries), (.open, shown == .anarchyOpen)]
+    color = .init(ModeColor(shown))
+    self.language = language
+  }
+
+  /// Splatfest Battle's strip, `shown` being the form the screen shows, underlined in neutral.
+  init(shown: SplatfestBattleForm, language: GameLanguage) {
+    forms = [(.open, shown == .open), (.pro, shown == .pro)]
+    color = .neutral
+    self.language = language
+  }
 
   var body: some View {
     HStack(spacing: 28) {
-      ForEach(Self.forms, id: \.mode) { form in
-        self.form(form.mode, label: form.label)
+      ForEach(forms, id: \.label) { form in
+        self.form(form.label, isShown: form.isShown)
       }
     }
     .frame(maxWidth: .infinity, minHeight: TimelineMetrics.stripHeight)
     .background(TimelinePalette.strip)
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel(Text(verbatim: Self.forms.first { $0.mode == shown }?.label.text(in: language) ?? ""))
+    .accessibilityLabel(Text(verbatim: forms.first(where: \.isShown)?.label.text(in: language) ?? ""))
   }
 
-  /// Anarchy Battle's forms in strip order, each with its label.
-  static private let forms: [(mode: BattleMode, label: ModeLabel)] = [(.anarchySeries, .series), (.anarchyOpen, .open)]
-
-  private func form(_ mode: BattleMode, label: ModeLabel) -> some View {
-    let isShown: Bool = mode == shown
-
-    return Text(verbatim: label.text(in: language))
+  private func form(_ label: ModeLabel, isShown: Bool) -> some View {
+    Text(verbatim: label.text(in: language))
       .ikaFont(.heavy, size: 14, relativeTo: .subheadline)
       .foregroundStyle(isShown ? .white : TimelinePalette.stripIdle)
       .padding(.vertical, 9)
       .overlay(alignment: .bottom) {
         if isShown {
           Rectangle()
-            .fill(Color(ModeColor(mode).base))
+            .fill(Color(color.base))
             .frame(height: TimelineMetrics.stripUnderline)
         }
       }

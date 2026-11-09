@@ -15,8 +15,7 @@ import SwiftUI
 
 /// The Debug launch's event card gallery (`--event-cards`): every event the snapshot lists at the
 /// app clock's instant as the chosen Style's card, one under the other on that Style's
-/// background, so a fixture launch can show each card before the iPad event strip does. Timeline
-/// shows Classic's cards until its own land.
+/// background, so a fixture launch can show each card before the iPad event strip does.
 struct EventCardGallery: View {
   @Environment(RefreshEngine.self) private var engine
   @Environment(\.effects) private var effects
@@ -33,9 +32,9 @@ struct EventCardGallery: View {
       VStack(spacing: 16) {
         ForEach(snapshot.eventItems(at: now) ?? [], id: \.self) { item in
           switch preferences.style {
+            case .classic: ClassicEventCard(item: item, terms: terms, now: now)
             case .ink: InkEventCard(item: item, terms: terms, now: now)
-            case .classic,
-                 .timeline: ClassicEventCard(item: item, terms: terms, now: now)
+            case .timeline: TimelineEventCard(item: item, terms: terms, now: now)
           }
         }
       }
@@ -43,9 +42,9 @@ struct EventCardGallery: View {
     }
     .background {
       switch preferences.style {
+        case .classic: classicBackground.ignoresSafeArea()
         case .ink: InkBackground().ignoresSafeArea()
-        case .classic,
-             .timeline: classicBackground.ignoresSafeArea()
+        case .timeline: TimelineBackground().ignoresSafeArea()
       }
     }
     .appColorScheme(preferences.colorScheme)

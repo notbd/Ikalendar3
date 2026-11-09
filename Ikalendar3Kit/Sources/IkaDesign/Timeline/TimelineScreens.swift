@@ -41,7 +41,7 @@ public struct TimelineBattleScreenView: View {
 
   public var body: some View {
     let entries: [TimelineEntry<Rotation>] = TimelineEntry.entries(of: screen)
-    let color: ModeColor = .init(screen.mode)
+    let color: TimelineTint = .init(ModeColor(screen.mode))
     let writer: SentenceWriter = time.writer(terms)
 
     TimelineScheduleList(
@@ -54,7 +54,7 @@ public struct TimelineBattleScreenView: View {
         TimelineFormStrip(shown: screen.mode, language: terms.language)
       }
       if let card = screen.announcedSplatfest {
-        SplatfestCardView(card: card, terms: terms, style: .timeline, now: now)
+        TimelineSplatfestCard(card: card, terms: terms, now: now)
           .padding(.horizontal, TimelineMetrics.contentTrailing)
           .padding(.top, TimelineMetrics.axisTop)
       }
@@ -176,7 +176,7 @@ public struct TimelineSalmonRunScreenView: View {
           TimelineStatusContent(text: ScreenText.nothingCurrent.text(in: terms.language))
         }
       } color: { entry in
-        entry.item.map { ModeColor($0.kind) } ?? .salmonRun
+        TimelineTint(entry.item.map { ModeColor($0.kind) } ?? .salmonRun)
       } sentence: { entry in
         entry.item.map { writer.sentence(for: $0, at: now) } ?? ScreenText.nothingCurrent.text(in: terms.language)
       }
@@ -186,16 +186,28 @@ public struct TimelineSalmonRunScreenView: View {
   }
 }
 
+// MARK: - TimelineBackground
+
+/// SplatNet 3's dark page, which Timeline's screens draw under their lists, for a view that
+/// shows Timeline's parts outside them, such as the Debug event card gallery.
+public struct TimelineBackground: View {
+  public init() { }
+
+  public var body: some View {
+    TimelinePalette.page
+  }
+}
+
 // MARK: - TimelineScheduleList
 
-/// What both Timeline screens share: SplatNet 3's dark page under the black header, the axis sized
+/// What every Timeline screen shares: SplatNet 3's dark page under the black header, the axis sized
 /// for the text size, entries moving into place as the clock changes them and, on iPhone and
 /// iPad, the header's stamp docking into the navigation bar badge, the inline title fading in
 /// with it.
 ///
 /// The page stays dark in light appearance until ticket 57 designs Timeline's light look, so the
 /// list and the navigation bar take the dark scheme.
-private struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowValue: Equatable>: View {
+struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowValue: Equatable>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   /// How far the header's stamp has docked into the navigation bar badge.
@@ -207,8 +219,7 @@ private struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, R
   /// The Mode's name in the header.
   let headerName: String
   let reflowValue: ReflowValue
-  /// What sits between the header and the axis: the Series and Open strip, an announced
-  /// Splatfest's card.
+  /// What sits between the header and the axis: the strip of forms, a Splatfest's card.
   @ViewBuilder let aboveAxis: () -> AboveAxis
   @ViewBuilder let axis: (CellArrangement) -> Axis
   @ViewBuilder let footer: () -> Footer
@@ -229,6 +240,7 @@ private struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, R
         }
         .listReflow(value: reflowValue)
       }
+      // A colour, not a view, so the page runs under the bars too.
       .background(TimelinePalette.page)
       .environment(\.colorScheme, .dark)
       #if os(iOS)
