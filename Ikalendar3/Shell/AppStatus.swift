@@ -27,6 +27,9 @@ final class AppStatus {
   private(set) var sidebarChoice: SidebarItem?
   /// Whether Settings is shown on iPhone and iPad.
   var isSettingsPresented = false
+  /// The event whose Schedule the iPad's sheet shows, opened from its card in the event strip. It
+  /// is kept here so the sheet stays open while the window switches layouts.
+  var presentedEvent: EventSheet?
   /// The haptic the last refresh run ended with, which every layout plays; `nil` before the first.
   var refreshHaptic: RefreshHaptic?
 

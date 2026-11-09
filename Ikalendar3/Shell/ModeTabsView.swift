@@ -14,8 +14,7 @@ import SwiftUI
 
 /// The iPhone tabs in the native Liquid Glass tab bar: Regular Battle, Anarchy, X Battle,
 /// Challenge and Salmon Run, with the Splatfest tab in Regular Battle's place while a Splatfest
-/// runs. An iPad window wide enough for columns and the Mac show them too until their own
-/// navigation lands.
+/// runs. The Mac shows them too until its own window lands.
 ///
 /// It plays ikalendar 2's Mode switch haptic, shows the failed-refresh toast above the tab bar
 /// (`AppRootView` keeps it), and shows Settings from each tab's toolbar. A second tap on the
