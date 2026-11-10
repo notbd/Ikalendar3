@@ -12,10 +12,9 @@
 #      Graphics' `CGDataProvider` and `CGPDFDocument` initialisers, `NSAttributedString(url:)`,
 #      `LPMetadataProvider`, and every `AV…(url:)` and `InputStream(url:)` initialiser, each
 #      also as `.init(url:)` or `.init(byReferencing:)` after a type annotation, such as
-#      `let player: AVPlayer = .init(url: address)`, or with that argument wrapped onto a line
-#      of its own; the client's `URLRequest` is the one
-#      `.init(url:)` let through), and its `Data(readingFile:)` refuses any URL that is not a
-#      file's
+#      `let player: AVPlayer = .init(url: address)`, and each of those with its argument
+#      wrapped onto the next line; the client's `URLRequest` is the one `.init(url:)` let
+#      through), and its `Data(readingFile:)` refuses any URL that is not a file's
 #   3  only `FeedClient.swift` sends on a transport, and its one `send(to:)` refuses any address
 #      `Source.serves` does not accept
 #   4  the transport's session follows a redirect only to an address `Source.serves` accepts
@@ -69,9 +68,18 @@ network=$(shipped_matches '\b(URLSession|URLSessionConfiguration|NSURLConnection
   | grep -v "^$TRANSPORT:" || true)
 [[ -z $network ]] || problems+=("Networking APIs outside $TRANSPORT:"$'\n'"$network")
 
-readers=$(shipped_matches '\bcontentsOf:|\bCG\w+CreateWithURL\b|\bCG(DataProvider|PDFDocument)\(|\bNSImage\(byReferencing:|\bNSAttributedString\(url:|\bLPMetadataProvider\b|\b(AV\w+|InputStream)\(url:|\.init\((url|byReferencing):|^\s*(url|byReferencing):' \
+readers=$(shipped_matches '\bcontentsOf:|\bCG\w+CreateWithURL\b|\bCG(DataProvider|PDFDocument)\(|\bNSImage\(byReferencing:|\bNSAttributedString\(url:|\bLPMetadataProvider\b|\b(AV\w+|InputStream)\(url:|\.init\((url|byReferencing):' \
   | grep -v "^$FILE_READER:" | grep -v "^$CLIENT:[0-9]*: *var request: URLRequest = \.init(url:" || true)
 [[ -z $readers ]] || problems+=("Readers that take a URL outside $FILE_READER (use Data(readingFile:)):"$'\n'"$readers")
+# The same initialisers with the argument SwiftFormat wrapped onto the next line, which a match
+# line by line cannot see. Only a reader's own parenthesis before the break counts, so another
+# call's wrapped `url:` argument passes.
+wrapped=$(git ls-files -z -- "${SHIPPED[@]}" | xargs -0 perl -0777 -ne '
+  while (/((?:\b(?:AV\w+|InputStream|NSImage|NSAttributedString)|\.init)\()\s*\n\s*(?:url|byReferencing):/g) {
+    my $line = 1 + (substr($_, 0, $-[0]) =~ tr/\n//);
+    print "$ARGV:$line: $1 with its argument on the next line\n";
+  }' | grep -v "^$FILE_READER:" || true)
+[[ -z $wrapped ]] || problems+=("Readers that take a URL outside $FILE_READER (use Data(readingFile:)):"$'\n'"$wrapped")
 grep -q 'guard url.isFileURL else' "$FILE_READER" \
   || problems+=("$FILE_READER no longer refuses URLs that are not a file's.")
 

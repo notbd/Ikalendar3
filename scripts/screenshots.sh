@@ -27,8 +27,12 @@
 # multitasking setting, the App Group container as the installed app found it, and whether it was
 # booted. One that was booted restarts at the end, so its languages apply. Its status bar goes
 # back to the system's; a status bar override it had before is printed, not put back. The app it
-# installs stays installed. The Mac app keeps its data in the output folder and a defaults suite
-# of its own, both removed at the end.
+# installs stays installed. When a simulator cannot be put back, the run ends with status 1 and
+# keeps what it saved in the output folder's `.borrowed/<UDID>`: the settings as property lists,
+# `booted` when it was booted, the status bar override, and `group`, the App Group container.
+# The next run with that simulator stops at once until that folder is put back or moved away.
+# The Mac app keeps its data in the output folder and a defaults suite of its own, both removed
+# at the end.
 #
 # Usage: scripts/screenshots.sh [--languages "en ja ..."] [--output PATH] [--derived-data PATH]
 #                               [--iphone UDID] [--ipad UDID] [--watch UDID] [--skip-build]
@@ -121,25 +125,40 @@ group_container() {
   xcrun simctl get_app_container "$1" "$2" groups 2>/dev/null | sed -n "s/^${APP_GROUP}[[:space:]]*//p" | grep .
 }
 
+# Stops the run when simulator `udid` still has a folder of kept state: what a run that could not
+# put the simulator back saved, the only copy of how it was, so no run may replace it.
+refuse_kept_state() {
+  [[ ! -e $BORROWED/$1 ]] ||
+    fail "simulator $1 still has the state an earlier run saved and could not put back, in $BORROWED/$1; put it back or move that folder away, then run again"
+}
+
+# Checked before anything is built or booted, so a run that cannot start says so at once.
+for udid in $iphone $ipad $watch; do
+  refuse_kept_state "$udid"
+done
+
 # Saves the settings the run changes on booted simulator `udid`, whose app is `bundle`, before it
 # changes any: each one as a property list, and the iPhone's and iPad's status bar override.
 # `was_booted` says whether the simulator was booted before the run.
+#
+# It saves into a folder beside the final name and renames it when every setting is in, so a
+# save that stopped half way, before the run changed anything, is not taken for kept state.
 remember() {
-  local udid=$1 bundle=$2 was_booted=$3 folder="$BORROWED/$1" setting domain key plist
-  # A folder already here is what a run that could not put the simulator back kept: the only
-  # copy of its state, so this run must not replace it.
-  [[ ! -e $folder ]] ||
-    fail "simulator $udid still has the state an earlier run saved and could not put back, in $folder; put it back or move that folder away, then run again"
-  mkdir -p "$folder"
-  [[ $was_booted == false ]] || touch "$folder/booted"
+  local udid=$1 bundle=$2 was_booted=$3 folder="$BORROWED/$1" saving="$BORROWED/$1.saving"
+  local setting domain key plist
+  refuse_kept_state "$udid"
+  command rm -rf "$saving"
+  mkdir -p "$saving"
+  [[ $was_booted == false ]] || touch "$saving/booted"
   for setting in "${BORROWED_SETTINGS[@]}"; do
     read -r domain key <<<"$setting"
     plist=$(xcrun simctl spawn "$udid" defaults export "$domain" -) || fail "could not read $domain on simulator $udid"
-    plutil -extract "$key" xml1 -o "$folder/$key" - <<<"$plist" 2>/dev/null || true
+    plutil -extract "$key" xml1 -o "$saving/$key" - <<<"$plist" 2>/dev/null || true
   done
   if [[ $bundle == "$BUNDLE_ID" ]]; then
-    xcrun simctl status_bar "$udid" list | tail -n +3 >"$folder/status-bar"
+    xcrun simctl status_bar "$udid" list | tail -n +3 >"$saving/status-bar"
   fi
+  mv "$saving" "$folder"
   borrowed+=("$udid $bundle")
 }
 
