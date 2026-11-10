@@ -9,9 +9,9 @@
 #   2  only `Data+File.swift` calls a reader that takes a URL and would load an `https` one too
 #      (any `contentsOf:` initialiser, such as `Data`'s, `String`'s or `NSImage`'s,
 #      `NSImage(byReferencing:)`, ImageIO's `CGImageSource…CreateWithURL` functions, Core
-#      Graphics' `CGDataProvider` and `CGPDFDocument` initialisers, and the media and stream
-#      initialisers that take a `url:`), and its `Data(readingFile:)` refuses any URL that is
-#      not a file's
+#      Graphics' `CGDataProvider` and `CGPDFDocument` initialisers, `NSAttributedString(url:)`,
+#      `LPMetadataProvider`, and every `AV…(url:)` and `InputStream(url:)` initialiser), and
+#      its `Data(readingFile:)` refuses any URL that is not a file's
 #   3  only `FeedClient.swift` sends on a transport, and its one `send(to:)` refuses any address
 #      `Source.serves` does not accept
 #   4  the transport's session follows a redirect only to an address `Source.serves` accepts
@@ -65,7 +65,7 @@ network=$(shipped_matches '\b(URLSession|URLSessionConfiguration|NSURLConnection
   | grep -v "^$TRANSPORT:" || true)
 [[ -z $network ]] || problems+=("Networking APIs outside $TRANSPORT:"$'\n'"$network")
 
-readers=$(shipped_matches '\bcontentsOf:|\bCG\w+CreateWithURL\b|\bCG(DataProvider|PDFDocument)\(|\bNSImage\(byReferencing:|\b(AVPlayer|AVPlayerItem|AVAsset|AVURLAsset|InputStream)\(url:' \
+readers=$(shipped_matches '\bcontentsOf:|\bCG\w+CreateWithURL\b|\bCG(DataProvider|PDFDocument)\(|\bNSImage\(byReferencing:|\bNSAttributedString\(url:|\bLPMetadataProvider\b|\b(AV\w+|InputStream)\(url:' \
   | grep -v "^$FILE_READER:" || true)
 [[ -z $readers ]] || problems+=("Readers that take a URL outside $FILE_READER (use Data(readingFile:)):"$'\n'"$readers")
 grep -q 'guard url.isFileURL else' "$FILE_READER" \

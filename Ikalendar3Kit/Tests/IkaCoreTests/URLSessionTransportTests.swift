@@ -29,8 +29,15 @@ struct URLSessionTransportTests {
   /// An intent builds a transport for each run, and a session with a delegate lives until it is
   /// invalidated, so a session per transport would pile up until the process ends.
   @Test
-  func `Every shipping transport uses the process's one session`() {
-    #expect(URLSessionTransport().session === URLSessionTransport().session)
+  func `Every shipping transport uses the process's one session`() throws {
+    #expect(try session(of: URLSessionTransport()) === session(of: URLSessionTransport()))
+  }
+
+  /// A transport's session, read by reflection: the property stays private, so no code in the
+  /// module can send on it past the feed client's check of the address.
+  private func session(of transport: URLSessionTransport) throws -> URLSession {
+    let child = try #require(Mirror(reflecting: transport).children.first { $0.label == "session" })
+    return try #require(child.value as? URLSession)
   }
 
   @Test(arguments: [200, 304, 500])

@@ -12,8 +12,8 @@ import SwiftUI
 extension View {
   /// What every layout shows as refreshes run, for the screens below: the haptic each run hands
   /// the status, and after each refresh that fails, the toast `refreshFailureToast()` shows for
-  /// three seconds while the screens keep their data. While `isSilent`, as under the welcome
-  /// screen, neither plays.
+  /// three seconds while the screens keep their data. While `isSilent`, as while the welcome
+  /// screen shows, neither plays.
   func refreshFeedback(isSilent: Bool = false) -> some View {
     modifier(RefreshFeedback(isSilent: isSilent))
   }
