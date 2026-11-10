@@ -35,7 +35,8 @@ Several checkouts can verify at the same time if each has its own derived data a
 ## Faster loops
 
 ```sh
-# Package tests on the Mac, in seconds
+# Package tests on the Mac, in seconds. The first run after a new resource file can test an old
+# copy of the resources and read a string's key; run it again (scripts/verify.sh, step 5, says why).
 swift test --package-path Ikalendar3Kit
 
 # App and package tests on the Mac (iOS-only code is not compiled there)

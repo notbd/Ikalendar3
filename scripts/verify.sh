@@ -325,13 +325,20 @@ test_plan_targets=$(jq -r '.testTargets[].target.name' "$TEST_PLAN" | sort)
 package_targets=$(package_test_targets)
 unplanned=$(comm -23 <(printf '%s\n' "$package_targets" "$APP_TEST_TARGET" | sort) <(printf '%s\n' "$test_plan_targets"))
 [[ -z $unplanned ]] || fail "Test targets missing from $TEST_PLAN, so xcodebuild never runs them:"$'\n'"$unplanned"
-run_logged package-tests swift test --package-path "$PACKAGE" --scratch-path "$derived_data/SwiftPM" \
-  -Xswiftc -warnings-as-errors --xunit-output "$VERIFY_DIR/package-tests.xml"
+package_options=(--package-path "$PACKAGE" --scratch-path "$derived_data/SwiftPM" -Xswiftc -warnings-as-errors)
+# Builds before testing. Swift Build copies each resource bundle into the test bundles that use it
+# and skips the copy when a scan of the bundle finds no change, but the scan does not wait for files
+# the same build adds. So the first build after a new resource file (a new string catalog's tables)
+# can keep the old copy, and a test reads a string's key. The build `swift test` runs then finds the
+# new files and copies again. llbuild's gap: https://github.com/swiftlang/swift-llbuild/blob/082a80d73c7acc76020c0619981af8eca8122d82/lib/BuildSystem/BuildSystem.cpp#L928-L956
+run_logged package-build swift build --build-tests "${package_options[@]}"
+run_logged package-tests swift test "${package_options[@]}" --xunit-output "$VERIFY_DIR/package-tests.xml"
 # Swift warnings are errors already; anything else (a manifest warning) also clears the build.
-warnings=$(strip_colors <"$VERIFY_DIR/package-tests.log" | grep -E '(^|: )warning: ' | sort -u || true)
+warnings=$(cat "$VERIFY_DIR/package-build.log" "$VERIFY_DIR/package-tests.log" | strip_colors \
+  | grep -E '(^|: )warning: ' | sort -u || true)
 if [[ -n $warnings ]]; then
   rm -rf "$derived_data/SwiftPM"
-  fail "Package warnings (there must be none):"$'\n'"$warnings" "$VERIFY_DIR/package-tests.log"
+  fail "Package warnings (there must be none):"$'\n'"$warnings" "$VERIFY_DIR/package-build.log"
 fi
 # shellcheck disable=SC2086 # one word per target
 macos_counts=$(package_test_counts $package_targets)
