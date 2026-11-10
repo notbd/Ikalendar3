@@ -29,10 +29,11 @@
 		F1000000000000000000000B /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000B /* IkaFixtures */; };
 		F1000000000000000000000C /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000C /* IkaFixtures */; };
 		F1000000000000000000000D /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000D /* IkaFixtures */; };
-		D30000000000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* Localizable.xcstrings */; platformFilter = ios; };
-		D30000000000000000000002 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* Localizable.xcstrings */; platformFilter = ios; };
+		D30000000000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* Localizable.xcstrings */; };
+		D30000000000000000000002 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* Localizable.xcstrings */; };
 		D30000000000000000000003 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000A /* LICENSE */; };
 		D30000000000000000000004 /* splatoon3.ink-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000B /* splatoon3.ink-LICENSE.txt */; };
+		D30000000000000000000005 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* Localizable.xcstrings */; };
 		F1000000000000000000000E /* IkaIntents in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000E /* IkaIntents */; };
 		F1000000000000000000000F /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000F /* IkaFixtures */; };
 /* End PBXBuildFile section */
@@ -572,6 +573,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D30000000000000000000005 /* Localizable.xcstrings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
