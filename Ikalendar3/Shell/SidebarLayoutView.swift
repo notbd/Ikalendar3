@@ -11,10 +11,11 @@ import SwiftUI
 
 // MARK: - SidebarLayoutView
 
-/// The iPad's layout in portrait or a narrow window of regular width: a sidebar of Modes beside
-/// one detail column, which shows the selected row's screen. The screens pick the wide detail or
-/// the iPhone list by their own width (`DetailLayout`). The sidebar's toolbar holds the refresh
-/// and Settings buttons; pull to refresh stays on iPhone.
+/// The iPad's layout in portrait or a narrow window of regular width, and the Mac's Sidebar view:
+/// a sidebar of Modes beside one detail column, which shows the selected row's screen. The screens
+/// pick the wide detail or the iPhone list by their own width (`DetailLayout`). On iPad the
+/// sidebar's toolbar holds the refresh and Settings buttons, and pull to refresh stays on iPhone;
+/// the Mac's window keeps them in its toolbar and app menu.
 ///
 /// The split view never collapses into one stack, where a row would have to push its detail: a
 /// window of compact width shows the tabs instead (`WindowLayout`).
@@ -34,12 +35,19 @@ struct SidebarLayoutView: View {
     NavigationSplitView(columnVisibility: .constant(.all)) {
       SidebarList(sidebar: sidebar, now: now, selection: .init(get: { shown }, set: { $0.map(status.pick) }))
         .toolbar(removing: .sidebarToggle)
+        #if os(iOS)
         .toolbar {
           ToolbarItem(placement: .primaryAction) {
             RefreshButton()
           }
         }
+        #endif
         .settingsButton(isPresented: $status.isSettingsPresented, language: language)
+        #if os(macOS)
+        // About an iPad sidebar's width, which the rows are drawn for; a Mac window's default is
+        // narrower and cuts their names.
+        .navigationSplitViewColumnWidth(min: 280, ideal: 320, max: 400)
+        #endif
     } detail: {
       NavigationStack {
         detail(for: shown)
@@ -100,7 +108,7 @@ private struct SidebarList: View {
 
   /// The list with each row drawn by `row` and each group's title by `header`.
   private func list(
-    row: @escaping (SidebarRowContent) -> some View,
+    row: @escaping (SummaryRowContent) -> some View,
     header: @escaping (String) -> some View)
     -> some View
   {
@@ -111,7 +119,7 @@ private struct SidebarList: View {
       ForEach(sidebar?.groups ?? [], id: \.kind) { group in
         Section {
           ForEach(group.rows, id: \.item) { sidebarRow in
-            row(SidebarRowContent(row: sidebarRow, writer: writer, format: format, now: now))
+            row(SummaryRowContent(row: sidebarRow, writer: writer, format: format, now: now))
               .tag(sidebarRow.item)
           }
         } header: {

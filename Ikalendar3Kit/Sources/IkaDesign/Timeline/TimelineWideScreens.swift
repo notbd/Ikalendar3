@@ -365,8 +365,7 @@ private struct TimelineWideProgress: View {
       ProgressRing(
         share: progress.sharePassed,
         color: Color(color.base),
-        lineWidth: side * Self.lineWidthShare,
-        timeLeft: writer.timeLeft(progress))
+        lineWidth: side * Self.lineWidthShare)
         .frame(width: side, height: side)
       TimelineNowTag(timeLeft: progress.timeLeft, color: color, language: writer.terms.language, now: now)
     }

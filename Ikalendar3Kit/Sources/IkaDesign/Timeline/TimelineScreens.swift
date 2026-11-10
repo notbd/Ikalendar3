@@ -12,9 +12,9 @@ import SwiftUI
 // MARK: - TimelineBattleScreenView
 
 /// Timeline's Battle Mode screen, after SplatNet 3's schedule page: a black header with the Mode,
-/// the Series and Open strip on Anarchy, an announced Splatfest's card, then every Rotation top to bottom on a
-/// Mode-colour time
-/// axis with 24-hour pins, the current one's progress filled in along the axis.
+/// the Series and Open strip on Anarchy, an announced Splatfest's card, then every Rotation top to
+/// bottom on a Mode-colour time axis with 24-hour pins, the current one's progress filled in along
+/// the axis.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store. Pull to
 /// refresh reaches its list through the `refreshable` action the shared screen sets. A finished
@@ -128,10 +128,9 @@ extension TimelineEntry<Rotation> {
 // MARK: - TimelineSalmonRunScreenView
 
 /// Timeline's Salmon Run screen: the black header, then the running or announced Eggstra Work on
-/// top and every
-/// Shift on the time axis with its Stage, four weapons, King Salmonid and time range, a Big Run
-/// inline where it falls and marked in its colour. It receives `IkaCore` values only and reads no
-/// store.
+/// top and every Shift on the time axis with its Stage, four weapons, King Salmonid and time
+/// range, a Big Run inline where it falls and marked in its colour. It receives `IkaCore` values
+/// only and reads no store.
 public struct TimelineSalmonRunScreenView: View {
   @TimeSettings private var time
 

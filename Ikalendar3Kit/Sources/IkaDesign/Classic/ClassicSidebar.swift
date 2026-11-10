@@ -13,31 +13,35 @@ import SwiftUI
 
 /// Classic's sidebar row on the system's sidebar list, as ikalendar 2's lists sit on the system's
 /// grouped lists: the Mode's icon in a ring of its colour, the name in the heavy face and the
-/// summary in the light face. It receives a sidebar row's content only and reads no store.
+/// line in the light face. It receives a summary row's content only and reads no store.
 public struct ClassicSidebarRow: View {
   @Environment(\.colorScheme) private var colorScheme
 
-  private let content: SidebarRowContent
+  private let content: SummaryRowContent
 
-  public init(content: SidebarRowContent) {
+  public init(content: SummaryRowContent) {
     self.content = content
   }
 
   public var body: some View {
-    SidebarRowFrame(content: content, ringColor: ringColor) { name in
+    SidebarRowFrame(content: content, ringColor: content.classicRingColor(in: colorScheme)) { name in
       Text(verbatim: name)
         .ikaFont(.heavy, size: 17, relativeTo: .headline)
-    } summary: { summary in
-      Text(verbatim: summary)
+    } line: { line in
+      Text(verbatim: line)
         .ikaFont(.light, size: 14, relativeTo: .subheadline)
         .foregroundStyle(.secondary)
     }
   }
+}
 
-  /// The Mode colour, tinted where it would not read on the list; the primary colour for the
-  /// Splatfest's rows.
-  private var ringColor: Color {
-    guard let color = content.color else { return .primary }
+// MARK: - SummaryRowContent
+
+extension SummaryRowContent {
+  /// The ring's colour in Classic's summary rows and Overview cards: the Mode colour, tinted where
+  /// it would not read on Classic's panels; the primary colour for the Splatfest's rows.
+  func classicRingColor(in colorScheme: ColorScheme) -> Color {
+    guard let color else { return .primary }
 
     return Color(color.onPanel(of: .classic, in: colorScheme, for: .largeTextAndIcons).foreground)
   }

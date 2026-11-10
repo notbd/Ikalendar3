@@ -58,6 +58,17 @@ public enum ModeColor: CaseIterable, Hashable, Sendable {
     }
   }
 
+  /// The colour of a Mode summary: its Mode's, or the Shift kind's while a Big Run is Salmon Run's
+  /// current Shift; `nil` for a form of Splatfest Battle, which has no colour of its own.
+  public init?(_ summary: ModeSummary) {
+    switch summary {
+      case .battle(let mode, _): self.init(mode)
+      case .splatfestBattle: return nil
+      case .salmonRun(.running(let running)): self.init(running.item.kind)
+      case .salmonRun: self = .salmonRun
+    }
+  }
+
   /// The colour as SplatNet 3's style sheet defines it.
   public var base: SRGBColor {
     switch self {

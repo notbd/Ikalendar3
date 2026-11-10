@@ -10,26 +10,21 @@ import SwiftUI
 // MARK: - ProgressRing
 
 /// A progress ring drawn like the Apple Watch activity rings (`ProgressRingGeometry`), in one
-/// colour, inside the frame it is offered. The watch's Now rows draw it around the Mode icon; the
-/// wide detail's current row draws it beside the time left.
+/// colour, inside the frame it is offered. Summary rows draw it around the Mode icon; the wide
+/// detail's current row draws it beside the time left.
 ///
-/// VoiceOver reads it as the time left, never as a percentage. A row that is one VoiceOver
-/// element reads its own sentence instead.
+/// VoiceOver skips it: every ring sits in a row that is one VoiceOver element and reads its own
+/// sentence, time left included, never a percentage.
 public struct ProgressRing: View {
   private let geometry: ProgressRingGeometry
   private let color: Color
   private let lineWidth: CGFloat
-  private let timeLeft: String?
 
   /// A ring with `share` of it drawn in `color`, its stroke `lineWidth` wide.
-  ///
-  /// - Parameter timeLeft: What VoiceOver reads, as `SentenceWriter.timeLeft(_:)` writes it, or
-  ///   `nil` while nothing runs, which hides the ring from VoiceOver.
-  public init(share: Double, color: Color, lineWidth: CGFloat, timeLeft: String?) {
+  public init(share: Double, color: Color, lineWidth: CGFloat) {
     geometry = ProgressRingGeometry(share: share)
     self.color = color
     self.lineWidth = lineWidth
-    self.timeLeft = timeLeft
   }
 
   public var body: some View {
@@ -59,9 +54,7 @@ public struct ProgressRing: View {
         }
       }
     }
-    .accessibilityElement()
-    .accessibilityLabel(Text(verbatim: timeLeft ?? ""))
-    .accessibilityHidden(timeLeft == nil)
+    .accessibilityHidden(true)
   }
 }
 
@@ -70,7 +63,7 @@ public struct ProgressRing: View {
 #Preview("Progress rings") {
   HStack(spacing: 12) {
     ForEach([0, 0.05, 0.4, 0.75, 1], id: \.self) { share in
-      ProgressRing(share: share, color: Color(ModeColor.xBattle.base), lineWidth: 5, timeLeft: nil)
+      ProgressRing(share: share, color: Color(ModeColor.xBattle.base), lineWidth: 5)
         .frame(width: 40, height: 40)
     }
   }

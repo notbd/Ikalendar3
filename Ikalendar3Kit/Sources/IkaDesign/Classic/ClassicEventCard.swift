@@ -51,9 +51,7 @@ public struct ClassicEventCard: View {
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding(Scoped.padding)
     .background(Self.background, in: .rect(cornerRadius: Scoped.cornerRadius))
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(sentence)
-    .accessibilityValue(value)
+    .eventAccessibility(item, writer: writer, at: now)
   }
 
   // MARK: Header
@@ -180,17 +178,6 @@ public struct ClassicEventCard: View {
     }
   }
 
-  // MARK: Accessibility
-
-  private var sentence: String {
-    writer.sentence(for: item, at: now)
-  }
-
-  /// A Splatfest's team names; the other events' sentences say all.
-  private var value: String {
-    if case .splatfest(let card) = item { ClassicTeamList.names(of: card.splatfest, terms: terms) } else { "" }
-  }
-
   // MARK: Parts
 
   private var arrangement: CellArrangement { CellArrangement(dynamicTypeSize) }
@@ -199,12 +186,13 @@ public struct ClassicEventCard: View {
 
   private var writer: SentenceWriter { time.writer(terms) }
 
-  /// A Classic list cell's colour, so a card reads as one of its cells.
-  static private var background: Color {
+  /// A Classic list cell's colour, so a card reads as one of its cells. A Mac window's background
+  /// is the colour of a control's, so a Mac card takes the system's fill over it instead.
+  static var background: Color {
     #if os(iOS)
     Color(uiColor: .secondarySystemGroupedBackground)
     #else
-    Color(nsColor: .controlBackgroundColor)
+    Color(nsColor: .quaternarySystemFill)
     #endif
   }
 }

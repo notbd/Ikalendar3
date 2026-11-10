@@ -21,12 +21,13 @@ struct ModePageView: View {
   let now: Date
 
   var body: some View {
-    let look: SummaryLook = .init(page.summary)
-
     VStack(alignment: .leading, spacing: WatchMetrics.rowSpacing) {
-      PageHeading(heading: look.heading, color: look.color, language: terms.language)
+      PageHeading(
+        heading: InkModeHeading(page.summary),
+        accent: InkAccent(ModeColor(page.summary)),
+        language: terms.language)
       VStack(alignment: .leading, spacing: WatchMetrics.rowSpacing) {
-        CurrentItem(summary: page.summary, look: look, terms: terms, now: now)
+        CurrentItem(summary: page.summary, terms: terms, now: now)
           // On a small watch the next item gives way first.
           .layoutPriority(1)
         switch page {
@@ -52,18 +53,18 @@ struct ModePageView: View {
 
 // MARK: - PageHeading
 
-/// A Mode's name in the heavy face, readable on the top of its tint in `color`, with its form on a
-/// tag: over a Mode page and its later list. VoiceOver reads it as a header.
+/// A Mode's name in the heavy face, readable on the top of its tint in `accent`, with its form on
+/// a tag: over a Mode page and its later list. VoiceOver reads it as a header.
 struct PageHeading: View {
   let heading: InkModeHeading
-  let color: ModeColor
+  let accent: InkAccent
   let language: GameLanguage
 
   var body: some View {
     HStack(spacing: WatchMetrics.lineSpacing) {
       Text(verbatim: heading.name.text(in: language))
         .ikaFont(.heavy, size: WatchMetrics.detailSize, relativeTo: .headline)
-        .foregroundStyle(Color(color.asFill.foreground))
+        .foregroundStyle(Color(accent.fill.foreground))
         .lineLimit(1)
         .minimumScaleFactor(0.6)
       if let form = heading.form {
@@ -90,32 +91,32 @@ private struct CurrentItem: View {
   @TimeSettings private var time
 
   let summary: ModeSummary
-  let look: SummaryLook
   let terms: GameTerms
   let now: Date
 
   var body: some View {
+    let content: SummaryRowContent = .init(summary, writer: writer, format: time.format(terms.language), now: now)
+
     VStack(alignment: .leading, spacing: WatchMetrics.lineSpacing) {
       HStack(spacing: WatchMetrics.rowSpacing) {
         ZStack {
           ProgressRing(
-            share: look.share,
+            share: content.progress?.sharePassed ?? 0,
             color: .white,
-            lineWidth: WatchMetrics.ringLineWidth,
-            timeLeft: look.progress.map(writer.timeLeft))
-          picture
+            lineWidth: WatchMetrics.ringLineWidth)
+          picture(icon: content.icon)
             .padding(WatchMetrics.ringLineWidth + WatchMetrics.iconInset)
         }
         .frame(width: WatchMetrics.pageRingSize, height: WatchMetrics.pageRingSize)
 
         VStack(alignment: .leading, spacing: WatchMetrics.lineSpacing / 2) {
-          Text(verbatim: look.detail(of: summary, terms: terms, format: format, now: now))
+          Text(verbatim: content.detail)
             .ikaFont(.heavy, size: WatchMetrics.detailSize, relativeTo: .headline)
             // The heavy face's tall line box leaves a gap between wrapped lines.
             .lineHeight(.tight)
             .lineLimit(2)
             .minimumScaleFactor(0.7)
-          if let progress = look.progress {
+          if let progress = content.progress {
             Text(verbatim: writer.countdown(progress))
               .ikaFont(.light, size: WatchMetrics.countdownSize, relativeTo: .footnote)
               .monospacedDigit()
@@ -130,13 +131,13 @@ private struct CurrentItem: View {
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .accessibilityElement(children: .ignore)
-    .accessibilityLabel(writer.sentence(for: summary, at: now))
+    .accessibilityLabel(content.accessibilityLabel)
   }
 
   /// The picture in the ring: the current Rule's icon, the current Shift's Stage cut to a circle,
-  /// or the Mode's icon while nothing runs.
+  /// or the summary's `icon` while nothing runs.
   @ViewBuilder
-  private var picture: some View {
+  private func picture(icon: ModeIcon) -> some View {
     switch summary {
       case .battle(_, .running(let running)),
            .splatfestBattle(_, .running(let running)):
@@ -156,12 +157,11 @@ private struct CurrentItem: View {
       case .battle,
            .splatfestBattle,
            .salmonRun:
-        Image(decorative: BundledImage.name(for: look.icon, size: .small), bundle: BundledImage.catalogBundle)
+        Image(decorative: BundledImage.name(for: icon, size: .small), bundle: BundledImage.catalogBundle)
           .resizable()
           .scaledToFit()
     }
   }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }

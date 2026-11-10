@@ -137,14 +137,4 @@ final private class TabReselectionDelegate: NSObject, UITabBarControllerDelegate
 
 /// The key under which a tab bar controller keeps its interceptor.
 nonisolated(unsafe) private var associationKey: UInt8 = 0
-
-#else
-
-extension View {
-  /// The Mac's tabs have no list to scroll to the top: the selection binding sees a second tap.
-  func interceptingTabReselection(isEnabled _: Bool, perform _: @escaping () -> Void) -> some View {
-    self
-  }
-}
-
 #endif

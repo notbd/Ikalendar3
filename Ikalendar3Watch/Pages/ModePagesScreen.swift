@@ -63,7 +63,7 @@ struct ModePagesScreen: View {
               .buttonStyle(.plain)
               .frame(width: screen.width, height: screen.height)
               .background {
-                ModeTint(color: SummaryLook(page.summary).color)
+                ModeTint(accent: InkAccent(ModeColor(page.summary)))
               }
               .accessibilityHint(WatchText.laterHint(of: page.mode).text(in: language))
             }
@@ -88,10 +88,10 @@ struct ModePagesScreen: View {
 /// A Mode page's background: the Mode's colour at full strength on top, fading toward Ink's black
 /// at the bottom, where the panel sits. Decoration only.
 struct ModeTint: View {
-  let color: ModeColor
+  let accent: InkAccent
 
   var body: some View {
-    let base: Color = .init(color.base)
+    let base: Color = .init(accent.base)
 
     LinearGradient(
       colors: [base, base.opacity(WatchMetrics.pageTintFloor)],

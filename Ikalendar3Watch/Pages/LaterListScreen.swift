@@ -56,7 +56,10 @@ struct LaterListView: View {
   var body: some View {
     ScrollView {
       VStack(spacing: WatchMetrics.rowSpacing) {
-        PageHeading(heading: InkModeHeading(page.mode), color: ModeColor(page.mode), language: terms.language)
+        PageHeading(
+          heading: InkModeHeading(page.mode),
+          accent: InkAccent(ModeColor(page.mode)),
+          language: terms.language)
           .padding(.leading, WatchMetrics.rowSpacing)
         switch page {
           case .battle(let screen):
@@ -75,7 +78,7 @@ struct LaterListView: View {
       }
     }
     .background {
-      ModeTint(color: ModeColor(page.mode))
+      ModeTint(accent: InkAccent(ModeColor(page.mode)))
         .ignoresSafeArea()
     }
   }

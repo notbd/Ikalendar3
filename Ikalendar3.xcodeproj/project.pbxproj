@@ -31,6 +31,12 @@
 		F1000000000000000000000D /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000D /* IkaFixtures */; };
 		D30000000000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* Localizable.xcstrings */; platformFilter = ios; };
 		D30000000000000000000002 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000009 /* Localizable.xcstrings */; platformFilter = ios; };
+		D30000000000000000000003 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000A /* LICENSE */; };
+		D30000000000000000000004 /* splatoon3.ink-LICENSE.txt in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000B /* splatoon3.ink-LICENSE.txt */; };
+		D30000000000000000000005 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000C /* PrivacyInfo.xcprivacy */; };
+		D30000000000000000000006 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000C /* PrivacyInfo.xcprivacy */; };
+		D30000000000000000000007 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000C /* PrivacyInfo.xcprivacy */; };
+		D30000000000000000000008 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AA000000000000000000000C /* PrivacyInfo.xcprivacy */; };
 		F1000000000000000000000E /* IkaIntents in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000E /* IkaIntents */; };
 		F1000000000000000000000F /* IkaFixtures in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000F /* IkaFixtures */; };
 /* End PBXBuildFile section */
@@ -161,6 +167,9 @@
 		B20000000000000000000005 /* Ikalendar3WatchWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Ikalendar3WatchWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B20000000000000000000006 /* IkaResources.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = IkaResources.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AA0000000000000000000009 /* Localizable.xcstrings */ = {isa = PBXFileReference; lastKnownFileType = text.json.xcstrings; name = Localizable.xcstrings; path = Ikalendar3Kit/Sources/IkaIntents/Resources/Localizable.xcstrings; sourceTree = "<group>"; };
+		AA000000000000000000000A /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		AA000000000000000000000B /* splatoon3.ink-LICENSE.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = "splatoon3.ink-LICENSE.txt"; path = "Ikalendar3Kit/Sources/IkaCore/Resources/splatoon3.ink-LICENSE.txt"; sourceTree = "<group>"; };
+		AA000000000000000000000C /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -276,6 +285,9 @@
 			children = (
 				AA0000000000000000000008 /* Ikalendar3Kit */,
 				AA0000000000000000000009 /* Localizable.xcstrings */,
+				AA000000000000000000000A /* LICENSE */,
+				AA000000000000000000000B /* splatoon3.ink-LICENSE.txt */,
+				AA000000000000000000000C /* PrivacyInfo.xcprivacy */,
 				AB0000000000000000000001 /* Ikalendar3 */,
 				AB0000000000000000000002 /* Ikalendar3Tests */,
 				AB0000000000000000000003 /* Ikalendar3Widgets */,
@@ -535,6 +547,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				D30000000000000000000001 /* Localizable.xcstrings in Resources */,
+				D30000000000000000000003 /* LICENSE in Resources */,
+				D30000000000000000000004 /* splatoon3.ink-LICENSE.txt in Resources */,
+				D30000000000000000000005 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -550,6 +565,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				D30000000000000000000002 /* Localizable.xcstrings in Resources */,
+				D30000000000000000000006 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -557,6 +573,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D30000000000000000000007 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -564,6 +581,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D30000000000000000000008 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -281,14 +281,12 @@ private struct ClassicWideProgress: View {
   var body: some View {
     let side: CGFloat = wide.half.length(.wideRingSize)
     let format: ClassicTimeFormat = time.classicFormat(terms.language)
-    let writer: SentenceWriter = time.writer(terms)
 
     HStack(spacing: ClassicMetrics.BattlePrimary.ruleSectionSpacing) {
       ProgressRing(
         share: progress.sharePassed,
         color: tint,
-        lineWidth: side * Self.lineWidthShare,
-        timeLeft: writer.timeLeft(progress))
+        lineWidth: side * Self.lineWidthShare)
         .frame(width: side, height: side)
       Text(verbatim: ClassicText.timeLeft.text(in: terms.language, format.span(progress.timeLeft)))
         .countdownRoll(value: now)

@@ -66,8 +66,7 @@ public struct TimelineEventCard: View {
             TimelineStageStrip(stages: window.challenge.stages, terms: terms, arrangement: arrangement)
           }
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(writer.sentence(for: item, at: now))
+        .eventAccessibility(item, writer: writer, at: now)
 
       case .splatfest(let card):
         TimelineSplatfestCard(card: card, terms: terms, now: now)
@@ -83,8 +82,7 @@ public struct TimelineEventCard: View {
             now: now,
             arrangement: arrangement)
         }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(writer.sentence(for: item, at: now))
+        .eventAccessibility(item, writer: writer, at: now)
     }
   }
 
@@ -115,8 +113,6 @@ struct TimelineSplatfestCard: View {
 
   var body: some View {
     let texts = terms.splatfest(splatfest.id)
-    // Looked up one by one: the source may lack them.
-    let teamNames: [String] = texts.teamNames ?? []
     let format: TimelineFormat = time.timelineFormat(terms.language)
 
     TimelineCardPanel(inset: false) {
@@ -141,10 +137,8 @@ struct TimelineSplatfestCard: View {
             .ikaFont(.heavy, size: 18, relativeTo: .headline)
             .foregroundStyle(.white)
             .fixedSize(horizontal: false, vertical: true)
-          ForEach(splatfest.teamColors.indices, id: \.self) { index in
-            if teamNames.indices.contains(index) {
-              team(named: teamNames[index], color: SRGBColor(splatfest.teamColors[index]))
-            }
+          ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
+            self.team(named: team.name, color: SRGBColor(team.color))
           }
           Text(verbatim: format.dateRange(from: splatfest.startTime, to: splatfest.endTime))
             .ikaFont(.light, size: 13, relativeTo: .footnote)
@@ -157,10 +151,7 @@ struct TimelineSplatfestCard: View {
     .task(id: card.art) {
       artImage = card.art.flatMap(Image.init(contentsOf:))
     }
-    .accessibilityElement(children: .ignore)
-    .accessibilityLabel(time.writer(terms)
-      .sentence(for: splatfest, at: now))
-    .accessibilityValue(teamNames.formatted(.list(type: .and).locale(Locale(identifier: terms.language.rawValue))))
+    .splatfestAccessibility(splatfest, writer: time.writer(terms), at: now)
   }
 
   /// The art, or the team colours side by side while it is not downloaded.

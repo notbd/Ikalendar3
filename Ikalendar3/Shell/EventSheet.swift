@@ -40,11 +40,17 @@ enum EventSheet: Hashable, Identifiable {
 extension View {
   /// Presents the event sheet `item` holds as a form sheet: its screen under its own navigation
   /// bar with a close button, the failed-refresh toast over it. A form sheet keeps the Challenge
-  /// and Splatfest screens, which have only the iPhone list, near an iPhone's width.
+  /// and Splatfest screens, which have only the iPhone list, near an iPhone's width. A Mac form
+  /// sheet is far shorter than an iPad's, so a Mac sheet takes an iPhone list's size instead.
   func eventSheetPresentation(item: Binding<EventSheet?>) -> some View {
     sheet(item: item) { sheet in
       EventSheetView(sheet: sheet)
+        #if os(macOS)
+        .frame(minWidth: 420, idealWidth: 480, minHeight: 400, idealHeight: 720)
+        .presentationSizing(.fitted)
+        #else
         .presentationSizing(.form)
+        #endif
     }
   }
 }

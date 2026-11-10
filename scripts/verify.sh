@@ -2,17 +2,19 @@
 #
 # Runs every check CI runs, in CI's order, and stops at the first failure:
 #
-#   1-2  SwiftFormat and SwiftLint, zero violations
-#   3    no tracked file names how changes are reviewed or written (scripts/check-wording.sh)
-#   4    every string catalog key in all 14 localizations, every App Shortcuts phrase naming the app
-#        (scripts/check-string-catalogs.sh)
-#   5    package tests on macOS
-#   6-8  unsigned Debug builds: iOS Simulator, macOS, watchOS Simulator
-#   9-10 unsigned Release builds: iOS device (with the watch app), macOS, with no fixture file
-#        or fixture code and the resource framework once per app, no font file outside it
-#   11   the iOS Simulator test run
+#   1-2   SwiftFormat and SwiftLint, zero violations
+#   3     no tracked file names how changes are reviewed or written (scripts/check-wording.sh)
+#   4     every string catalog key in all 14 localizations, every App Shortcuts phrase naming the app
+#         (scripts/check-string-catalogs.sh)
+#   5     shipped code contacts only splatoon3.ink and its asset host (scripts/check-hosts.sh)
+#   6     package tests on macOS
+#   7-9   unsigned Debug builds: iOS Simulator, macOS, watchOS Simulator
+#   10-11 unsigned Release builds: iOS device (with the watch app), macOS, with no fixture file
+#         or fixture code, the resource framework once per app, no font file outside it, and a
+#         privacy manifest declaring each required-reason API a binary uses
+#   12    the iOS Simulator test run
 #
-# Any compiler or build warning fails the step that shows it. Step 11 also fails when a test
+# Any compiler or build warning fails the step that shows it. Step 12 also fails when a test
 # bundle of the test plan is missing or ran no tests, or when a package test bundle ran fewer
 # tests in the simulator than on macOS: xcodebuild can skip a package's tests and still succeed.
 #
@@ -36,7 +38,7 @@ readonly TEST_PLAN=Ikalendar3.xctestplan
 readonly PACKAGE=Ikalendar3Kit
 # The app's test bundle. The test plan must list it beside every package test target.
 readonly APP_TEST_TARGET=Ikalendar3Tests
-readonly STEP_COUNT=11
+readonly STEP_COUNT=12
 
 # MARK: - Output
 
@@ -190,7 +192,7 @@ watch_simulator=$(resolve_simulator watchOS "Apple Watch" "$watch_udid") || true
 ios_udid=${ios_simulator%%|*}
 watch_udid=${watch_simulator%%|*}
 
-# Boots the iPhone while the earlier steps run; step 11 waits for it. It stays booted afterwards,
+# Boots the iPhone while the earlier steps run; step 12 waits for it. It stays booted afterwards,
 # which makes the next run faster.
 xcrun simctl bootstatus "$ios_udid" -b >"$VERIFY_DIR/boot-ios-simulator.log" 2>&1 &
 boot_pid=$!
@@ -289,6 +291,46 @@ expect_no_fixtures() {
   [[ -z $holders ]] || fail "Fixture code or names in:$holders"
 }
 
+# Required-reason API categories (Apple's NSPrivacyAccessedAPIType list) and the symbols or
+# strings by which a binary uses one: an imported symbol, a selector or key name, or Swift type
+# metadata.
+# shellcheck disable=SC2016 # regular expressions, not expansions
+readonly REQUIRED_REASON_APIS=(
+  'NSPrivacyAccessedAPICategoryUserDefaults|NSUserDefaults'
+  'NSPrivacyAccessedAPICategoryFileTimestamp|NSFileCreationDate|NSFileModificationDate|NSURLContentModificationDateKey|NSURLCreationDateKey|fileModificationDate|^_(f?getattrlist(at|bulk)?|f?stat(at)?|lstat)(\$INODE64)?$'
+  'NSPrivacyAccessedAPICategorySystemBootTime|^_mach_absolute_time$|systemUptime'
+  'NSPrivacyAccessedAPICategoryDiskSpace|NSURLVolume(Available|Total)Capacity|NSFileSystem(Free)?Size|^_f?statv?fs(\$INODE64)?$'
+  'NSPrivacyAccessedAPICategoryActiveKeyboards|activeInputModes'
+)
+
+# Fails unless every binary in $1 that uses a required-reason API sits in a bundle whose privacy
+# manifest passes `plutil -lint` and declares that API's category. The manifest sits next to the
+# binary, or in the bundle's Resources folder on macOS.
+expect_privacy_manifests() {
+  local binary folder candidate manifest symbols declared entry category problems=""
+  while IFS= read -r binary; do
+    file -b "$binary" | grep -q '^Mach-O' || continue
+    symbols=$({ nm -u "$binary" 2>/dev/null || true; strings "$binary"; })
+    folder=$(dirname "$binary")
+    manifest=""
+    for candidate in "$folder/PrivacyInfo.xcprivacy" "$folder/../Resources/PrivacyInfo.xcprivacy" \
+      "$folder/Resources/PrivacyInfo.xcprivacy"; do
+      [[ -f $candidate ]] && manifest=$candidate && break
+    done
+    declared=""
+    if [[ -n $manifest ]]; then
+      plutil -lint -s "$manifest" || fail "Invalid privacy manifest: $manifest"
+      declared=$(plutil -extract NSPrivacyAccessedAPITypes json -o - "$manifest" | jq -r '.[].NSPrivacyAccessedAPIType')
+    fi
+    for entry in "${REQUIRED_REASON_APIS[@]}"; do
+      category=${entry%%|*}
+      grep -E -- "${entry#*|}" >/dev/null <<<"$symbols" || continue
+      grep -Fxq -- "$category" <<<"$declared" || problems+=$'\n'"${binary#"$1"/}: $category"
+    done
+  done < <(find "$1" -type f -perm -u+x)
+  [[ -z $problems ]] || fail "Binaries using a required-reason API that their bundle's privacy manifest does not declare:$problems"
+}
+
 # MARK: - Run
 
 printf 'Xcode %s%s, SwiftFormat %s, SwiftLint %s\n' "$xcode_version" \
@@ -317,6 +359,10 @@ step_done
 step "String catalogs"
 run_logged string-catalogs scripts/check-string-catalogs.sh
 step_done "$(<"$VERIFY_DIR/string-catalogs.log")"
+
+step "Hosts"
+run_logged hosts scripts/check-hosts.sh
+step_done
 
 step "Package tests, macOS"
 # The app's and every package test target must be in the test plan, or the simulator run never
@@ -369,7 +415,8 @@ expect_paths "$ios_app/PlugIns/Ikalendar3Widgets.appex" "$ios_app/Watch/Ikalenda
   "$ios_app/Frameworks/IkaResources.framework" "$ios_app/Watch/Ikalendar3Watch.app/Frameworks/IkaResources.framework"
 expect_resource_copies "$ios_app" 2
 expect_no_fixtures "$ios_app"
-step_done "widget extension and watch app embedded, one resource framework per app, no fixture file or code"
+expect_privacy_manifests "$ios_app"
+step_done "widget extension and watch app embedded, one resource framework per app, no fixture file or code, privacy manifests"
 
 step "Build, macOS, Release"
 xcodebuild_step build-macos-release build -scheme Ikalendar3 -configuration Release \
@@ -379,7 +426,8 @@ expect_paths "$mac_app/Contents/PlugIns/Ikalendar3Widgets.appex" "$mac_app/Conte
 expect_resource_copies "$mac_app" 1
 [[ -z $(find "$mac_app" -name 'Ikalendar3Watch*') ]] || fail "The macOS app embeds the watch app: $mac_app"
 expect_no_fixtures "$mac_app"
-step_done "widget extension and resource framework embedded, no watch app, no fixture file or code"
+expect_privacy_manifests "$mac_app"
+step_done "widget extension and resource framework embedded, no watch app, no fixture file or code, privacy manifests"
 
 step "Test, iOS Simulator"
 wait "$boot_pid" || fail "The iOS simulator did not boot." "$VERIFY_DIR/boot-ios-simulator.log"

@@ -48,6 +48,18 @@ struct AppStatusTests {
     #expect(status.presentedMenu == nil)
   }
 
+  @Test
+  func `The Splatfest menu closes when its tab gives Regular Battle its place back`() {
+    let status: AppStatus = .init(selectedPlace: AppTab.splatfest.place)
+    status.select(.splatfest)
+
+    status.closeMenu(unlessOfferedBy: .splatfest)
+    #expect(status.presentedMenu == .splatfestBattle)
+
+    status.closeMenu(unlessOfferedBy: .mode(.regularBattle))
+    #expect(status.presentedMenu == nil)
+  }
+
   @Test(arguments: [AppTab.mode(.regularBattle), .mode(.xBattle), .mode(.challenge), .mode(.salmonRun)])
   func `A second tap on any other selected tab opens no menu`(_ tab: AppTab) {
     let status: AppStatus = .init(selectedPlace: tab.place)
