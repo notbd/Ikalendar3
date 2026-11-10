@@ -5,7 +5,6 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
-#if os(iOS)
 import IkaCore
 import SwiftUI
 
@@ -13,8 +12,9 @@ import SwiftUI
 
 /// The strings the Live Activity writes itself, from `IkaDesign`'s `LiveActivity` string table.
 /// The raw value is the catalog key. The reminders are `IkaCore`'s, the Refresh button's word
-/// `IkaIntents`' (`TrackingText`), the Next tag Ink's (`InkText`).
-enum LiveActivityText: String {
+/// `IkaIntents`' (`TrackingText`), the Next tag Ink's (`InkText`). Strings only, so it builds on
+/// every platform and the macOS package tests read it.
+enum LiveActivityText: String, CaseIterable {
   /// "Nothing later published yet".
   case nothingLater = "liveActivity.nothingLater"
 
@@ -23,6 +23,8 @@ enum LiveActivityText: String {
     Bundle.module.localizedString(forKey: rawValue, table: "LiveActivity", in: language)
   }
 }
+
+#if os(iOS)
 
 // MARK: - TrackingModeIcon
 
