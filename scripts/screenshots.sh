@@ -126,7 +126,10 @@ group_container() {
 # `was_booted` says whether the simulator was booted before the run.
 remember() {
   local udid=$1 bundle=$2 was_booted=$3 folder="$BORROWED/$1" setting domain key plist
-  command rm -rf "$folder"
+  # A folder already here is what a run that could not put the simulator back kept: the only
+  # copy of its state, so this run must not replace it.
+  [[ ! -e $folder ]] ||
+    fail "simulator $udid still has the state an earlier run saved and could not put back, in $folder; put it back or move that folder away, then run again"
   mkdir -p "$folder"
   [[ $was_booted == false ]] || touch "$folder/booted"
   for setting in "${BORROWED_SETTINGS[@]}"; do
@@ -141,13 +144,16 @@ remember() {
 }
 
 # Saves a copy of each borrowed simulator's App Group container, once the app is installed and
-# before it first runs.
+# before it first runs. The copy is made beside its final name and renamed when it is whole, so
+# `restore_simulator`, which looks for `group` only, never puts back half a copy.
 remember_group() {
-  local entry udid bundle container
+  local entry udid bundle container staging
   for entry in "${borrowed[@]+"${borrowed[@]}"}"; do
     read -r udid bundle <<<"$entry"
     container=$(group_container "$udid" "$bundle") || fail "$bundle on simulator $udid has no App Group container"
-    ditto "$container" "$BORROWED/$udid/group"
+    staging="$BORROWED/$udid/group.partial"
+    ditto "$container" "$staging"
+    mv "$staging" "$BORROWED/$udid/group"
   done
 }
 
