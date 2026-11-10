@@ -31,7 +31,8 @@ struct IntentTablesTests {
   }
 
   /// The names the system shows from `IkaIntents`' table: the parameter types and their values,
-  /// and on iOS the start-Tracking intent's title.
+  /// and on iOS the start-Tracking intent's title, which the control's name and configuration
+  /// read too.
   static private var names: [LocalizedStringResource] {
     var names: [LocalizedStringResource] = [
       ModeParameter.typeDisplayRepresentation.name,

@@ -448,7 +448,7 @@
       }
     },
     "Mode" : {
-      "comment" : "The Mode value: a Battle Mode or Salmon Run. Written for this app.",
+      "comment" : "The Mode value: a Battle Mode or Salmon Run, and the Control Center control's setting for it. Written for this app.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -1250,7 +1250,7 @@
       }
     },
     "Start Tracking" : {
-      "comment" : "The start-Tracking intent's title, which Siri and Shortcuts show, and the app's track button: starts a Live Activity that follows a Mode.",
+      "comment" : "The start-Tracking intent's title, which Siri and Shortcuts show, the app's track button, and the Control Center control's name and configuration title: starts a Live Activity that follows a Mode.",
       "localizations" : {
         "de" : {
           "stringUnit" : {
