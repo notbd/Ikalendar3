@@ -12,7 +12,8 @@
 #      Graphics' `CGDataProvider` and `CGPDFDocument` initialisers, `NSAttributedString(url:)`,
 #      `LPMetadataProvider`, and every `AV…(url:)` and `InputStream(url:)` initialiser, each
 #      also as `.init(url:)` or `.init(byReferencing:)` after a type annotation, such as
-#      `let player: AVPlayer = .init(url: address)`; the client's `URLRequest` is the one
+#      `let player: AVPlayer = .init(url: address)`, or with that argument wrapped onto a line
+#      of its own; the client's `URLRequest` is the one
 #      `.init(url:)` let through), and its `Data(readingFile:)` refuses any URL that is not a
 #      file's
 #   3  only `FeedClient.swift` sends on a transport, and its one `send(to:)` refuses any address
@@ -68,7 +69,7 @@ network=$(shipped_matches '\b(URLSession|URLSessionConfiguration|NSURLConnection
   | grep -v "^$TRANSPORT:" || true)
 [[ -z $network ]] || problems+=("Networking APIs outside $TRANSPORT:"$'\n'"$network")
 
-readers=$(shipped_matches '\bcontentsOf:|\bCG\w+CreateWithURL\b|\bCG(DataProvider|PDFDocument)\(|\bNSImage\(byReferencing:|\bNSAttributedString\(url:|\bLPMetadataProvider\b|\b(AV\w+|InputStream)\(url:|\.init\((url|byReferencing):' \
+readers=$(shipped_matches '\bcontentsOf:|\bCG\w+CreateWithURL\b|\bCG(DataProvider|PDFDocument)\(|\bNSImage\(byReferencing:|\bNSAttributedString\(url:|\bLPMetadataProvider\b|\b(AV\w+|InputStream)\(url:|\.init\((url|byReferencing):|^\s*(url|byReferencing):' \
   | grep -v "^$FILE_READER:" | grep -v "^$CLIENT:[0-9]*: *var request: URLRequest = \.init(url:" || true)
 [[ -z $readers ]] || problems+=("Readers that take a URL outside $FILE_READER (use Data(readingFile:)):"$'\n'"$readers")
 grep -q 'guard url.isFileURL else' "$FILE_READER" \
