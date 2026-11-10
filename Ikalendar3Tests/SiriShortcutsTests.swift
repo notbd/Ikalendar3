@@ -30,10 +30,11 @@ struct SiriShortcutsTests {
         preferences: PreferenceStore(defaults: #require(UserDefaults(suiteName: "SiriShortcutsTests")))),
       language: .enUS,
       timeZone: #require(TimeZone(identifier: "America/Los_Angeles")),
-      hourCycle: .oneToTwelve)
+      hourCycle: .oneToTwelve,
+      clock: SettableClock(instant))
     let start: Date = .now
 
-    let answer = await source.answer(NowIntent(mode: .xBattle), at: instant)
+    let answer = await source.answer(NowIntent(mode: .xBattle))
 
     #expect(answer ==
       "X Battle: Tower Control on Mahi-Mahi Resort and Robo ROM-en, "

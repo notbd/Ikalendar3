@@ -112,6 +112,32 @@ struct SummaryRowContentTests {
     #expect(contents.allSatisfy { $0.line.hasSuffix(" left") })
   }
 
+  /// The menu row draws `RotationMode.shortName(in:)`, with a summary or without, so it names a
+  /// Battle Mode as the sidebar's row of it does.
+  @Test(arguments: GameLanguage.allCases)
+  func `A tab menu's options are named as the sidebar names them`(language: GameLanguage) async throws {
+    let instant = date("2026-11-01T05:23:00Z")
+    let snapshot = try await snapshot(.splatfestSecondHalf)
+    let terms = snapshot.terms(in: language)
+    let writer: SentenceWriter = .init(terms: terms, timeZone: .gmt, hourCycle: .zeroToTwentyThree)
+    let options = [TabMenu.splatfestBattle, .anarchy].flatMap { snapshot.options(of: $0, at: instant) }
+
+    let summaries = options.compactMap { option in
+      option.summary.map { (option.mode, SummaryRowContent($0, writer: writer, format: format, now: instant)) }
+    }
+    for (mode, content) in summaries {
+      #expect(content.name == mode.shortName(in: language), "\(mode)")
+    }
+    #expect(summaries.count == 4)
+  }
+
+  @Test
+  func `A menu names a form of Splatfest Battle by its label alone and an Anarchy form in full`() {
+    #expect(TabMenu.splatfestBattle.modes.map { $0.shortName(in: .enUS) } == ["Open", "Pro"])
+    #expect(
+      TabMenu.anarchy.modes.map { $0.shortName(in: .enUS) } == ["Anarchy Battle (Series)", "Anarchy Battle (Open)"])
+  }
+
   @Test
   func `Tricolor Turf War before the midterm time is dimmed and shows when it starts`() async throws {
     let instant = date("2026-10-31T12:00:00Z")

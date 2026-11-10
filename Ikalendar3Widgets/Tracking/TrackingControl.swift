@@ -19,7 +19,9 @@ import WidgetKit
 /// one tap away. Its button runs `IkaIntents`' start-Tracking intent, which the system runs in the
 /// app's process. It reads as the Mode's name beside the track button's symbol, which takes the
 /// Mode's colour while pressed: Control Center draws only symbols, so the bundled Mode icon cannot
-/// show there. iOS only, as Tracking is.
+/// show there. Its name, its configuration's title and its Mode setting are `IkaIntents`' own
+/// words, read from the copy of that module's `Localizable` table the extension carries, so they
+/// always match the intent's; only the description is the control's. iOS only, as Tracking is.
 struct TrackingControl: ControlWidget {
   var body: some ControlWidgetConfiguration {
     AppIntentControlConfiguration(kind: WidgetKind.tracking.rawValue, provider: TrackingControlProvider()) { mode in
@@ -28,7 +30,7 @@ struct TrackingControl: ControlWidget {
       }
       .tint(Color(ModeColor(mode.mode).base))
     }
-    .displayName(LocalizedStringResource("control.tracking.name", table: "Controls"))
+    .displayName(LocalizedStringResource("Start Tracking"))
     .description(LocalizedStringResource("control.tracking.description", table: "Controls"))
     .promptsForUserConfiguration()
   }
@@ -38,9 +40,9 @@ struct TrackingControl: ControlWidget {
 
 /// The control's configuration: the Mode it starts Tracking.
 struct TrackingControlIntent: ControlConfigurationIntent {
-  static let title: LocalizedStringResource = .init("intent.tracking.title", table: "Controls")
+  static let title: LocalizedStringResource = .init("Start Tracking")
 
-  @Parameter(title: LocalizedStringResource("intent.tracking.mode", table: "Controls"), default: .regularBattle)
+  @Parameter(title: LocalizedStringResource("Mode"), default: .regularBattle)
   var mode: ModeParameter
 
   init() { }

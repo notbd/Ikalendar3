@@ -14,8 +14,9 @@ import Testing
 /// Pins that starts of Tracking take turns per Mode across their whole end-then-request step, so
 /// overlapping starts of one Mode leave one activity, while starts of other Modes never wait.
 ///
-/// Everything runs on the main actor, as every start does, so a task started here runs up to its
-/// first suspension at the next yield, and each interleaving below is the only one possible.
+/// Everything runs on the main actor, as every start does. The test waits for a held end, and for
+/// a second start to be called (`Signal`), before it releases the end, so each interleaving below
+/// is the only one possible.
 @MainActor
 struct TrackingStartsTests {
   @Test
@@ -27,8 +28,12 @@ struct TrackingStartsTests {
     let first = Task { await starts.run(.salmonRun) { await activities.replace(.salmonRun, with: "B") } }
     await activities.waitUntilEndIsHeld()
     // Without turns, this start would also find A running and end it, and both would request.
-    let second = Task { await starts.run(.salmonRun) { await activities.replace(.salmonRun, with: "C") } }
-    await Task.yield()
+    let called: Signal = .init()
+    let second = Task {
+      called.raise()
+      await starts.run(.salmonRun) { await activities.replace(.salmonRun, with: "C") }
+    }
+    await called.wait()
     activities.releaseEnds()
     await first.value
     await second.value

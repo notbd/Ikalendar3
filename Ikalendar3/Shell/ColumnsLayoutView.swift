@@ -16,8 +16,9 @@ import SwiftUI
 /// everything shows at once.
 ///
 /// Each column is its Mode's screen under a navigation bar of its own, so it shows its Style's
-/// iPhone list as on iPhone, with its stamp, title and track button; the screens pick the list by
-/// their width (`DetailLayout`). The Anarchy column's header opens the Series and Open menu. On
+/// iPhone list as on iPhone, with its stamp, title and track button; the columns choose the list
+/// at any width (`detailLayout(.list)`), so a wide window never turns one into the wide detail.
+/// The Anarchy column's header opens the Series and Open menu. On
 /// iPad the refresh and Settings buttons sit beside the strip; the Mac's window keeps them in its
 /// toolbar and app menu, and scrolls its columns sideways in a narrow window. An event card opens
 /// its Schedule in a sheet, which `AppRootView` presents.
@@ -57,6 +58,7 @@ struct ColumnsLayoutView: View {
         .macColumnWidth(count: columns.count)
       }
     }
+    .detailLayout(.list)
   }
 
   /// `column`'s screen. A Mode picked from the Anarchy menu opens at the top, on its current

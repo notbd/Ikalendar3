@@ -23,11 +23,10 @@ struct SettingsView: View {
   @Environment(\.gameLanguage) private var language
   @Environment(\.openURL) private var openURL
   @Environment(\.dismiss) private var dismiss
-  @Environment(\.effects) private var effects
   @Environment(\.scenePhase) private var scenePhase
 
-  /// Whether the Reminders section says notifications are off: after a switch turned back off
-  /// because the system does not allow them, or while a switch is on and they are off.
+  /// Whether the Reminders section says notifications are off: after a switch stayed off because
+  /// the system does not allow them, or while a switch is on and they are off.
   @State private var areNotificationsOff = false
 
   var body: some View {
@@ -140,17 +139,15 @@ struct SettingsView: View {
     }
   }
 
-  /// The four switches, all off until the player turns one on. Turning one on asks for permission
-  /// to notify the first time; if the system does not allow notifications, it turns back off and
-  /// a note with a row to the app's notification settings shows. Every change rebuilds the
-  /// pending reminders from the cache.
+  /// The four switches, all off until the player turns one on (`reminderSwitch(_:)`). The effects
+  /// shell rebuilds the pending reminders from every change of them, wherever it is written
+  /// (`EffectsShell.followReminderSwitches()`).
   private var remindersSection: some View {
-    @Bindable var preferences = preferences
-    return Section {
-      Toggle(ModeLabel.bigRun.text(in: language), isOn: $preferences.isBigRunReminderOn)
-      Toggle(ModeLabel.eggstraWork.text(in: language), isOn: $preferences.isEggstraWorkReminderOn)
-      Toggle(ModeLabel.splatfest.text(in: language), isOn: $preferences.isSplatfestReminderOn)
-      Toggle(ModeLabel.challenges.text(in: language), isOn: $preferences.isChallengeReminderOn)
+    Section {
+      Toggle(ModeLabel.bigRun.text(in: language), isOn: reminderSwitch(.bigRun))
+      Toggle(ModeLabel.eggstraWork.text(in: language), isOn: reminderSwitch(.eggstraWork))
+      Toggle(ModeLabel.splatfest.text(in: language), isOn: reminderSwitch(.splatfest))
+      Toggle(ModeLabel.challenges.text(in: language), isOn: reminderSwitch(.challenge))
 
       if areNotificationsOff, let url = Self.notificationSettingsURL {
         Button {
@@ -170,9 +167,6 @@ struct SettingsView: View {
       if areNotificationsOff {
         Text(ReminderText.notificationsOff.text(in: language))
       }
-    }
-    .onChange(of: preferences.reminderKinds) { old, new in
-      Task { await remindersChanged(from: old, to: new) }
     }
     // Again on return from the system's settings, where the player may have allowed them.
     .task(id: scenePhase) {
@@ -199,17 +193,28 @@ struct SettingsView: View {
 
   // MARK: Helpers
 
-  /// Asks for permission when a switch turned on, then rebuilds the pending reminders. A switch
-  /// the system will not notify for turns back off, which comes back here and rebuilds.
-  private func remindersChanged(from old: Set<EventReminder.Kind>, to new: Set<EventReminder.Kind>) async {
-    let switchedOn = new.subtracting(old)
-    if !switchedOn.isEmpty, await !ReminderCenter.requestPermission() {
-      preferences.reminderKinds.subtract(switchedOn)
-      areNotificationsOff = true
-      return
-    }
+  /// `kind`'s reminder switch. Turning it on asks for permission to notify the first time, and
+  /// writes the switch only once the system allows notifications; otherwise it stays off and a
+  /// note with a row to the app's notification settings shows. So the store never holds a switch
+  /// the system refuses.
+  private func reminderSwitch(_ kind: EventReminder.Kind) -> Binding<Bool> {
+    Binding {
+      preferences.reminderKinds.contains(kind)
+    } set: { isOn in
+      guard isOn else {
+        preferences.reminderKinds.remove(kind)
+        return
+      }
 
-    await effects?.rebuildReminders()
+      Task {
+        if await ReminderCenter.requestPermission() {
+          preferences.reminderKinds.insert(kind)
+        }
+        else {
+          areNotificationsOff = true
+        }
+      }
+    }
   }
 
   private func text(_ text: SettingsText) -> String {

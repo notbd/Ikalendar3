@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - SalmonRunScreenView
 
 /// The Salmon Run screen in the selected Style, at the app clock's instant: the iPhone list, or
-/// the wide detail where the screen is wide enough (`DetailLayout`).
+/// the wide detail where the screen is wide enough and its place lets it (`DetailLayout`).
 struct SalmonRunScreenView: View {
   @Environment(RefreshEngine.self) private var engine
   @Environment(AppClock.self) private var clock

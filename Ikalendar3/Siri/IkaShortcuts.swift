@@ -53,7 +53,7 @@ struct IkaShortcuts: AppShortcutsProvider {
       intent: CurrentShiftIntent(),
       phrases: [
         "What's the current Shift in \(.applicationName)",
-        "What's on in Salmon Run in \(.applicationName)",
+        "Which Shift is on in Salmon Run in \(.applicationName)",
       ],
       shortTitle: "Current Shift",
       systemImageName: "fish")

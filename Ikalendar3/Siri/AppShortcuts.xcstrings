@@ -451,96 +451,6 @@
         }
       }
     },
-    "What's on in Salmon Run in ${applicationName}" : {
-      "comment" : "The current Shift shortcut, by the Mode's name.",
-      "extractionState" : "manual",
-      "localizations" : {
-        "de" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Was läuft bei Salmon Run in ${applicationName}"
-          }
-        },
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What's on in Salmon Run in ${applicationName}"
-          }
-        },
-        "en-GB" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "What's on in Salmon Run in ${applicationName}"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Qué hay en Salmon Run en ${applicationName}"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Qué hay en Salmon Run en ${applicationName}"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Qu'est-ce qui se joue en Salmon Run dans ${applicationName}"
-          }
-        },
-        "fr-CA" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Qu'est-ce qui se joue en Salmon Run dans ${applicationName}"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Cosa c'è in Salmon Run in ${applicationName}"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "${applicationName}でサーモンランの今のバイト"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "${applicationName}에서 새먼 런 지금 아르바이트 알려줘"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Wat is er in Salmon Run in ${applicationName}"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Что идёт в Salmon Run в ${applicationName}"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用${applicationName}查看鲑鱼跑现在的打工"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "用${applicationName}查看鮭魚跑現在的打工"
-          }
-        }
-      }
-    },
     "What's on now in ${applicationName}" : {
       "comment" : "The now shortcut, with no Mode: Siri asks for one.",
       "extractionState" : "manual",
@@ -1077,6 +987,96 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用${applicationName}查看下次祭典是什麼時候"
+          }
+        }
+      }
+    },
+    "Which Shift is on in Salmon Run in ${applicationName}" : {
+      "comment" : "The current Shift shortcut, by the Mode's name and the game's word for a Salmon Run Shift.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "de" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Welche Schicht läuft bei Salmon Run in ${applicationName}"
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which Shift is on in Salmon Run in ${applicationName}"
+          }
+        },
+        "en-GB" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Which Shift is on in Salmon Run in ${applicationName}"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qué turno hay en Salmon Run en ${applicationName}"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Qué turno hay en Salmon Run en ${applicationName}"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quel créneau se joue en Salmon Run dans ${applicationName}"
+          }
+        },
+        "fr-CA" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quel créneau se joue en Salmon Run dans ${applicationName}"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Quale turno c'è in Salmon Run in ${applicationName}"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName}でサーモンランの今のバイト"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "${applicationName}에서 새먼 런 지금 아르바이트 알려줘"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Welke dienst is er in Salmon Run in ${applicationName}"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "needs_review",
+            "value" : "Какая смена идёт в Salmon Run в ${applicationName}"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用${applicationName}查看鲑鱼跑现在的打工"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用${applicationName}查看鮭魚跑現在的打工"
           }
         }
       }
