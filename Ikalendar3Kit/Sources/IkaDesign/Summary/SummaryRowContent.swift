@@ -68,11 +68,11 @@ public struct SummaryRowContent: Equatable, Sendable {
         color = ModeColor(summary)
         switch summary {
           case .battle(let mode, let onNow):
-            name = mode.name(in: language)
+            name = RotationMode.battle(mode).shortName(in: language)
             (detail, progress) = Self.rotation(onNow, terms: terms, else: whyNoneIsOn(onNow))
 
           case .splatfestBattle(let form, let onNow):
-            name = form.label.text(in: language)
+            name = RotationMode.splatfestBattle(form).shortName(in: language)
             (detail, progress) = Self.rotation(onNow, terms: terms, else: whyNoneIsOn(onNow))
 
           case .salmonRun(.running(let running)):
@@ -161,17 +161,5 @@ public struct SummaryRowContent: Equatable, Sendable {
     guard case .running(let running) = onNow, let setting = running.item.setting else { return (whyNot, nil) }
 
     return (terms.name(of: setting.rule), running.progress)
-  }
-}
-
-// MARK: - SplatfestBattleForm
-
-extension SplatfestBattleForm {
-  /// The form's own label, which names its row under the Splatfest.
-  fileprivate var label: ModeLabel {
-    switch self {
-      case .open: .open
-      case .pro: .pro
-    }
   }
 }

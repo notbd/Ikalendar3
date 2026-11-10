@@ -41,6 +41,17 @@ extension RotationMode {
       case .splatfestBattle(.pro): ModeLabel.splatfestBattle.withForm(.pro, in: language)
     }
   }
+
+  /// The name of a Rotation's Battle Mode in a list the Splatfest heads, as the sidebar's
+  /// Splatfest group and the Splatfest tab's menu write it: a form of Splatfest Battle by its
+  /// label alone, "Open" or "Pro"; a continuous Battle Mode by its full name.
+  public func shortName(in language: GameLanguage) -> String {
+    switch self {
+      case .battle(let battleMode): battleMode.name(in: language)
+      case .splatfestBattle(.open): ModeLabel.open.text(in: language)
+      case .splatfestBattle(.pro): ModeLabel.pro.text(in: language)
+    }
+  }
 }
 
 extension ModeLabel {

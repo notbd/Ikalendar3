@@ -87,7 +87,8 @@ struct TabMenuView: View {
 
 /// One option as its Mode summary's row (`SummaryRowContent`): the icon in a ring of the share
 /// passed, the name, the current Rule and time left, and a checkmark on the Battle Mode the tab
-/// shows. Before the Mode has a screen, only its icon and name.
+/// shows. Before the Mode has a screen, only its icon and name. The name is the sidebar's, with a
+/// summary or without: a form of Splatfest Battle by its label alone (`RotationMode.shortName`).
 private struct TabMenuRow: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @TimeSettings private var time
@@ -123,7 +124,7 @@ private struct TabMenuRow: View {
           .frame(width: ringSize, height: ringSize)
 
         VStack(alignment: .leading, spacing: 2) {
-          Text(verbatim: content?.name ?? option.mode.name(in: terms.language))
+          Text(verbatim: option.mode.shortName(in: terms.language))
             .font(.headline)
           if let content {
             Text(verbatim: content.line)
