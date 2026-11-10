@@ -149,7 +149,7 @@ struct TimelineSplatfestCard: View {
       }
     }
     .task(id: card.art) {
-      artImage = card.art.flatMap(Image.init(contentsOf:))
+      artImage = card.art.flatMap(Image.init(storedFile:))
     }
     .splatfestAccessibility(splatfest, writer: time.writer(terms), at: now)
   }

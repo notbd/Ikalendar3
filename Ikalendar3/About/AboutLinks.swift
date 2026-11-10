@@ -89,7 +89,8 @@ enum CreditedLicense: CaseIterable {
   var text: String? {
     Bundle.main
       .url(forResource: fileName, withExtension: nil)
-      .flatMap { try? String(contentsOf: $0, encoding: .utf8) }
+      .flatMap { try? Data(readingFile: $0) }
+      .flatMap { String(bytes: $0, encoding: .utf8) }
   }
 
   /// The bundled file's name.

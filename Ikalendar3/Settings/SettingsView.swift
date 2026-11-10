@@ -28,6 +28,8 @@ struct SettingsView: View {
   /// Whether the Reminders section says notifications are off: after a switch stayed off because
   /// the system does not allow them, or while a switch is on and they are off.
   @State private var areNotificationsOff = false
+  /// What the reminder switches show while the system answers the permission request.
+  @State private var reminderChoices: ReminderSwitchChoices = .init()
 
   var body: some View {
     NavigationStack {
@@ -193,24 +195,17 @@ struct SettingsView: View {
 
   // MARK: Helpers
 
-  /// `kind`'s reminder switch. Turning it on asks for permission to notify the first time, and
-  /// writes the switch only once the system allows notifications; otherwise it stays off and a
-  /// note with a row to the app's notification settings shows. So the store never holds a switch
-  /// the system refuses.
+  /// `kind`'s reminder switch. Turning it on asks for permission to notify the first time; the
+  /// switch shows on while the system answers and writes the store once it allows notifications
+  /// (`ReminderSwitchChoices`). If the system refuses, it falls back to off and a note with a row
+  /// to the app's notification settings shows. The choice starts at once, so the switch shows it in
+  /// the frame of the tap.
   private func reminderSwitch(_ kind: EventReminder.Kind) -> Binding<Bool> {
     Binding {
-      preferences.reminderKinds.contains(kind)
+      reminderChoices.isOn(kind, in: preferences)
     } set: { isOn in
-      guard isOn else {
-        preferences.reminderKinds.remove(kind)
-        return
-      }
-
-      Task {
-        if await ReminderCenter.requestPermission() {
-          preferences.reminderKinds.insert(kind)
-        }
-        else {
+      Task.immediate {
+        if await !reminderChoices.choose(kind, isOn: isOn, in: preferences) {
           areNotificationsOff = true
         }
       }

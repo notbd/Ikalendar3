@@ -34,7 +34,7 @@ extension TermTable {
         throw CocoaError(.fileNoSuchFile)
       }
 
-      return try TermTable(localeFile: Data(contentsOf: url))
+      return try TermTable(localeFile: Data(readingFile: url))
     }
     catch {
       Logger.decode.fault("shipped locale \(language.rawValue, privacy: .public): \(error, privacy: .public)")

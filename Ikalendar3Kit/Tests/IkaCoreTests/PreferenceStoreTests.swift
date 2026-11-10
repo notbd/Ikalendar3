@@ -231,6 +231,18 @@ struct PreferenceStoreTests {
   }
 
   @Test
+  func `The stored reminder kinds are the suite's, written by any store on it since`() {
+    let copy: PreferenceStore = .init(defaults: defaults)
+    let settings: PreferenceStore = .init(defaults: defaults)
+
+    settings.reminderKinds = [.bigRun, .eggstraWork]
+    settings.isBigRunReminderOn = false
+
+    #expect(copy.reminderKinds.isEmpty)
+    #expect(copy.storedReminderKinds == [.eggstraWork])
+  }
+
+  @Test
   func `Five tabs in tab bar order`() {
     #expect(ModeTab.allCases == [.regularBattle, .anarchy, .xBattle, .challenge, .salmonRun])
   }

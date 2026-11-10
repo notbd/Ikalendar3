@@ -87,7 +87,7 @@ struct ClassicSplatfestArt: View {
       }
     }
     .task(id: art) {
-      image = art.flatMap(Image.init(contentsOf:))
+      image = art.flatMap(Image.init(storedFile:))
     }
   }
 }

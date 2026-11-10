@@ -178,7 +178,7 @@ struct FeedGate {
   private func storedRecords() throws -> [String: AttemptRecord] {
     let data: Data
     do {
-      data = try Data(contentsOf: recordsURL)
+      data = try Data(readingFile: recordsURL)
     }
     catch CocoaError.fileReadNoSuchFile {
       return [:]
