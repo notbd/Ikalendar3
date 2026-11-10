@@ -7,9 +7,11 @@
 #   1  only `URLSessionTransport.swift` names a networking API (URLSession, Network, WebKit,
 #      Safari views, AsyncImage, sockets), so every request goes through an `HTTPTransport`
 #   2  only `Data+File.swift` calls a reader that takes a URL and would load an `https` one too
-#      (any `contentsOf:` initialiser, such as `Data`'s, `String`'s or `NSImage`'s, the Core
-#      Graphics `…CreateWithURL` functions, and the media and stream initialisers that take a
-#      `url:`), and its `Data(readingFile:)` refuses any URL that is not a file's
+#      (any `contentsOf:` initialiser, such as `Data`'s, `String`'s or `NSImage`'s,
+#      `NSImage(byReferencing:)`, ImageIO's `CGImageSource…CreateWithURL` functions, Core
+#      Graphics' `CGDataProvider` and `CGPDFDocument` initialisers, and the media and stream
+#      initialisers that take a `url:`), and its `Data(readingFile:)` refuses any URL that is
+#      not a file's
 #   3  only `FeedClient.swift` sends on a transport, and its one `send(to:)` refuses any address
 #      `Source.serves` does not accept
 #   4  the transport's session follows a redirect only to an address `Source.serves` accepts
@@ -63,7 +65,7 @@ network=$(shipped_matches '\b(URLSession|URLSessionConfiguration|NSURLConnection
   | grep -v "^$TRANSPORT:" || true)
 [[ -z $network ]] || problems+=("Networking APIs outside $TRANSPORT:"$'\n'"$network")
 
-readers=$(shipped_matches '\bcontentsOf:|\bCG\w+CreateWithURL\b|\b(AVPlayer|AVPlayerItem|AVURLAsset|InputStream)\(url:' \
+readers=$(shipped_matches '\bcontentsOf:|\bCG\w+CreateWithURL\b|\bCG(DataProvider|PDFDocument)\(|\bNSImage\(byReferencing:|\b(AVPlayer|AVPlayerItem|AVAsset|AVURLAsset|InputStream)\(url:' \
   | grep -v "^$FILE_READER:" || true)
 [[ -z $readers ]] || problems+=("Readers that take a URL outside $FILE_READER (use Data(readingFile:)):"$'\n'"$readers")
 grep -q 'guard url.isFileURL else' "$FILE_READER" \

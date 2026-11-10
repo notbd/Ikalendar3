@@ -385,7 +385,10 @@ for attempt in 1 2 3; do
     fail "$(diagnostics "$swiftformat_log")" "$swiftformat_log"
   fi
 done
-step_done
+# A rising rate of timeouts should show before three runs in a row time out.
+swiftformat_note=""
+((attempt == 1)) || swiftformat_note="after $attempt runs (rule timeouts)"
+step_done "$swiftformat_note"
 
 step "SwiftLint"
 run_logged swiftlint swiftlint lint --strict --quiet
