@@ -178,6 +178,16 @@ extension PreferenceStore {
     }
   }
 
+  /// The kinds whose switch is on as the suite holds them now, whichever store on it wrote them
+  /// last. A store reads the suite once, at init, so one that outlives a write by another store,
+  /// such as an intent's while the player flips a switch in Settings, reads these, not
+  /// `reminderKinds`.
+  public var storedReminderKinds: Set<EventReminder.Kind> {
+    Set(EventReminder.Kind.allCases.filter { kind in
+      defaults.ikaBool(forKey: Key.reminderSwitch(of: kind), default: Default.isReminderOn)
+    })
+  }
+
   /// The switch of one kind.
   private subscript(reminderSwitch kind: EventReminder.Kind) -> Bool {
     get {
@@ -217,6 +227,16 @@ extension PreferenceStore {
 
     static let shouldShowOnboarding = "state.should_show_onboarding"
     static let hasDiscoveredRating = "state.has_discovered_rating"
+
+    /// The key of `kind`'s reminder switch.
+    static func reminderSwitch(of kind: EventReminder.Kind) -> String {
+      switch kind {
+        case .bigRun: isBigRunReminderOn
+        case .eggstraWork: isEggstraWorkReminderOn
+        case .splatfest: isSplatfestReminderOn
+        case .challenge: isChallengeReminderOn
+      }
+    }
   }
 }
 

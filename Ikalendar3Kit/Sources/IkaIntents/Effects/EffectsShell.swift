@@ -20,9 +20,10 @@ import WidgetKit
 /// whichever entry point started it.
 ///
 /// It replaces the app's pending event reminders as the plan says, after a refresh that committed a
-/// feed and whenever a reminder switch changes (`followReminderSwitches()`), with the switches read
-/// from the preferences as it plans. Replacements take turns in the order the shell plans them
-/// (`ReminderReplacements`), so the latest switches always stand.
+/// feed and whenever a reminder switch changes (`followReminderSwitches()`), with the switches the
+/// preferences' suite holds as it plans: an intent's store is a copy taken as the intent started,
+/// and the player may have flipped a switch since. Replacements take turns in the order the shell
+/// plans them (`ReminderReplacements`), so the latest switches always stand.
 ///
 /// On iOS it also starts Tracking, and every run re-arms each running Tracking from the cache.
 /// Live Activities render on the system's clock, so their instant is the wall clock's. Not on
@@ -104,11 +105,12 @@ public struct EffectsShell {
     #endif
   }
 
-  /// The switches as they are now, with the reminder text in the app language and the device's
-  /// time zone and hour cycle, read at each run so a change in the system's settings applies.
+  /// The switches as the suite holds them now, with the reminder text in the app language and the
+  /// device's time zone and hour cycle, read at each plan so a change in the system's settings
+  /// applies.
   private var reminderSettings: ReminderSettings {
     ReminderSettings(
-      kinds: preferences.reminderKinds,
+      kinds: preferences.storedReminderKinds,
       language: GameLanguage(resolvedFor: .main),
       timeZone: .current,
       hourCycle: Locale.current.hourCycle)
@@ -119,8 +121,8 @@ public struct EffectsShell {
 extension EffectsShell {
   /// The shell an intent runs, a Siri question's or a Tracking one's: an engine of its own on the
   /// App Group cache, which it shares with the app and every other engine through the gate's
-  /// attempt records, in the app language, with the reminder switches of the App Group's
-  /// preferences. No runtime registration: an intent builds it each time it runs.
+  /// attempt records, in the app language, with the reminder switches of the App Group's suite.
+  /// No runtime registration: an intent builds it each time it runs.
   ///
   /// - Throws: `TrackingError.noSchedule` with no App Group container (logged by `AppGroup`) or
   ///   suite, where no cache can hold a schedule.
