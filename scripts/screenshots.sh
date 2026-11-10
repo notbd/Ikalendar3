@@ -16,8 +16,8 @@
 # - Every launch writes times as they read in Tokyo at the fixture's instant
 #   (`--fixture-time-zone`), so every language and every run shows the same times.
 #
-# Before it captures anything, it launches the app once on each device and stops unless the font
-# log of SplatNet 3's faces says every face registered (build them with
+# Before it captures anything, it launches the app once on each device and stops unless that
+# launch's font log says every face of SplatNet 3 registered (build them with
 # `scripts/assets.sh --only fonts`). It checks each image's pixel size against the App Store size
 # it targets.
 #
@@ -168,12 +168,17 @@ check_size() {
   printf '%s\n' "${file#"$ROOT/"}"
 }
 
-# Fails unless the font log (`log show` output on stdin) says every face registered: the line
-# `BundledResources.load(from:)` writes, "Registered <n> of <m> font faces".
+# Fails unless the font log of process `pid` (`log show --style compact` output on stdin) says
+# every face registered. Only that process's last registration line counts, either of the two
+# `BundledResources.load(from:)` writes: "Registered <n> of <m> font faces" or "No font face
+# registered". A line of any other process, such as an earlier launch's, does not.
 check_fonts() {
-  local device=$1 line
-  line=$(grep -o 'Registered [0-9]* of [0-9]* font faces' | tail -1) || true
-  [[ -n $line ]] || fail "$device: no font face registered (scripts/assets.sh --only fonts builds them); nothing captured"
+  local device=$1 pid=$2 line
+  line=$(grep -E "\[$pid:[[:xdigit:]]+\] " \
+    | grep -o -E 'Registered [0-9]+ of [0-9]+ font faces|No font face registered' | tail -1) || true
+  [[ -n $line ]] || fail "$device: process $pid logged no font registration; nothing captured"
+  [[ $line != "No font face registered" ]] ||
+    fail "$device: no font face registered (scripts/assets.sh --only fonts builds them); nothing captured"
   read -r _ registered _ expected _ <<<"$line"
   ((registered == expected)) ||
     fail "$device: $line; scripts/assets.sh --only fonts builds the missing ones; nothing captured"
@@ -265,17 +270,23 @@ xcrun simctl install "$watch" "$WATCH_APP"
 # MARK: Launches
 
 # Launches the app on simulator `udid` with `bundle` and the arguments that follow, starting over.
+# Sets `app_pid` to its process, which runs on this Mac (`simctl launch` prints
+# "<bundle>: <pid>"), and `app_launched` to the time of the launch, for `log show --start`.
 launch() {
-  local udid=$1 bundle=$2
+  local udid=$1 bundle=$2 started
   shift 2
-  xcrun simctl launch --terminate-running-process "$udid" "$bundle" "$@" >/dev/null
+  app_launched=$(date '+%Y-%m-%d %H:%M:%S')
+  started=$(xcrun simctl launch --terminate-running-process "$udid" "$bundle" "$@")
+  app_pid=${started##*: }
+  [[ $app_pid =~ ^[0-9]+$ ]] || fail "simctl launch named no process: $started"
 }
 
 # Launches the Mac app with the arguments that follow, its window `MAC_WINDOW` points, and waits
-# for that window. Sets `mac_pid` and `mac_window`.
+# for that window. Sets `mac_pid`, `mac_window` and `mac_launched`, the time of the launch.
 launch_mac() {
   [[ -z $mac_pid ]] || { kill "$mac_pid" 2>/dev/null || true; sleep 1; }
   mkdir -p "$MAC_DATA"
+  mac_launched=$(date '+%Y-%m-%d %H:%M:%S')
   open -n -g "$MAC_APP" --args "$@" --data-folder "$MAC_DATA" --defaults-suite "$MAC_SUITE" \
     --window-size "$MAC_WINDOW" -ApplePersistenceIgnoreState YES
   mac_pid=""
@@ -317,18 +328,22 @@ capture() {
 printf 'Checking the font faces on each device\n'
 set_language en
 set_day "$NORMAL_DAY"
-launch "$iphone" "$BUNDLE_ID" "${base[@]}" "${fixture[@]}"
-launch "$ipad" "$BUNDLE_ID" "${base[@]}" "${fixture[@]}"
-launch "$watch" "$WATCH_BUNDLE_ID" "${base[@]}" "${fixture[@]}"
-launch_mac "${base[@]}" "${fixture[@]}"
-sleep 3
+# Each launch, as "<device> <udid> <bundle> <pid> <time of the launch>".
+font_launches=()
 for device in "iPhone $iphone $BUNDLE_ID" "iPad $ipad $BUNDLE_ID" "watch $watch $WATCH_BUNDLE_ID"; do
   read -r name udid bundle <<<"$device"
-  xcrun simctl spawn "$udid" log show --last 2m --style compact 2>/dev/null \
-    --predicate "subsystem == \"$bundle\" AND category == \"fonts\"" | check_fonts "$name"
+  launch "$udid" "$bundle" "${base[@]}" "${fixture[@]}"
+  font_launches+=("$name $udid $bundle $app_pid $app_launched")
 done
-log show --last 2m --style compact \
-  --predicate "subsystem == \"$BUNDLE_ID\" AND category == \"fonts\" AND processID == $mac_pid" | check_fonts Mac
+launch_mac "${base[@]}" "${fixture[@]}"
+sleep 3
+for font_launch in "${font_launches[@]}"; do
+  read -r name udid bundle pid since <<<"$font_launch"
+  xcrun simctl spawn "$udid" log show --start "$since" --style compact 2>/dev/null \
+    --predicate "subsystem == \"$bundle\" AND category == \"fonts\" AND processID == $pid" | check_fonts "$name" "$pid"
+done
+log show --start "$mac_launched" --style compact \
+  --predicate "subsystem == \"$BUNDLE_ID\" AND category == \"fonts\" AND processID == $mac_pid" | check_fonts Mac "$mac_pid"
 
 # MARK: Capture
 
