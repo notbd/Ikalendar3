@@ -2,21 +2,26 @@
 #
 # Fails when shipped code could contact a host other than splatoon3.ink and assets.splatoon3.ink.
 # Shipped code is every tracked file in the four product folders and the package's sources, except
-# the Debug-only fixture module. It proves five things:
+# the Debug-only fixture module. It proves six things:
 #
 #   1  only `URLSessionTransport.swift` names a networking API (URLSession, Network, WebKit,
 #      Safari views, AsyncImage, sockets), so every request goes through an `HTTPTransport`
-#   2  only `FeedClient.swift` sends on a transport, and its one `send(to:)` refuses any address
+#   2  only `Data+File.swift` calls a reader that takes a URL and would load an `https` one too
+#      (any `contentsOf:` initialiser, such as `Data`'s, `String`'s or `NSImage`'s, the Core
+#      Graphics `…CreateWithURL` functions, and the media and stream initialisers that take a
+#      `url:`), and its `Data(readingFile:)` refuses any URL that is not a file's
+#   3  only `FeedClient.swift` sends on a transport, and its one `send(to:)` refuses any address
 #      `Source.serves` does not accept
-#   3  the transport's session follows a redirect only to an address `Source.serves` accepts
+#   4  the transport's session follows a redirect only to an address `Source.serves` accepts
 #      (`RedirectGuard`), so no answer takes a request anywhere else
-#   4  `Source.hosts` is exactly the two hosts, so the feed account's avatar on Nintendo's host
+#   5  `Source.hosts` is exactly the two hosts, so the feed account's avatar on Nintendo's host
 #      (an address the feed carries) is refused like any other
-#   5  every address written in shipped code is on the two hosts or is a link the player opens in
+#   6  every address written in shipped code is on the two hosts or is a link the player opens in
 #      the browser, Mail or the App Store, listed below with what opens it
 #
 # Being static, it proves the code's shape; the package tests run the refusals
-# (URLSessionTransportTests the redirects, SplatfestArtTests an address off the two hosts).
+# (FileReadTests a URL that is not a file's, URLSessionTransportTests the redirects,
+# SplatfestArtTests an address off the two hosts).
 #
 # Usage: scripts/check-hosts.sh
 #
@@ -30,6 +35,7 @@ readonly FEED_HOSTS='"splatoon3.ink", "assets.splatoon3.ink"'
 readonly TRANSPORT=Ikalendar3Kit/Sources/IkaCore/Network/URLSessionTransport.swift
 readonly CLIENT=Ikalendar3Kit/Sources/IkaCore/Network/FeedClient.swift
 readonly SOURCE=Ikalendar3Kit/Sources/IkaCore/Network/Feed.swift
+readonly FILE_READER=Ikalendar3Kit/Sources/IkaCore/Data+File.swift
 
 # Hosts of links the player opens; the app never fetches from them.
 readonly LINK_HOSTS=(
@@ -56,6 +62,12 @@ shipped_matches() {
 network=$(shipped_matches '\b(URLSession|URLSessionConfiguration|NSURLConnection|CFStream\w*|NW(Connection|PathMonitor|Browser|Listener|Endpoint)|WKWebView|SFSafariViewController|ASWebAuthenticationSession|AsyncImage|getaddrinfo|socket)\b|^import (Network|WebKit|SafariServices)\b' \
   | grep -v "^$TRANSPORT:" || true)
 [[ -z $network ]] || problems+=("Networking APIs outside $TRANSPORT:"$'\n'"$network")
+
+readers=$(shipped_matches '\bcontentsOf:|\bCG\w+CreateWithURL\b|\b(AVPlayer|AVPlayerItem|AVURLAsset|InputStream)\(url:' \
+  | grep -v "^$FILE_READER:" || true)
+[[ -z $readers ]] || problems+=("Readers that take a URL outside $FILE_READER (use Data(readingFile:)):"$'\n'"$readers")
+grep -q 'guard url.isFileURL else' "$FILE_READER" \
+  || problems+=("$FILE_READER no longer refuses URLs that are not a file's.")
 
 senders=$(shipped_matches '\.send\(' | grep -v "^$CLIENT:" || true)
 [[ -z $senders ]] || problems+=("Transport sends outside $CLIENT:"$'\n'"$senders")

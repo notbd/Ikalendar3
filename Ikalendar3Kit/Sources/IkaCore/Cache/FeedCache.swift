@@ -27,7 +27,7 @@ public struct FeedCache: Sendable {
 
   /// A feed's stored record, or `nil` when there is none or it cannot be read.
   public func record(for feed: Feed) -> FeedRecord? {
-    guard let data = try? Data(contentsOf: recordURL(for: feed)) else { return nil }
+    guard let data = try? Data(readingFile: recordURL(for: feed)) else { return nil }
 
     return try? PropertyListDecoder().decode(FeedRecord.self, from: data)
   }

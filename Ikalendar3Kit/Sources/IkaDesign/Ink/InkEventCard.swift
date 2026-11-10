@@ -70,7 +70,7 @@ public struct InkEventCard: View {
     }
     .inkPanel()
     .task(id: art) {
-      artImage = art.flatMap(Image.init(contentsOf:))
+      artImage = art.flatMap(Image.init(storedFile:))
     }
     .eventAccessibility(item, writer: writer, at: now)
   }
