@@ -1,0 +1,46 @@
+{
+  "configurations" : [
+    {
+      "id" : "5C1F0A2E-3B7D-4E0B-9C61-7A2D8E4F1B01",
+      "name" : "Default",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "language" : "en",
+    "region" : "US"
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Ikalendar3.xcodeproj",
+        "identifier" : "B10000000000000000000002",
+        "name" : "Ikalendar3Tests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Ikalendar3Kit",
+        "identifier" : "IkaCoreTests",
+        "name" : "IkaCoreTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Ikalendar3Kit",
+        "identifier" : "IkaDesignTests",
+        "name" : "IkaDesignTests"
+      }
+    },
+    {
+      "target" : {
+        "containerPath" : "container:Ikalendar3Kit",
+        "identifier" : "IkaIntentsTests",
+        "name" : "IkaIntentsTests"
+      }
+    }
+  ],
+  "version" : 1
+}

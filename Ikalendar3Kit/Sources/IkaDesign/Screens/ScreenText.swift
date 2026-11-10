@@ -1,0 +1,41 @@
+//
+//  ScreenText.swift
+//  Ikalendar3
+//
+//  Copyright (c) TIANWEI ZHANG. All rights reserved.
+//
+
+import Foundation
+import IkaCore
+
+// MARK: - ScreenText
+
+/// The strings every Style's screens share, from `IkaDesign`'s `Screens` string table. The raw
+/// value is the catalog key.
+///
+/// Each Style's own strings live in its own table (`Classic`, `Ink`, `Timeline`), so parallel
+/// work on two Styles never edits one catalog file.
+public enum ScreenText: String, CaseIterable, Sendable {
+  /// "No schedule yet": the shared empty state.
+  case empty = "screen.empty"
+  /// "Updated %@", with the fetch time.
+  case fetchTime = "screen.fetchTime"
+  /// "Nothing on right now".
+  case nothingCurrent = "screen.nothingCurrent"
+  /// "Returns %@", with the time a paused Battle Mode returns.
+  case paused = "screen.paused"
+  /// "Couldn't refresh".
+  case refreshFailed = "screen.refreshFailed"
+  /// "%1$@ - %2$@", a range's start and end joined as the game joins them: a wave dash in
+  /// Japanese and Korean. Classic and Timeline join their ranges with it; Ink and the widgets
+  /// write theirs through `ScheduleFormat`, with the locale's own joiner.
+  case timeRange = "screen.timeRange"
+
+  /// The string in a text set, its placeholders filled in.
+  public func text(in language: GameLanguage, _ arguments: any CVarArg...) -> String {
+    let template = Bundle.module.localizedString(forKey: rawValue, table: "Screens", in: language)
+    return arguments.isEmpty
+      ? template
+      : String(format: template, locale: Locale(identifier: language.rawValue), arguments: arguments)
+  }
+}

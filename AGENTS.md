@@ -13,3 +13,7 @@ The five default triage labels, each label string equal to its role name. See `d
 ### Domain docs
 
 Single-context: `GLOSSARY.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+
+## Build and verify
+
+`CONTRIBUTING.md` covers the tools, `scripts/verify.sh`, the parallel worktree rules (own derived data, own simulators by UDID) and the test naming style. A ticket is done only when `scripts/verify.sh` passes in full.

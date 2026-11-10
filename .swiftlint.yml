@@ -1,0 +1,98 @@
+###
+### SwiftLint Config File for Ikalendar3
+###
+### Following _Airbnb Swift Style Guide_ [https://github.com/airbnb/swift]
+### with some minor personal adjustments.
+###
+### Copyright (c) TIANWEI ZHANG
+###
+
+excluded:
+  - build
+  - Ikalendar3Kit/.build
+  - .scratch
+
+indentation: 2
+
+### RULE SWITCHES
+
+disabled_rules:
+  - void_function_in_ternary
+  - vertical_whitespace
+  - identifier_name
+  - nesting
+  - opening_brace
+#  - comment_spacing
+  - cyclomatic_complexity
+  - statement_position
+  - large_tuple
+#  - multiple_closures_with_trailing_closure
+#  - force_cast
+#  - function_body_length
+#  - todo
+#  - valid_docs
+#  - missing_docs
+
+opt_in_rules: # some rules are only opt-in
+  - empty_count
+  - missing_docs
+
+### FORMAT OPTIONS
+
+switch_case_alignment:
+  indented_cases: true
+
+colon:
+  apply_to_dictionaries: false
+
+trailing_comma:
+  mandatory_comma: true
+
+line_length:
+  - 120 # warning
+  - 140 # error
+
+type_body_length:
+  - 1400 # warning
+  - 2000 # error
+
+function_body_length:
+  - 400 # warning
+  - 1500 # error
+
+file_length:
+  warning: 2000
+  error: 4000
+
+type_name:
+  min_length: 3 # only warning
+  max_length: # warning and error
+    warning: 60
+    error: 80
+  excluded: iPhone # excluded via string
+
+function_parameter_count:
+  warning: 7
+  error: 10
+
+custom_rules:
+  ika_core_imports_no_ui_frameworks:
+    name: "IkaCore imports no UI or system-surface framework"
+    included: /Ikalendar3Kit/Sources/IkaCore/
+    regex: "^[ \\t]*(?:@[A-Za-z_]+(?:\\([^)]*\\))?[ \\t]+)*(?:(?:public|package|internal|fileprivate|private)[ \\t]+)?import[ \\t]+(?:(?:typealias|struct|class|enum|protocol|let|var|func)[ \\t]+)?(?:SwiftUI|SwiftUICore|UIKit|AppKit|WidgetKit|ActivityKit|AppIntents|UserNotifications|BackgroundTasks)\\b"
+    message: "IkaCore is plain values only, so every target and Swift Testing can link it. Put framework code in IkaDesign, IkaIntents or a target."
+    severity: error
+  no_objcMembers:
+    name: "@objcMembers"
+    regex: "@objcMembers"
+    message: "Explicitly use @objc on each member you want to expose to Objective-C"
+    severity: error
+  no_direct_standard_out_logs:
+    name: "Writing log messages directly to standard out is disallowed"
+    regex: "(\\bprint|\\bdebugPrint|\\bdump|Swift\\.print|Swift\\.debugPrint|Swift\\.dump)\\s*\\("
+    match_kinds:
+      - identifier
+    message: "Don't commit `print(…)`, `debugPrint(…)`, or `dump(…)` as they write to standard out in release. Either log to a dedicated logging system or silence this warning in debug-only scenarios explicitly using `// swiftlint:disable:next no_direct_standard_out_logs`"
+    severity: warning
+
+reporter: "xcode" # reporter type (xcode, json, csv, checkstyle)

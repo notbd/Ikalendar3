@@ -1,0 +1,276 @@
+//
+//  PreferenceStore.swift
+//  Ikalendar3
+//
+//  Copyright (c) TIANWEI ZHANG. All rights reserved.
+//
+
+import Foundation
+import Observation
+
+// MARK: - PreferenceStore
+
+/// The user's preferences and the app's first-run state, read and written through one
+/// `UserDefaults` suite. Ship it on the App Group's suite, so the app, the widget extension and
+/// the intents on one device all see the same values; a store reads the suite once, at init,
+/// and writes a value only when it changes.
+@Observable
+final public class PreferenceStore {
+  /// The tab the iPhone app opens on.
+  public var defaultMode: ModeTab {
+    didSet {
+      guard defaultMode != oldValue else { return }
+
+      defaults.set(defaultMode.rawValue, forKey: Key.defaultMode)
+    }
+  }
+
+  /// The colour scheme the app asks for.
+  public var colorScheme: ColorSchemePreference {
+    didSet {
+      guard colorScheme != oldValue else { return }
+
+      defaults.set(colorScheme.rawValue, forKey: Key.colorScheme)
+    }
+  }
+
+  /// The look of the app's own screens.
+  public var style: Style {
+    didSet {
+      guard style != oldValue else { return }
+
+      defaults.set(style.rawValue, forKey: Key.style)
+    }
+  }
+
+  /// Minimizes the iPhone tab bar while scrolling.
+  public var shouldMinimizeTabBar: Bool {
+    didSet {
+      guard shouldMinimizeTabBar != oldValue else { return }
+
+      defaults.set(shouldMinimizeTabBar, forKey: Key.shouldMinimizeTabBar)
+    }
+  }
+
+  /// Reminds at the start of each Big Run.
+  public var isBigRunReminderOn: Bool {
+    didSet {
+      guard isBigRunReminderOn != oldValue else { return }
+
+      defaults.set(isBigRunReminderOn, forKey: Key.isBigRunReminderOn)
+    }
+  }
+
+  /// Reminds at the start of each Eggstra Work.
+  public var isEggstraWorkReminderOn: Bool {
+    didSet {
+      guard isEggstraWorkReminderOn != oldValue else { return }
+
+      defaults.set(isEggstraWorkReminderOn, forKey: Key.isEggstraWorkReminderOn)
+    }
+  }
+
+  /// Reminds at the start of each Splatfest.
+  public var isSplatfestReminderOn: Bool {
+    didSet {
+      guard isSplatfestReminderOn != oldValue else { return }
+
+      defaults.set(isSplatfestReminderOn, forKey: Key.isSplatfestReminderOn)
+    }
+  }
+
+  /// Reminds at the start of each Challenge's first window.
+  public var isChallengeReminderOn: Bool {
+    didSet {
+      guard isChallengeReminderOn != oldValue else { return }
+
+      defaults.set(isChallengeReminderOn, forKey: Key.isChallengeReminderOn)
+    }
+  }
+
+  /// The Mac window's last layout, which it reopens on.
+  public var macLayout: MacLayout {
+    didSet {
+      guard macLayout != oldValue else { return }
+
+      defaults.set(macLayout.rawValue, forKey: Key.macLayout)
+    }
+  }
+
+  /// True until the welcome screen has been shown once.
+  public var shouldShowOnboarding: Bool {
+    didSet {
+      guard shouldShowOnboarding != oldValue else { return }
+
+      defaults.set(shouldShowOnboarding, forKey: Key.shouldShowOnboarding)
+    }
+  }
+
+  /// True once the player has used the Rate row, which ends its nudge.
+  public var hasDiscoveredRating: Bool {
+    didSet {
+      guard hasDiscoveredRating != oldValue else { return }
+
+      defaults.set(hasDiscoveredRating, forKey: Key.hasDiscoveredRating)
+    }
+  }
+
+  @ObservationIgnored private let defaults: UserDefaults
+
+  /// Reads every value from `defaults`; a value never written reads as its default.
+  public init(defaults: UserDefaults) {
+    self.defaults = defaults
+    defaultMode = defaults.ikaEnum(forKey: Key.defaultMode, default: Default.defaultMode)
+    colorScheme = defaults.ikaEnum(forKey: Key.colorScheme, default: Default.colorScheme)
+    style = defaults.ikaEnum(forKey: Key.style, default: Default.style)
+    shouldMinimizeTabBar = defaults.ikaBool(forKey: Key.shouldMinimizeTabBar, default: Default.shouldMinimizeTabBar)
+    isBigRunReminderOn = defaults.ikaBool(forKey: Key.isBigRunReminderOn, default: Default.isReminderOn)
+    isEggstraWorkReminderOn = defaults.ikaBool(forKey: Key.isEggstraWorkReminderOn, default: Default.isReminderOn)
+    isSplatfestReminderOn = defaults.ikaBool(forKey: Key.isSplatfestReminderOn, default: Default.isReminderOn)
+    isChallengeReminderOn = defaults.ikaBool(forKey: Key.isChallengeReminderOn, default: Default.isReminderOn)
+    macLayout = defaults.ikaEnum(forKey: Key.macLayout, default: Default.macLayout)
+    shouldShowOnboarding = defaults.ikaBool(forKey: Key.shouldShowOnboarding, default: Default.shouldShowOnboarding)
+    hasDiscoveredRating = defaults.ikaBool(forKey: Key.hasDiscoveredRating, default: Default.hasDiscoveredRating)
+  }
+
+  /// Restores the onboarding and discovery flags (Debug Options' Reset App States) and nothing
+  /// else.
+  public func resetAppStates() {
+    shouldShowOnboarding = Default.shouldShowOnboarding
+    hasDiscoveredRating = Default.hasDiscoveredRating
+  }
+
+  /// Restores every value except the onboarding and discovery flags (Debug Options' Reset App
+  /// Preferences) and touches nothing else.
+  public func resetAppPreferences() {
+    defaultMode = Default.defaultMode
+    colorScheme = Default.colorScheme
+    style = Default.style
+    shouldMinimizeTabBar = Default.shouldMinimizeTabBar
+    isBigRunReminderOn = Default.isReminderOn
+    isEggstraWorkReminderOn = Default.isReminderOn
+    isSplatfestReminderOn = Default.isReminderOn
+    isChallengeReminderOn = Default.isReminderOn
+    macLayout = Default.macLayout
+  }
+
+  /// Both resets above (Debug Options' Reset All), and nothing else: the store holds neither the
+  /// feed cache nor its attempt records, which Debug Options must never clear, because they ship
+  /// in Release builds and a cleared record would bypass splatoon3.ink's hourly limit.
+  public func resetAll() {
+    resetAppStates()
+    resetAppPreferences()
+  }
+}
+
+// MARK: Reminder switches
+
+extension PreferenceStore {
+  /// The kinds of event whose reminder switch is on, read from and written to the four switches.
+  public var reminderKinds: Set<EventReminder.Kind> {
+    get {
+      Set(EventReminder.Kind.allCases.filter { self[reminderSwitch: $0] })
+    }
+    set {
+      for kind in EventReminder.Kind.allCases {
+        self[reminderSwitch: kind] = newValue.contains(kind)
+      }
+    }
+  }
+
+  /// The kinds whose switch is on as the suite holds them now, whichever store on it wrote them
+  /// last. A store reads the suite once, at init, so one that outlives a write by another store,
+  /// such as an intent's while the player flips a switch in Settings, reads these, not
+  /// `reminderKinds`.
+  public var storedReminderKinds: Set<EventReminder.Kind> {
+    Set(EventReminder.Kind.allCases.filter { kind in
+      defaults.ikaBool(forKey: Key.reminderSwitch(of: kind), default: Default.isReminderOn)
+    })
+  }
+
+  /// The switch of one kind.
+  private subscript(reminderSwitch kind: EventReminder.Kind) -> Bool {
+    get {
+      switch kind {
+        case .bigRun: isBigRunReminderOn
+        case .eggstraWork: isEggstraWorkReminderOn
+        case .splatfest: isSplatfestReminderOn
+        case .challenge: isChallengeReminderOn
+      }
+    }
+    set {
+      switch kind {
+        case .bigRun: isBigRunReminderOn = newValue
+        case .eggstraWork: isEggstraWorkReminderOn = newValue
+        case .splatfest: isSplatfestReminderOn = newValue
+        case .challenge: isChallengeReminderOn = newValue
+      }
+    }
+  }
+}
+
+// MARK: PreferenceStore.Key
+
+extension PreferenceStore {
+  /// On-disk keys, new for ikalendar 3. Frozen once shipped: renaming one resets that value for
+  /// every updating user. Pinned by `PreferenceStoreTests`.
+  enum Key {
+    static let defaultMode = "pref.default_mode"
+    static let colorScheme = "pref.color_scheme"
+    static let style = "pref.style"
+    static let shouldMinimizeTabBar = "pref.should_minimize_tab_bar"
+    static let isBigRunReminderOn = "pref.reminder.big_run"
+    static let isEggstraWorkReminderOn = "pref.reminder.eggstra_work"
+    static let isSplatfestReminderOn = "pref.reminder.splatfest"
+    static let isChallengeReminderOn = "pref.reminder.challenge"
+    static let macLayout = "pref.mac_layout"
+
+    static let shouldShowOnboarding = "state.should_show_onboarding"
+    static let hasDiscoveredRating = "state.has_discovered_rating"
+
+    /// The key of `kind`'s reminder switch.
+    static func reminderSwitch(of kind: EventReminder.Kind) -> String {
+      switch kind {
+        case .bigRun: isBigRunReminderOn
+        case .eggstraWork: isEggstraWorkReminderOn
+        case .splatfest: isSplatfestReminderOn
+        case .challenge: isChallengeReminderOn
+      }
+    }
+  }
+}
+
+// MARK: PreferenceStore.Default
+
+extension PreferenceStore {
+  /// The values before the first write and after a reset.
+  private enum Default {
+    static let defaultMode: ModeTab = .regularBattle
+    static let colorScheme: ColorSchemePreference = .dark
+    static let style: Style = .ink
+    static let shouldMinimizeTabBar = false
+    static let isReminderOn = false
+    static let macLayout: MacLayout = .columns
+
+    static let shouldShowOnboarding = true
+    static let hasDiscoveredRating = false
+  }
+}
+
+// MARK: - UserDefaults
+
+extension UserDefaults {
+  /// Reads a value stored as its `String` raw value; a missing or unknown value reads as the
+  /// default.
+  fileprivate func ikaEnum<T: RawRepresentable>(forKey key: String, default defaultValue: T) -> T
+    where T.RawValue == String
+  {
+    string(forKey: key).flatMap(T.init(rawValue:)) ?? defaultValue
+  }
+
+  /// Reads a `Bool` with a presence check: `bool(forKey:)` reads a missing key as false, which
+  /// would break a default of true before the first write.
+  fileprivate func ikaBool(forKey key: String, default defaultValue: Bool) -> Bool {
+    object(forKey: key) as? Bool ?? defaultValue
+  }
+}

@@ -4,7 +4,7 @@
 # Planning map, research notes and Nintendo reference material: never public
 /.scratch/
 
-# Claude Code
+# Local tool settings
 .claude/worktrees/
 .claude/settings.local.json
 
@@ -15,11 +15,26 @@ build/
 *.xcscmblueprint
 *.xccheckout
 
+# Python bytecode (the asset script)
+__pycache__/
+
 # Swift Package Manager
 .build/
+.swiftpm/
 SourcePackages/
+
+# Font files are never committed; the asset script writes them to a git-ignored folder
+/IkaResources/Fonts/
+*.ttf
+*.otf
+*.ttc
+*.woff
+*.woff2
 
 # App packaging
 *.ipa
 *.dSYM.zip
 *.dSYM
+
+# Coverage data a binary writes when it runs outside Xcode
+*.profraw
