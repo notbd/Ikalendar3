@@ -9,7 +9,7 @@
 
 ## Verify
 
-`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, the wording check (`scripts/check-wording.sh`), the string catalog check, package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, each checked for fixture files and for one resource framework per app, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
+`scripts/verify.sh` runs every check CI runs, in the same order, and stops at the first failure: SwiftFormat and SwiftLint, the wording check (`scripts/check-wording.sh`), the string catalog check, the hosts check (`scripts/check-hosts.sh`: shipped code can contact only `splatoon3.ink` and `assets.splatoon3.ink`, and every other address is a listed link the player opens), package tests on macOS, unsigned Debug builds for the iOS simulator, macOS and the watchOS simulator, unsigned Release builds for an iOS device (with the watch app) and macOS, each checked for fixture files, for one resource framework per app and for a privacy manifest that declares each required-reason API its binaries use, then the iOS simulator test run. `scripts/verify.sh --help` lists what each step proves. Every ticket ends with it passing in full.
 
 | Option | Environment variable | Default |
 |---|---|---|
@@ -35,7 +35,8 @@ Several checkouts can verify at the same time if each has its own derived data a
 ## Faster loops
 
 ```sh
-# Package tests on the Mac, in seconds
+# Package tests on the Mac, in seconds. The first run after a new resource file can test an old
+# copy of the resources and read a string's key; run it again (verify's package test step says why).
 swift test --package-path Ikalendar3Kit
 
 # App and package tests on the Mac (iOS-only code is not compiled there)
@@ -136,10 +137,11 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 
 ## Fonts
 
-- `scripts/assets.sh` also builds SplatNet 3's fonts into `IkaResources/Fonts`, which git ignores: one file per face, named for the face and carrying it as its PostScript name, as `FontFace` expects (`Splatoon1`, `Splatoon1KRko`, `Splatoon1JP`, `Splatoon1CHzh`, `Splatoon1TWzh` and the same five for `Splatoon2`). The resource framework ships whatever faces are there (Project layout). `scripts/assets.sh --only fonts` builds only the fonts; a release build runs it first. CI and the verify script never run it.
+- `scripts/assets.sh` also builds SplatNet 3's fonts into `IkaResources/Fonts`, which git ignores: one file per face, named for the face and carrying it as its PostScript name, as `FontFace` expects (`Splatoon1`, `Splatoon1KRko`, `Splatoon1JP`, `Splatoon1CHzh`, `Splatoon1TWzh` and the same five for `Splatoon2`). The resource framework ships whatever faces are there (Project layout). `scripts/assets.sh --only fonts` builds only the fonts. CI and the verify script never run it.
 - Sources: the manifest's `fonts` list SplatNet 3's woff subsets in splatoon3.ink's repository at the commit its `repo` base pins, each with its sha256. `KRko-level2` is left out: its Hangul outlines are empty. If splatoon3.ink drops the files, point the sources at Nintendo's host (`https://api.lp1.av5ja.srv.nintendo.net/static/media/`) and keep the hashes: Nintendo serves the same bytes under names with a content hash, which SplatNet 3's main CSS lists.
 - The script unpacks each woff to plain TrueType or OpenType, merges a face's subsets with fontTools and sets the PostScript name; Fontworks' Rowdy subsets are CID-keyed, so they become name-keyed first. It stops if any character's outline or advance differs from its subset's. Merging drops the vertical-origin table (`VORG`), which only vertical text uses.
 - A face whose file is missing falls back to the system font for its script, so a checkout without fonts builds and runs. `FontManifestTests` keeps the manifest's faces equal to `FontFace.allCases` without needing a font file.
+- Before a release is archived, `scripts/check-release-fonts.sh` builds the fonts, rebuilds the Release products from scratch (iOS with the watch app, and macOS) and fails unless the app, the watch app and the Mac app each carry every face of the manifest in their resource framework and each widget extension resolves its host app's copy through its run path. A release without fonts would pass every other check and set its text in the system font. It needs network and takes several minutes; `--derived-data` picks the build folder (default `build/ReleaseCheck`).
 
 ## Tests
 

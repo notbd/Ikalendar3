@@ -1,0 +1,76 @@
+#!/usr/bin/env bash
+#
+# Fails when shipped code could contact a host other than splatoon3.ink and assets.splatoon3.ink.
+# Shipped code is every tracked file in the four product folders and the package's sources, except
+# the Debug-only fixture module. It proves four things:
+#
+#   1  only `URLSessionTransport.swift` names a networking API (URLSession, Network, WebKit,
+#      Safari views, AsyncImage, sockets), so every request goes through an `HTTPTransport`
+#   2  only `FeedClient.swift` sends on a transport, and its one `send(to:)` refuses any address
+#      `Source.serves` does not accept
+#   3  `Source.hosts` is exactly the two hosts, so the feed account's avatar on Nintendo's host
+#      (an address the feed carries) is refused like any other
+#   4  every address written in shipped code is on the two hosts or is a link the player opens in
+#      the browser, Mail or the App Store, listed below with what opens it
+#
+# Usage: scripts/check-hosts.sh
+#
+# scripts/verify.sh runs it.
+
+set -Eeuo pipefail
+
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+readonly FEED_HOSTS='"splatoon3.ink", "assets.splatoon3.ink"'
+readonly TRANSPORT=Ikalendar3Kit/Sources/IkaCore/Network/URLSessionTransport.swift
+readonly CLIENT=Ikalendar3Kit/Sources/IkaCore/Network/FeedClient.swift
+readonly SOURCE=Ikalendar3Kit/Sources/IkaCore/Network/Feed.swift
+
+# Hosts of links the player opens; the app never fetches from them.
+readonly LINK_HOSTS=(
+  'ikalendar.app'         # About: website and privacy policy (also named in the User-Agent)
+  'twitter.com'           # About: the developer's profile
+  'apps.apple.com'        # About: App Store pages of ikalendar 3 and ikalendar 2
+  'github.com'            # About and Credits: source code of ikalendar 3 and splatoon3.ink
+  'www.nintendo.com'      # Credits: Splatoon 3's regional sites
+  'splatoon.nintendo.com' # Credits: Splatoon 3's global site
+)
+
+readonly SHIPPED=(Ikalendar3 Ikalendar3Widgets Ikalendar3Watch Ikalendar3WatchWidgets IkaResources
+  Ikalendar3Kit/Sources ':!Ikalendar3Kit/Sources/IkaFixtures')
+
+problems=()
+
+# Prints `git grep` matches of a Perl pattern in shipped files, or nothing.
+shipped_matches() {
+  local status=0
+  git grep -I -n -P "$1" -- "${SHIPPED[@]}" || status=$?
+  ((status <= 1)) || exit "$status"
+}
+
+network=$(shipped_matches '\b(URLSession|URLSessionConfiguration|NSURLConnection|CFStream\w*|NW(Connection|PathMonitor|Browser|Listener|Endpoint)|WKWebView|SFSafariViewController|ASWebAuthenticationSession|AsyncImage|getaddrinfo|socket)\b|^import (Network|WebKit|SafariServices)\b' \
+  | grep -v "^$TRANSPORT:" || true)
+[[ -z $network ]] || problems+=("Networking APIs outside $TRANSPORT:"$'\n'"$network")
+
+senders=$(shipped_matches '\.send\(' | grep -v "^$CLIENT:" || true)
+[[ -z $senders ]] || problems+=("Transport sends outside $CLIENT:"$'\n'"$senders")
+grep -q 'guard Source.serves(url) else' "$CLIENT" \
+  || problems+=("$CLIENT no longer refuses addresses off the two hosts before it sends.")
+grep -q "static let hosts: Set<String> = \[$FEED_HOSTS\]" "$SOURCE" \
+  || problems+=("Source.hosts in $SOURCE is not exactly [$FEED_HOSTS].")
+
+# Every address in shipped files, as "<file>:<line>: <host>". The plist DTD is a document type,
+# never fetched.
+addresses=$(shipped_matches 'https?://' | grep -v 'apple.com/DTDs/PropertyList' \
+  | perl -ne 'my ($where) = /^([^:]+:\d+):/; print "$where: $1\n" while m{https?://([A-Za-z0-9.-]+)}g')
+allowed=$(printf '%s\n' "${FEED_HOSTS//[\", ]/$'\n'}" "${LINK_HOSTS[@]}" | grep -v '^$')
+unlisted=$(ALLOWED="$allowed" awk 'BEGIN { n = split(ENVIRON["ALLOWED"], list, "\n"); for (i = 1; i <= n; i++) ok[list[i]] = 1 }
+  !($2 in ok)' <<<"$addresses")
+[[ -z $unlisted ]] || problems+=("Addresses on hosts that are neither the two feed hosts nor a listed link:"$'\n'"$unlisted")
+
+if ((${#problems[@]} > 0)); then
+  printf '%s\n\n' "${problems[@]}" >&2
+  exit 1
+fi
+
+printf 'Requests only to %s; links to %s\n' "${FEED_HOSTS//\"/}" "$(IFS=,; printf '%s' "${LINK_HOSTS[*]}" | sed 's/,/, /g')"
