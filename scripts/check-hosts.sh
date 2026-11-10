@@ -2,16 +2,21 @@
 #
 # Fails when shipped code could contact a host other than splatoon3.ink and assets.splatoon3.ink.
 # Shipped code is every tracked file in the four product folders and the package's sources, except
-# the Debug-only fixture module. It proves four things:
+# the Debug-only fixture module. It proves five things:
 #
 #   1  only `URLSessionTransport.swift` names a networking API (URLSession, Network, WebKit,
 #      Safari views, AsyncImage, sockets), so every request goes through an `HTTPTransport`
 #   2  only `FeedClient.swift` sends on a transport, and its one `send(to:)` refuses any address
 #      `Source.serves` does not accept
-#   3  `Source.hosts` is exactly the two hosts, so the feed account's avatar on Nintendo's host
+#   3  the transport's session follows a redirect only to an address `Source.serves` accepts
+#      (`RedirectGuard`), so no answer takes a request anywhere else
+#   4  `Source.hosts` is exactly the two hosts, so the feed account's avatar on Nintendo's host
 #      (an address the feed carries) is refused like any other
-#   4  every address written in shipped code is on the two hosts or is a link the player opens in
+#   5  every address written in shipped code is on the two hosts or is a link the player opens in
 #      the browser, Mail or the App Store, listed below with what opens it
+#
+# Being static, it proves the code's shape; the package tests run the refusals
+# (URLSessionTransportTests the redirects, SplatfestArtTests an address off the two hosts).
 #
 # Usage: scripts/check-hosts.sh
 #
@@ -56,6 +61,9 @@ senders=$(shipped_matches '\.send\(' | grep -v "^$CLIENT:" || true)
 [[ -z $senders ]] || problems+=("Transport sends outside $CLIENT:"$'\n'"$senders")
 grep -q 'guard Source.serves(url) else' "$CLIENT" \
   || problems+=("$CLIENT no longer refuses addresses off the two hosts before it sends.")
+{ grep -q 'delegate: RedirectGuard()' "$TRANSPORT" \
+  && grep -q 'guard let target = request.url, Source.serves(target) else' "$TRANSPORT"; } \
+  || problems+=("$TRANSPORT no longer refuses redirects off the two hosts.")
 grep -q "static let hosts: Set<String> = \[$FEED_HOSTS\]" "$SOURCE" \
   || problems+=("Source.hosts in $SOURCE is not exactly [$FEED_HOSTS].")
 
