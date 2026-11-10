@@ -161,9 +161,10 @@ public struct FixtureRun: Sendable {
   public let client: FeedClient
   /// The clock: running from the instant, or the system's for a rebased launch.
   public let timeSource: any TimeSource
-  /// The time zone the process writes times in, or `nil` for the device's: the launch's own, or
-  /// for a rebased launch one that the whole-hour move shifts, so each time reads as the
-  /// recording does in the launch's.
+  /// The time zone the screens write times in, which each root sets in SwiftUI's environment, or
+  /// `nil` for the device's: the launch's own, or for a rebased launch one that the whole-hour
+  /// move shifts, so each time reads as the recording does in the launch's. Reminders and Siri
+  /// answers keep the device's.
   public let timeZone: TimeZone?
 }
 
@@ -238,7 +239,7 @@ extension FixtureLaunch {
   static func zone(reading zone: TimeZone, at instant: Date, movedBy offset: Duration) -> TimeZone {
     let day = 86400
     let shift = (zone.secondsFromGMT(for: instant) - Int(offset.components.seconds)) % day
-    // From -12 to +12 hours, as every fixed-offset zone the formatters write.
+    // The same shift modulo a day, written between -12 and +12 hours.
     let seconds = (shift + day + 12 * 3600) % day - 12 * 3600
     return TimeZone(secondsFromGMT: seconds) ?? zone
   }
