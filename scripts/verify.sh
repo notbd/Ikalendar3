@@ -11,7 +11,9 @@
 #   7-9   unsigned Debug builds: iOS Simulator, macOS, watchOS Simulator
 #   10-11 unsigned Release builds: iOS device (with the watch app), macOS, with no fixture file
 #         or fixture code, the resource framework once per app, no font file outside it, and a
-#         privacy manifest declaring each required-reason API a binary uses
+#         privacy manifest declaring each required-reason API a binary uses; on macOS, the app and
+#         its widget extension also carry IkaIntents' names in every language (step 12's
+#         IntentTablesTests read the iOS ones)
 #   12    the iOS Simulator test run
 #
 # Any compiler or build warning fails the step that shows it. Step 12 also fails when a test
@@ -291,6 +293,32 @@ expect_no_fixtures() {
   [[ -z $holders ]] || fail "Fixture code or names in:$holders"
 }
 
+# Fails unless each macOS host bundle after $1 (the app, an extension) carries `IkaIntents`' table:
+# in every language of the package's own copy in bundle $1, a `Localizable.strings` with the same
+# text for each of its keys. The system looks intent and parameter names up in the host's own
+# table, so without the copy the widget editor and Shortcuts show the English keys
+# (CONTRIBUTING.md).
+expect_intent_tables() {
+  local own=$1/Contents/Resources lproj host table differing problems=""
+  shift
+  [[ -n $(find "$own" -path '*.lproj/Localizable.strings') ]] || fail "No Localizable table in $own"
+  for host in "$@"; do
+    for lproj in "$own"/*.lproj; do
+      table=$host/Contents/Resources/${lproj##*/}/Localizable.strings
+      if [[ ! -f $table ]]; then
+        problems+=$'\n'"${table#"$derived_data"/Build/Products/}: missing"
+        continue
+      fi
+      differing=$(jq -r -n --slurpfile own <(plutil -convert json -o - "$lproj/Localizable.strings") \
+        --slurpfile copy <(plutil -convert json -o - "$table") \
+        '$own[0] | to_entries[] | select($copy[0][.key] != .value) | .key' | paste -sd ',' -)
+      [[ -z $differing ]] || problems+=$'\n'"${table#"$derived_data"/Build/Products/}: $differing"
+    done
+  done
+  [[ -z $problems ]] \
+    || fail "Tables without IkaIntents' names (the target's Resources must list IkaIntents' Localizable.xcstrings):$problems"
+}
+
 # Required-reason API categories (Apple's NSPrivacyAccessedAPIType list) and the symbols or
 # strings by which a binary uses one: an imported symbol, a selector or key name, or Swift type
 # metadata.
@@ -427,7 +455,9 @@ expect_resource_copies "$mac_app" 1
 [[ -z $(find "$mac_app" -name 'Ikalendar3Watch*') ]] || fail "The macOS app embeds the watch app: $mac_app"
 expect_no_fixtures "$mac_app"
 expect_privacy_manifests "$mac_app"
-step_done "widget extension and resource framework embedded, no watch app, no fixture file or code, privacy manifests"
+expect_intent_tables "$mac_app/Contents/Resources/Ikalendar3Kit_IkaIntents.bundle" \
+  "$mac_app" "$mac_app/Contents/PlugIns/Ikalendar3Widgets.appex"
+step_done "widget extension and resource framework embedded, no watch app, no fixture file or code, privacy manifests, IkaIntents' names"
 
 step "Test, iOS Simulator"
 wait "$boot_pid" || fail "The iOS simulator did not boot." "$VERIFY_DIR/boot-ios-simulator.log"
