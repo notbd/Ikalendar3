@@ -345,7 +345,18 @@ printf 'watchOS simulator: %s, watchOS %s (%s)\n\n' "$name" "$os" "$watch_udid"
 started=$SECONDS
 
 step "SwiftFormat"
-run_logged swiftformat swiftformat --lint .
+# SwiftFormat allows each rule about a second per file and has no option to change that, so on a
+# loaded machine (a CI runner linting every file at once) a rule can time out in a file with
+# nothing wrong. It caches the files that passed, so another run takes only the ones that timed
+# out. Anything else in its output fails at once.
+swiftformat_log=$VERIFY_DIR/swiftformat.log
+for attempt in 1 2 3; do
+  if swiftformat --lint . >"$swiftformat_log" 2>&1; then break; fi
+  other_findings=$(strip_colors <"$swiftformat_log" | grep -E '(error|warning):' | grep -v ' rule timed out in ' || true)
+  if [[ -n $other_findings || $attempt == 3 ]]; then
+    fail "$(diagnostics "$swiftformat_log")" "$swiftformat_log"
+  fi
+done
 step_done
 
 step "SwiftLint"
