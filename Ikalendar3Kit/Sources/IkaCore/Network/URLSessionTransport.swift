@@ -21,7 +21,7 @@ public struct URLSessionTransport: HTTPTransport {
   /// each would stay in memory until the process ends.
   static private let shared: URLSession = session(with: .ephemeral)
 
-  let session: URLSession
+  private let session: URLSession
 
   /// A transport on the process's one session.
   public init() {

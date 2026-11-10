@@ -242,6 +242,16 @@ struct PreferenceStoreTests {
     #expect(copy.storedReminderKinds == [.eggstraWork])
   }
 
+  @Test(arguments: EventReminder.Kind.allCases)
+  func `A switch one store writes is the kind another store reads from the suite`(kind: EventReminder.Kind) {
+    let copy: PreferenceStore = .init(defaults: defaults)
+    let settings: PreferenceStore = .init(defaults: defaults)
+
+    settings.reminderKinds = [kind]
+
+    #expect(copy.storedReminderKinds == [kind])
+  }
+
   @Test
   func `Five tabs in tab bar order`() {
     #expect(ModeTab.allCases == [.regularBattle, .anarchy, .xBattle, .challenge, .salmonRun])

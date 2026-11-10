@@ -20,7 +20,7 @@ Requires iOS, iPadOS, macOS and watchOS 26 or later.
 
 ## Privacy
 
-ikalendar 3 collects no data. It contacts only `splatoon3.ink` (the schedules) and `assets.splatoon3.ink` (Splatfest art), and its requests carry the app's name, version and contact address but no identifier. Settings and cached schedules stay on the device. Links in About and Credits open in the browser, Mail or the App Store. `scripts/check-hosts.sh` fails the build checks if any code could contact another host.
+ikalendar 3 collects no data. It contacts only `splatoon3.ink` (the schedules) and `assets.splatoon3.ink` (Splatfest art), and its requests carry the app's name, version and contact address but no identifier. Settings and cached schedules stay on the device. Links in About and Credits open in the browser, Mail or the App Store. `scripts/check-hosts.sh` fails the build checks if any code names a networking API, a reader that takes a URL, or another host.
 
 ## Building
 
