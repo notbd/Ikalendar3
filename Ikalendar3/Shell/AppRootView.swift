@@ -14,11 +14,16 @@ import SwiftUI
 /// The app's root: the iPhone tabs, on iPad the layout its window's size and width class call for
 /// (`WindowLayout`), or on the Mac the view the player picked (`MacWindowView`), around them what
 /// every layout shares: Settings, the event sheet, the colour scheme, the refresh haptic and the
-/// failed-refresh toast, and over them the welcome screen while the preferences ask for it.
+/// failed-refresh toast. While the preferences ask for the welcome screen, it shows instead of the
+/// layout.
 ///
-/// The welcome screen covers the schedules while the first load runs silently behind it: no
-/// refresh haptic and no toast until Get Started. With no network and no cache, the shared empty
-/// state shows after it, and the next activation or a pull to refresh tries again.
+/// The first load runs silently while the welcome screen shows (the scene's effects run it, not
+/// the layout): no refresh haptic and no toast until Get Started. The layout is not built until
+/// then, so VoiceOver, Full Keyboard Access, the Tab key and the Mac toolbar reach nothing but the
+/// welcome screen; the layout appears at once under it as it fades. The sheets hang on the root,
+/// so Settings stays open when Debug Options shows the welcome screen again. With no network and
+/// no cache, the shared empty state shows after it, and the next activation or a pull to refresh
+/// tries again.
 ///
 /// The layouts share one selection in `AppStatus`: a sidebar pick selects its tab and a tab or
 /// menu choice moves the sidebar, so a window that crosses a layout boundary shows the player's
@@ -32,17 +37,19 @@ struct AppRootView: View {
     @Bindable var status = status
 
     ZStack {
-      layout
-        .settingsPresentation(isPresented: $status.isSettingsPresented)
-        .eventSheetPresentation(item: $status.presentedEvent)
-        .refreshFeedback(isSilent: preferences.shouldShowOnboarding)
-
       if preferences.shouldShowOnboarding {
         OnboardingView()
           .zIndex(1)
           .transition(.opacity)
       }
+      else {
+        layout
+          .transition(.identity)
+      }
     }
+    .settingsPresentation(isPresented: $status.isSettingsPresented)
+    .eventSheetPresentation(item: $status.presentedEvent)
+    .refreshFeedback(isSilent: preferences.shouldShowOnboarding)
     .animation(.default, value: preferences.shouldShowOnboarding)
     .appColorScheme(preferences.colorScheme)
   }

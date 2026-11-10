@@ -12,8 +12,8 @@ import SwiftUI
 // MARK: - OnboardingView
 
 /// ikalendar 2's welcome screen with the new name, and no other page: the icon and title float in,
-/// the icon bounces now and then, and Get Started closes it for good. It covers the schedules on
-/// first launch while the first load runs behind it.
+/// the icon bounces now and then, and Get Started closes it for good. It shows instead of the
+/// schedules on first launch while the first load runs (`AppRootView`).
 ///
 /// Under Reduce Motion the entrance only fades in, and the bounce and the button's pulse stop.
 struct OnboardingView: View {
