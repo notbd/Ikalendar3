@@ -31,7 +31,7 @@ struct AppServices {
   let status: AppStatus
   #if DEBUG
   /// The time zone a fixture launch writes times in, or `nil` for the device's.
-  var timeZone: TimeZone?
+  private(set) var timeZone: TimeZone?
   #endif
 
   /// The engine with its effects shell, the preferences on `defaults`, a clock reading

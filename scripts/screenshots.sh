@@ -189,9 +189,10 @@ restore_simulator() {
   [[ ! -f $folder/booted ]] || xcrun simctl boot "$udid" || return 1
 }
 
-# Puts back every borrowed simulator; one that fails keeps its saved folder and says where.
+# Puts back every borrowed simulator; one that fails keeps its saved folder and says where, and
+# makes this fail.
 restore_borrowed() {
-  local entry udid bundle
+  local entry udid bundle failed=0
   for entry in "${borrowed[@]+"${borrowed[@]}"}"; do
     read -r udid bundle <<<"$entry"
     if restore_simulator "$udid" "$bundle"; then
@@ -199,9 +200,11 @@ restore_borrowed() {
       printf 'Put simulator %s back as it was\n' "$udid"
     else
       printf 'error: simulator %s is not as it was; what it was is saved in %s\n' "$udid" "$BORROWED/$udid" >&2
+      failed=1
     fi
   done
   rmdir "$BORROWED" 2>/dev/null || true
+  return "$failed"
 }
 
 # MARK: Cleanup
@@ -211,15 +214,19 @@ mac_pid=""
 readonly MAC_SUITE="ikalendar3-screenshots-$(basename "$ROOT")"
 readonly MAC_DATA="$output/.mac-data"
 
+# Ends the run with its own status, or with 1 when a borrowed simulator could not be put back, so
+# a run that saved every screenshot but left a simulator changed does not pass.
 cleanup() {
+  local status=$?
   [[ -z $mac_pid ]] || kill "$mac_pid" 2>/dev/null || true
-  restore_borrowed
+  restore_borrowed || status=1
   for udid in "${created_simulators[@]+"${created_simulators[@]}"}"; do
     xcrun simctl shutdown "$udid" >/dev/null 2>&1 || true
     xcrun simctl delete "$udid" >/dev/null 2>&1 || true
   done
   command rm -rf "$MAC_DATA"
   defaults delete "$MAC_SUITE" >/dev/null 2>&1 || true
+  exit "$status"
 }
 trap cleanup EXIT
 

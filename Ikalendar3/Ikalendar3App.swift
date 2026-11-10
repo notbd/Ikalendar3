@@ -128,7 +128,8 @@ struct Ikalendar3App: App {
 ///   a run whose window was closed (the run ended without a quit, such as a crash or a force quit,
 ///   or the player keeps windows when quitting) would otherwise open none, only the menu bar
 ///   entry; `defaultLaunchBehavior(.presented)` on the `Window`, alone or with
-///   `restorationBehavior(.disabled)`, does not change that.
+///   `restorationBehavior(.disabled)`, does not change that. The window's frame still comes back:
+///   AppKit autosaves it in the defaults, outside the restored state.
 /// - The app keeps running in the menu bar after its window closes, so the menu bar window and the
 ///   periodic refresh stay; with a single `Window` scene, SwiftUI would quit the app instead.
 final class MacAppDelegate: NSObject, NSApplicationDelegate {

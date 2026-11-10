@@ -29,7 +29,7 @@ struct WatchServices {
   let clock: AppClock
   #if DEBUG
   /// The time zone a fixture launch writes times in, or `nil` for the device's.
-  var timeZone: TimeZone?
+  private(set) var timeZone: TimeZone?
   #endif
 
   /// The engine with its effects shell, and a clock reading `timeSource`.
