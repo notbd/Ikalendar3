@@ -23,11 +23,12 @@
 # each image's pixel size against the App Store size it targets.
 #
 # It creates its own simulators of App Store sizes and deletes them when it ends. A simulator
-# passed by UDID is used instead and left as it was found: its languages, appearance, status bar
-# override, the iPad's multitasking setting, the App Group container as the installed app found
-# it, and whether it was booted. One that was booted restarts at the end, so its languages apply.
-# The app it installs stays installed. The Mac app keeps its data in the output folder and a
-# defaults suite of its own, both removed at the end.
+# passed by UDID is used instead and left as it was found: its languages, appearance, the iPad's
+# multitasking setting, the App Group container as the installed app found it, and whether it was
+# booted. One that was booted restarts at the end, so its languages apply. Its status bar goes
+# back to the system's; a status bar override it had before is printed, not put back. The app it
+# installs stays installed. The Mac app keeps its data in the output folder and a defaults suite
+# of its own, both removed at the end.
 #
 # Usage: scripts/screenshots.sh [--languages "en ja ..."] [--output PATH] [--derived-data PATH]
 #                               [--iphone UDID] [--ipad UDID] [--watch UDID] [--skip-build]
