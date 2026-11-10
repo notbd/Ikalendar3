@@ -375,13 +375,14 @@ launch() {
 }
 
 # Launches the Mac app with the arguments that follow, its window `MAC_WINDOW` points, and waits
-# for that window. Sets `mac_pid`, `mac_window` and `mac_launched`, the time of the launch.
+# for that window. Sets `mac_pid`, `mac_window` and `mac_launched`, the time of the launch. The
+# arguments that follow go last, so an option without a value among them ends the list.
 launch_mac() {
   [[ -z $mac_pid ]] || { kill "$mac_pid" 2>/dev/null || true; sleep 1; }
   mkdir -p "$MAC_DATA"
   mac_launched=$(date '+%Y-%m-%d %H:%M:%S')
-  open -n -g "$MAC_APP" --args "$@" --data-folder "$MAC_DATA" --defaults-suite "$MAC_SUITE" \
-    --window-size "$MAC_WINDOW" -ApplePersistenceIgnoreState YES
+  open -n -g "$MAC_APP" --args --data-folder "$MAC_DATA" --defaults-suite "$MAC_SUITE" \
+    --window-size "$MAC_WINDOW" "$@"
   mac_pid=""
   mac_window=""
   for _ in $(seq 40); do
@@ -444,6 +445,9 @@ log show --start "$mac_launched" --style compact \
 
 # MARK: Capture
 
+# Options without a value (`--fixture-rebase`, `--landscape`) come last in every launch: the app
+# reads its arguments as option and value pairs, and on the Mac a word left over opens no main
+# window (CONTRIBUTING.md).
 for language in $languages; do
   folder="$output/$language"
   command rm -rf "$folder"
@@ -464,8 +468,8 @@ for language in $languages; do
   shot 02-iphone-salmon-run salmon_run "$NORMAL_DAY"
   shot 03-iphone-splatfest regular_battle "$SPLATFEST"
   shot 04-iphone-challenge challenge "$BIG_RUN_DAY"
-  shot 05-iphone-widgets regular_battle "$NORMAL_DAY" --fixture-rebase --showcase widgets
-  shot 06-iphone-live-activity regular_battle "$NORMAL_DAY" --fixture-rebase --showcase live-activity
+  shot 05-iphone-widgets regular_battle "$NORMAL_DAY" --showcase widgets --fixture-rebase
+  shot 06-iphone-live-activity regular_battle "$NORMAL_DAY" --showcase live-activity --fixture-rebase
 
   # iPad: columns in landscape, the sidebar with a detail in portrait, a running Splatfest, the
   # Home Screen widgets.
@@ -487,7 +491,7 @@ for language in $languages; do
   pad_shot 07-ipad-columns regular_battle "$NORMAL_DAY" --landscape
   pad_shot 08-ipad-sidebar salmon_run "$NORMAL_DAY"
   pad_shot 09-ipad-splatfest regular_battle "$SPLATFEST"
-  pad_shot 10-ipad-widgets regular_battle "$NORMAL_DAY" --fixture-rebase --showcase widgets
+  pad_shot 10-ipad-widgets regular_battle "$NORMAL_DAY" --showcase widgets --fixture-rebase
 
   # Mac: Columns, Overview, the menu bar window with desktop widgets.
   mac_shot() {
@@ -504,7 +508,7 @@ for language in $languages; do
   }
   mac_shot 11-mac-columns "$NORMAL_DAY" -pref.mac_layout columns
   mac_shot 12-mac-overview "$BIG_RUN_DAY" -pref.mac_layout overview
-  mac_shot 13-mac-menu-bar "$NORMAL_DAY" --fixture-rebase --showcase menu-bar
+  mac_shot 13-mac-menu-bar "$NORMAL_DAY" --showcase menu-bar --fixture-rebase
 
   # Apple Watch: the Now page, a Mode page, the complications.
   watch_shot() {
@@ -517,7 +521,7 @@ for language in $languages; do
   set_device_language "$watch" "$language"
   watch_shot 14-watch-now
   watch_shot 15-watch-mode-page --mode-page salmonRun
-  watch_shot 16-watch-complications --fixture-rebase --showcase complications
+  watch_shot 16-watch-complications --showcase complications --fixture-rebase
 done
 
 printf 'Saved 16 screenshots for each of: %s\nin %s\n' "$languages" "$output"

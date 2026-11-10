@@ -50,9 +50,6 @@ struct Ikalendar3App: App {
       // Named for the app, not the symbol, so VoiceOver reads the app's name.
       Image(systemName: "calendar")
         .accessibilityLabel(Text(verbatim: Self.name))
-        #if DEBUG
-        .debugOpeningMainWindow()
-        #endif
     }
     .menuBarExtraStyle(.window)
 

@@ -58,30 +58,6 @@ extension View {
 }
 
 #if os(macOS)
-extension View {
-  /// Opens the main window once this view appears, when the launch sizes it (`--window-size`), for
-  /// the screenshot script. A launch whose arguments leave a word over opens no main window, only
-  /// the menu bar entry, whose label this modifies. The arguments are read as option and value
-  /// pairs, so an option that takes no value, followed by one that takes a value, leaves the
-  /// second one's value over: `--fixture-rebase --showcase menu-bar` leaves `menu-bar`. Opening a
-  /// window that is open brings it forward.
-  func debugOpeningMainWindow() -> some View {
-    modifier(MainWindowOpener())
-  }
-}
-
-/// Opens the main window when the launch sizes it.
-private struct MainWindowOpener: ViewModifier {
-  @Environment(\.openWindow) private var openWindow
-
-  func body(content: Content) -> some View {
-    content.task {
-      guard DebugWindow.size() != nil else { return }
-
-      openWindow(id: Ikalendar3App.mainWindowID)
-    }
-  }
-}
 
 // MARK: - DebugWindowReader
 
