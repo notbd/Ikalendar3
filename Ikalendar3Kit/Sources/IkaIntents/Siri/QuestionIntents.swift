@@ -25,20 +25,29 @@ public protocol QuestionIntent: AppIntent {
 
 /// Where a question intent's answer comes from: a run of the effects shell, so a fetch Siri
 /// triggers also reloads widgets, rebuilds reminders and re-arms Tracking, then `SiriAnswers` over
-/// the snapshot the run left, in a text set and the time settings.
+/// the snapshot the run left, in a text set and the time settings, at the moment the run ends.
 @MainActor
 public struct AnswerSource {
   private let shell: EffectsShell
   private let language: GameLanguage
   private let timeZone: TimeZone
   private let hourCycle: Locale.HourCycle
+  private let clock: any TimeSource
 
-  /// Answers after a run of `shell`, in `language`, with times in a time zone and hour cycle.
-  public init(shell: EffectsShell, language: GameLanguage, timeZone: TimeZone, hourCycle: Locale.HourCycle) {
+  /// Answers after a run of `shell`, in `language`, with times in a time zone and hour cycle, at
+  /// the instant `clock` shows as the run ends.
+  public init(
+    shell: EffectsShell,
+    language: GameLanguage,
+    timeZone: TimeZone,
+    hourCycle: Locale.HourCycle,
+    clock: any TimeSource = SystemTimeSource())
+  {
     self.shell = shell
     self.language = language
     self.timeZone = timeZone
     self.hourCycle = hourCycle
+    self.clock = clock
   }
 
   /// The source an intent asks: `EffectsShell.forIntents()`, in the app language and the
@@ -53,9 +62,10 @@ public struct AnswerSource {
       hourCycle: Locale.current.hourCycle)
   }
 
-  /// Logs which process runs `question`, refreshes under the hourly gate and answers it at
-  /// `instant`.
-  public func answer<Question: QuestionIntent>(_ question: Question, at instant: Date = Date()) async -> String {
+  /// Logs which process runs `question`, refreshes under the hourly gate and answers it at the
+  /// instant the refresh ends: a refresh that crosses a Rotation boundary answers with the
+  /// Rotation it ends in.
+  public func answer<Question: QuestionIntent>(_ question: Question) async -> String {
     Logger.logRun(of: Question.self)
     let result = await shell.run()
     let answers: SiriAnswers = .init(
@@ -63,7 +73,7 @@ public struct AnswerSource {
       language: language,
       timeZone: timeZone,
       hourCycle: hourCycle)
-    return question.answer(from: answers, at: instant)
+    return question.answer(from: answers, at: clock.now)
   }
 
   /// `question`'s answer as Siri says it and Shortcuts passes it on.
