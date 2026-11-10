@@ -50,6 +50,9 @@ struct Ikalendar3App: App {
       // Named for the app, not the symbol, so VoiceOver reads the app's name.
       Image(systemName: "calendar")
         .accessibilityLabel(Text(verbatim: Self.name))
+      #if DEBUG
+        .debugOpeningMainWindow()
+      #endif
     }
     .menuBarExtraStyle(.window)
 
@@ -77,12 +80,23 @@ struct Ikalendar3App: App {
     else if let services {
       Group {
         #if DEBUG
-        if DebugLaunch.showsEventCards() { EventCardGallery() } else { AppRootView() }
+        if let showcase = Showcase.requested() {
+          ShowcaseView(showcase: showcase)
+        }
+        else if DebugLaunch.showsEventCards() {
+          EventCardGallery()
+        }
+        else {
+          AppRootView()
+        }
         #else
         AppRootView()
         #endif
       }
       .environment(services)
+      #if DEBUG
+        .debugWindow()
+      #endif
     }
     else {
       // With nowhere to keep data the widget extension can see, there is nothing to show.

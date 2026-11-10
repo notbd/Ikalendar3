@@ -28,13 +28,8 @@ struct Ikalendar3WatchApp: App {
     WindowGroup {
       Group {
         if let services {
-          NavigationStack(path: $path) {
-            NowScreen()
-              .navigationDestination(for: WatchRoute.self) { route in
-                route.destination
-              }
-          }
-          .environment(services)
+          root
+            .environment(services)
         }
         else {
           // With nowhere to keep data the complications can see, there is nothing to show.
@@ -44,6 +39,25 @@ struct Ikalendar3WatchApp: App {
       .environment(\.gameLanguage, WatchServices.language)
     }
     .runningEffects(services, scenePhase: scenePhase)
+  }
+
+  /// The Now page with the pages open over it; in a Debug launch, the complications' showcase
+  /// instead when it asks for that.
+  @ViewBuilder private var root: some View {
+    #if DEBUG
+    if WatchShowcase.isRequested() { ComplicationsShowcase() } else { pages }
+    #else
+    pages
+    #endif
+  }
+
+  private var pages: some View {
+    NavigationStack(path: $path) {
+      NowScreen()
+        .navigationDestination(for: WatchRoute.self) { route in
+          route.destination
+        }
+    }
   }
 
   /// Registers the fonts and points image lookups at the resource framework before anything draws,
