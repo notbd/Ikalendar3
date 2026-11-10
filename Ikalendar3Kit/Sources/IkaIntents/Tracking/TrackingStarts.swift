@@ -22,33 +22,16 @@ import IkaCore
 /// but watchOS, so the package tests run it on the Mac; only iOS starts Tracking.
 @MainActor
 final class TrackingStarts {
-  /// The starts waiting for each Mode whose start runs. A Mode with no start running has no entry.
-  private var waiting: [Mode: [CheckedContinuation<Void, Never>]] = [:]
+  /// Each Mode's turns, made at its first start.
+  private var turns: [Mode: Turns] = [:]
 
   nonisolated init() { }
 
   /// Runs `start` in `mode`'s turn and returns what it returns.
   func run<Value>(_ mode: Mode, _ start: () async throws -> Value) async rethrows -> Value {
-    if waiting[mode] == nil {
-      waiting[mode] = []
-    }
-    else {
-      await withCheckedContinuation { waiting[mode, default: []].append($0) }
-    }
-    defer { passTurn(of: mode) }
-
-    return try await start()
-  }
-
-  /// Hands `mode`'s turn to the start that has waited longest, or frees it.
-  private func passTurn(of mode: Mode) {
-    guard var queue = waiting[mode], !queue.isEmpty else {
-      waiting[mode] = nil
-      return
-    }
-
-    queue.removeFirst().resume()
-    waiting[mode] = queue
+    let modeTurns = turns[mode] ?? Turns()
+    turns[mode] = modeTurns
+    return try await modeTurns.run(start)
   }
 }
 #endif

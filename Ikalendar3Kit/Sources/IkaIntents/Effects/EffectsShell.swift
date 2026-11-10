@@ -20,7 +20,8 @@ import WidgetKit
 ///
 /// It replaces the app's pending event reminders as the plan says, after a refresh that committed a
 /// feed and whenever a reminder switch changes (`rebuildReminders()`), with the switches read from
-/// the preferences as the run starts.
+/// the preferences as it plans. Replacements take turns in the order the shell plans them
+/// (`ReminderReplacements`), so the latest switches always stand.
 ///
 /// On iOS it also starts Tracking, and every run re-arms each running Tracking from the cache.
 /// Live Activities render on the system's clock, so their instant is the wall clock's. Not on
@@ -29,12 +30,20 @@ import WidgetKit
 public struct EffectsShell {
   private let engine: RefreshEngine
   private let preferences: PreferenceStore
+  private let reminders: ReminderReplacements
 
   /// A shell that refreshes through an engine, whose snapshot the caller shows, with the reminder
   /// switches of `preferences`.
   public init(engine: RefreshEngine, preferences: PreferenceStore) {
+    self.init(engine: engine, preferences: preferences, reminders: .system)
+  }
+
+  /// A shell that replaces the pending reminders through `reminders`: the process's own
+  /// (`ReminderReplacements.system`), or a test's.
+  init(engine: RefreshEngine, preferences: PreferenceStore, reminders: ReminderReplacements) {
     self.engine = engine
     self.preferences = preferences
+    self.reminders = reminders
   }
 
   /// Refreshes under the hourly gate, then applies the effects the result calls for. A run that
@@ -64,8 +73,8 @@ public struct EffectsShell {
     if plan.reloadsWidgetTimelines {
       WidgetCenter.shared.reloadAllTimelines()
     }
-    if let reminders = plan.reminders {
-      await ReminderCenter.replace(with: reminders)
+    if let planned = plan.reminders {
+      await reminders.replace(with: planned)
     }
     #if os(iOS)
     await TrackingActivities.apply(plan.tracking)
