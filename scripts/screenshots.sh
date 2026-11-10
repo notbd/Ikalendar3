@@ -22,9 +22,12 @@
 # Mac has closed its window: a crashed app leaves the Home Screen, of the right size. It checks
 # each image's pixel size against the App Store size it targets.
 #
-# It creates its own simulators of App Store sizes and deletes them when it ends; each one passed
-# by UDID is used instead and kept. The Mac app keeps its data in the output folder and a defaults
-# suite of its own, both removed at the end.
+# It creates its own simulators of App Store sizes and deletes them when it ends. A simulator
+# passed by UDID is used instead and left as it was found: its languages, appearance, status bar
+# override, the iPad's multitasking setting, the App Group container as the installed app found
+# it, and whether it was booted. One that was booted restarts at the end, so its languages apply.
+# The app it installs stays installed. The Mac app keeps its data in the output folder and a
+# defaults suite of its own, both removed at the end.
 #
 # Usage: scripts/screenshots.sh [--languages "en ja ..."] [--output PATH] [--derived-data PATH]
 #                               [--iphone UDID] [--ipad UDID] [--watch UDID] [--skip-build]
@@ -95,6 +98,105 @@ for language in $languages; do
   [[ " $ALL_LANGUAGES " == *" $language "* ]] || fail "unknown language $language; the 14 are: $ALL_LANGUAGES"
 done
 
+# MARK: Borrowed simulators
+
+# The simulators passed by UDID that `remember` has saved, as "<udid> <app bundle id>". What the
+# run changes on each is saved in its folder under BORROWED, a missing file standing for a
+# setting that was unset, and `restore_borrowed` puts it back. The App Group container is saved
+# once the app is installed (`remember_group`), so the app keeps its container.
+borrowed=()
+readonly BORROWED="$output/.borrowed"
+readonly APP_GROUP=group.io.tianwei.ikalendar3
+# The settings the run changes, as "<domain> <key>": the languages (`set_device_language`), the
+# iPad's multitasking and the appearance `simctl ui` sets. `defaults write` puts each one back at
+# once; `simctl ui` was seen to lose an appearance when the simulator shut down right after.
+BORROWED_SETTINGS=("NSGlobalDomain AppleLanguages" "NSGlobalDomain AppleLocale"
+  "com.apple.springboard SBMedusaMultitaskingEnabled"
+  "com.apple.uikitservices.userInterfaceStyleMode UserInterfaceStyleMode")
+
+# Prints the App Group container of app `bundle` on simulator `udid`, or fails when the app is not
+# installed.
+group_container() {
+  xcrun simctl get_app_container "$1" "$2" groups 2>/dev/null | sed -n "s/^${APP_GROUP}[[:space:]]*//p" | grep .
+}
+
+# Saves the settings the run changes on booted simulator `udid`, whose app is `bundle`, before it
+# changes any: each one as a property list, and the iPhone's and iPad's status bar override.
+# `was_booted` says whether the simulator was booted before the run.
+remember() {
+  local udid=$1 bundle=$2 was_booted=$3 folder="$BORROWED/$1" setting domain key plist
+  command rm -rf "$folder"
+  mkdir -p "$folder"
+  [[ $was_booted == false ]] || touch "$folder/booted"
+  for setting in "${BORROWED_SETTINGS[@]}"; do
+    read -r domain key <<<"$setting"
+    plist=$(xcrun simctl spawn "$udid" defaults export "$domain" -) || fail "could not read $domain on simulator $udid"
+    plutil -extract "$key" xml1 -o "$folder/$key" - <<<"$plist" 2>/dev/null || true
+  done
+  if [[ $bundle == "$BUNDLE_ID" ]]; then
+    xcrun simctl status_bar "$udid" list | tail -n +3 >"$folder/status-bar"
+  fi
+  borrowed+=("$udid $bundle")
+}
+
+# Saves a copy of each borrowed simulator's App Group container, once the app is installed and
+# before it first runs.
+remember_group() {
+  local entry udid bundle container
+  for entry in "${borrowed[@]+"${borrowed[@]}"}"; do
+    read -r udid bundle <<<"$entry"
+    container=$(group_container "$udid" "$bundle") || fail "$bundle on simulator $udid has no App Group container"
+    ditto "$container" "$BORROWED/$udid/group"
+  done
+}
+
+# Puts back borrowed simulator `udid`, whose app is `bundle`, as `remember` saved it, or fails.
+# The settings go back first; then, shut down so that no process writes it meanwhile, the App
+# Group container; then it boots again if it was booted, which applies its languages and the
+# iPad's multitasking setting.
+restore_simulator() {
+  local udid=$1 bundle=$2 folder="$BORROWED/$1" setting domain key container
+  xcrun simctl bootstatus "$udid" -b >/dev/null || return 1
+  xcrun simctl terminate "$udid" "$bundle" >/dev/null 2>&1 || true
+  for setting in "${BORROWED_SETTINGS[@]}"; do
+    read -r domain key <<<"$setting"
+    if [[ -f $folder/$key ]]; then
+      xcrun simctl spawn "$udid" defaults write "$domain" "$key" "$(<"$folder/$key")" || return 1
+    else
+      xcrun simctl spawn "$udid" defaults delete "$domain" "$key" >/dev/null 2>&1 || true
+    fi
+  done
+  if [[ -f $folder/status-bar ]]; then
+    xcrun simctl status_bar "$udid" clear || return 1
+    [[ ! -s $folder/status-bar ]] ||
+      printf 'note: simulator %s had a status bar override, now cleared:\n%s\n' "$udid" "$(<"$folder/status-bar")"
+  fi
+  if [[ -d $folder/group ]]; then
+    container=$(group_container "$udid" "$bundle") || return 1
+  fi
+  xcrun simctl shutdown "$udid" || return 1
+  if [[ -d $folder/group ]]; then
+    command rm -rf "$container" || return 1
+    ditto "$folder/group" "$container" || return 1
+  fi
+  [[ ! -f $folder/booted ]] || xcrun simctl boot "$udid" || return 1
+}
+
+# Puts back every borrowed simulator; one that fails keeps its saved folder and says where.
+restore_borrowed() {
+  local entry udid bundle
+  for entry in "${borrowed[@]+"${borrowed[@]}"}"; do
+    read -r udid bundle <<<"$entry"
+    if restore_simulator "$udid" "$bundle"; then
+      command rm -rf "${BORROWED:?}/$udid"
+      printf 'Put simulator %s back as it was\n' "$udid"
+    else
+      printf 'error: simulator %s is not as it was; what it was is saved in %s\n' "$udid" "$BORROWED/$udid" >&2
+    fi
+  done
+  rmdir "$BORROWED" 2>/dev/null || true
+}
+
 # MARK: Cleanup
 
 created_simulators=()
@@ -102,17 +204,9 @@ mac_pid=""
 readonly MAC_SUITE="ikalendar3-screenshots-$(basename "$ROOT")"
 readonly MAC_DATA="$output/.mac-data"
 
-# The system languages of the simulators passed by UDID, "<udid> <languages> <locale>", put back
-# at the end (`set_device_language` changes them).
-kept_languages=()
-
 cleanup() {
   [[ -z $mac_pid ]] || kill "$mac_pid" 2>/dev/null || true
-  for kept in "${kept_languages[@]+"${kept_languages[@]}"}"; do
-    read -r udid system_languages system_locale <<<"$kept"
-    xcrun simctl spawn "$udid" defaults write -g AppleLanguages "$system_languages" >/dev/null 2>&1 || true
-    xcrun simctl spawn "$udid" defaults write -g AppleLocale "$system_locale" >/dev/null 2>&1 || true
-  done
+  restore_borrowed
   for udid in "${created_simulators[@]+"${created_simulators[@]}"}"; do
     xcrun simctl shutdown "$udid" >/dev/null 2>&1 || true
     xcrun simctl delete "$udid" >/dev/null 2>&1 || true
@@ -240,16 +334,13 @@ create_simulator iphone "$IPHONE_TYPE"
 create_simulator ipad "$IPAD_TYPE"
 create_simulator watch "$WATCH_TYPE"
 
-for udid in "$iphone" "$ipad" "$watch"; do
+for device in "$iphone $BUNDLE_ID" "$ipad $BUNDLE_ID" "$watch $WATCH_BUNDLE_ID"; do
+  read -r udid bundle <<<"$device"
+  was_booted=false
+  if xcrun simctl list devices | grep -F "($udid) (Booted)" >/dev/null; then was_booted=true; fi
   xcrun simctl boot "$udid" 2>/dev/null || true
   xcrun simctl bootstatus "$udid" -b >/dev/null
-done
-for udid in "$ipad" "$watch"; do
-  [[ " ${created_simulators[*]+"${created_simulators[*]}"} " == *" $udid "* ]] && continue
-  system_languages=$(xcrun simctl spawn "$udid" defaults read -g AppleLanguages 2>/dev/null | tr -d ' \n') ||
-    system_languages="(en)"
-  system_locale=$(xcrun simctl spawn "$udid" defaults read -g AppleLocale 2>/dev/null) || system_locale=en_US
-  kept_languages+=("$udid $system_languages $system_locale")
+  [[ " ${created_simulators[*]+"${created_simulators[*]}"} " == *" $udid "* ]] || remember "$udid" "$bundle" "$was_booted"
 done
 
 # The iPad shows apps full screen, not as windows; SpringBoard reads it at boot.
@@ -267,6 +358,7 @@ for udid in "$iphone" "$ipad"; do
   xcrun simctl install "$udid" "$IOS_APP"
 done
 xcrun simctl install "$watch" "$WATCH_APP"
+remember_group
 
 # MARK: Launches
 
