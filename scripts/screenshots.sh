@@ -18,8 +18,9 @@
 #
 # Before it captures anything, it launches the app once on each device and stops unless that
 # launch's font log says every face of SplatNet 3 registered (build them with
-# `scripts/assets.sh --only fonts`). It checks each image's pixel size against the App Store size
-# it targets.
+# `scripts/assets.sh --only fonts`). A capture fails when the app has quit by then, or on the
+# Mac has closed its window: a crashed app leaves the Home Screen, of the right size. It checks
+# each image's pixel size against the App Store size it targets.
 #
 # It creates its own simulators of App Store sizes and deletes them when it ends; each one passed
 # by UDID is used instead and kept. The Mac app keeps its data in the output folder and a defaults
@@ -316,11 +317,15 @@ EOF
 }
 
 # Waits for a launch to draw and its opening animation to end, then saves simulator `udid`'s
-# screen to `file`.
+# screen to `file`. Fails, keeping no image, when the app launched last (`app_pid`) has quit.
 capture() {
-  local udid=$1 file=$2
+  local udid=$1 file=$2 written
   sleep 8
-  xcrun simctl io "$udid" screenshot "$file" >/dev/null 2>&1
+  written=$(xcrun simctl io "$udid" screenshot "$file" 2>&1) || fail "${file#"$ROOT/"}: $written"
+  if ! kill -0 "$app_pid" 2>/dev/null; then
+    command rm -f "$file"
+    fail "${file#"$ROOT/"}: the app quit before its screenshot"
+  fi
 }
 
 # MARK: Fonts
@@ -399,6 +404,10 @@ for language in $languages; do
     launch_mac "${base[@]}" "${fixture[@]}" "${@:3}"
     sleep 4
     screencapture -l "$mac_window" -o -x "$file"
+    if ! kill -0 "$mac_pid" 2>/dev/null || [[ $(mac_window_of "$mac_pid") != "$mac_window" ]]; then
+      command rm -f "$file"
+      fail "${file#"$ROOT/"}: the Mac app quit or closed its window before its screenshot"
+    fi
     check_size "$file" "$MAC_SIZE"
   }
   mac_shot 11-mac-columns "$NORMAL_DAY" -pref.mac_layout columns
