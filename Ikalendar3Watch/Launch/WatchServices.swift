@@ -27,13 +27,17 @@ struct WatchServices {
   let effects: WatchEffectsShell
   /// The one clock the pages read.
   let clock: AppClock
+  /// The time zone a fixture launch writes times in, or `nil` for the device's.
+  let timeZone: TimeZone?
 
-  /// The engine with its effects shell, and a clock reading `timeSource`.
-  init(client: FeedClient, timeSource: any TimeSource) {
+  /// The engine with its effects shell, and a clock reading `timeSource`, writing times in
+  /// `timeZone`.
+  init(client: FeedClient, timeSource: any TimeSource, timeZone: TimeZone? = nil) {
     let engine: RefreshEngine = .init(client: client, language: Self.language)
     self.engine = engine
     effects = WatchEffectsShell(engine: engine)
     clock = AppClock(source: timeSource)
+    self.timeZone = timeZone
   }
 }
 
@@ -54,7 +58,7 @@ extension WatchServices {
 
     #if DEBUG
     if let run = FixtureLaunch.run(sharedCache: cache) {
-      return WatchServices(client: run.client, timeSource: run.timeSource)
+      return WatchServices(client: run.client, timeSource: run.timeSource, timeZone: run.timeZone)
     }
     #endif
 
@@ -67,9 +71,10 @@ extension WatchServices {
 // MARK: - Environment
 
 extension View {
-  /// Injects the engine and the clock the pages read.
+  /// Injects the engine and the clock the pages read, and a fixture launch's time zone.
   func environment(_ services: WatchServices) -> some View {
     environment(services.engine)
       .environment(services.clock)
+      .environment(\.timeZone, services.timeZone ?? .autoupdatingCurrent)
   }
 }

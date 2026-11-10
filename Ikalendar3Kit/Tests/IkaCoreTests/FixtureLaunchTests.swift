@@ -70,6 +70,19 @@ final class FixtureLaunchTests {
       isRebased: true))
   }
 
+  @Test
+  func `A fixture launch reads the time zone its times are written in`() throws {
+    let launch = try FixtureLaunch(arguments: [
+      "/app",
+      "--fixture", "bigRun",
+      "--fixture-folder", "/tmp/Fixtures",
+      "--fixture-instant", "2026-09-07T12:00:00Z",
+      "--fixture-time-zone", "Asia/Tokyo",
+    ])
+
+    #expect(launch?.timeZone == TimeZone(identifier: "Asia/Tokyo"))
+  }
+
   @Test(arguments: [
     (
       ["--fixture", "someDay", "--fixture-folder", "/f", "--fixture-instant", "2026-10-20T12:00:00Z"],
@@ -81,6 +94,12 @@ final class FixtureLaunchTests {
     (["--fixture", "normalDay", "--fixture-folder", "/f"], .missing("--fixture-instant")),
     (["--fixture", "normalDay", "--fixture-folder", "/f", "--fixture-instant", "noon"], .malformedInstant("noon")),
     (["--fixture"], .missing("--fixture")),
+    (
+      [
+        "--fixture", "normalDay", "--fixture-folder", "/f", "--fixture-instant", "2026-10-20T12:00:00Z",
+        "--fixture-time-zone", "Mars/Olympus",
+      ],
+      .unknownTimeZone("Mars/Olympus")),
   ])
   func `A fixture launch with a missing or malformed option is refused`(
     arguments: [String],
@@ -168,6 +187,62 @@ final class FixtureLaunchTests {
     #expect(moved.item.setting == recorded.item.setting)
     let offset = moved.item.startTime.timeIntervalSince(recorded.item.startTime)
     #expect(abs(offset - now.timeIntervalSince(date("2026-10-20T13:15:00Z"))) < 1)
+  }
+
+  /// Screenshots taken at any hour show the clock times of the recording: the payloads move by
+  /// whole hours, and the time zone takes up the rest of the day.
+  @Test
+  func `A rebased fixture launch with a time zone moves by whole hours and reads each time as the recording does`()
+    async throws
+  {
+    let instant = date("2026-10-20T13:15:00Z")
+    let now = instant.addingTimeInterval(5 * 3600 + 23 * 60 + 10)
+    let tokyo: TimeZone = try #require(TimeZone(identifier: "Asia/Tokyo"))
+    let shared: FeedCache = .init(directory: sharedDirectory)
+    let launch: FixtureLaunch = .init(
+      schedules: .normalDay,
+      folder: Fixture.folder,
+      instant: instant,
+      isRebased: true,
+      timeZone: tokyo)
+
+    let run = try launch.prepare(sharedCache: shared, now: now)
+
+    guard
+      case .running(let recorded) = try await recordedScreen()?.current,
+      case .running(let moved) = await shared.snapshot().battleScreen(of: .anarchySeries, at: now)?.current
+    else {
+      Issue.record("no current Rotation in the recorded or the rebased schedules")
+      return
+    }
+
+    #expect(moved.item.startTime.timeIntervalSince(recorded.item.startTime) == 5 * 3600)
+    let zone = try #require(run.timeZone)
+    func hour(_ time: Date, in zone: TimeZone) -> Int {
+      var calendar: Calendar = .init(identifier: .gregorian)
+      calendar.timeZone = zone
+      return calendar.component(.hour, from: time)
+    }
+    #expect(hour(moved.item.startTime, in: zone) == hour(recorded.item.startTime, in: tokyo))
+    #expect(hour(moved.item.endTime, in: zone) == hour(recorded.item.endTime, in: tokyo))
+  }
+
+  @Test
+  func `An unrebased fixture launch with a time zone reads times in that zone`() throws {
+    let tokyo: TimeZone = try #require(TimeZone(identifier: "Asia/Tokyo"))
+    let launch: FixtureLaunch = .init(
+      schedules: .normalDay,
+      folder: Fixture.folder,
+      instant: date("2026-10-20T13:15:00Z"),
+      isRebased: false,
+      timeZone: tokyo)
+
+    let run = try launch.prepare(
+      sharedCache: FeedCache(directory: sharedDirectory),
+      temporaryDirectory: temporaryDirectory,
+      now: Date())
+
+    #expect(run.timeZone == tokyo)
   }
 
   // MARK: Short-item Tracking

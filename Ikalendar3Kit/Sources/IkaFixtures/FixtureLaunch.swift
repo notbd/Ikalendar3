@@ -19,6 +19,7 @@ import IkaCore
 /// --fixture-folder <Ikalendar3Kit/Fixtures>   where the payloads are read, so no product ships them
 /// --fixture-instant 2026-10-20T13:59:50Z      the instant the clock starts at
 /// --fixture-rebase                        optional: move the payloads to now instead
+/// --fixture-time-zone Asia/Tokyo          optional: write every time as the recording reads there
 /// ```
 ///
 /// The schedules feed comes with the recorded `festivals.json` and every recorded locale file.
@@ -32,13 +33,19 @@ public struct FixtureLaunch: Hashable, Sendable {
   /// Whether the payloads move to now and land in the shared cache, so the Surfaces the system
   /// renders on its own clock (widgets, the Live Activity) show the fixture day too.
   public let isRebased: Bool
+  /// The time zone whose clock times the Surfaces show, or `nil` for the device's. A rebased
+  /// launch then moves the payloads by whole hours only
+  /// (`prepare(sharedCache:temporaryDirectory:now:)`), so screenshots taken at any hour show the
+  /// same times.
+  public let timeZone: TimeZone?
 
   /// A fixture launch with the given parts.
-  public init(schedules: Fixture, folder: URL, instant: Date, isRebased: Bool) {
+  public init(schedules: Fixture, folder: URL, instant: Date, isRebased: Bool, timeZone: TimeZone? = nil) {
     self.schedules = schedules
     self.folder = folder
     self.instant = instant
     self.isRebased = isRebased
+    self.timeZone = timeZone
   }
 
   /// The fixture launch a process's arguments ask for, or `nil` when they have no `--fixture`.
@@ -58,11 +65,20 @@ public struct FixtureLaunch: Hashable, Sendable {
     let instantText = try arguments.required(Option.instant)
     guard let instant = try? Date(instantText, strategy: .iso8601) else { throw .malformedInstant(instantText) }
 
+    var timeZone: TimeZone?
+    if arguments.contains(Option.timeZone) {
+      let identifier = try arguments.required(Option.timeZone)
+      guard let zone = TimeZone(identifier: identifier) else { throw .unknownTimeZone(identifier) }
+
+      timeZone = zone
+    }
+
     self.init(
       schedules: schedules,
       folder: URL(filePath: folder, directoryHint: .isDirectory),
       instant: instant,
-      isRebased: arguments.contains(Option.rebase))
+      isRebased: arguments.contains(Option.rebase),
+      timeZone: timeZone)
   }
 
   /// The option names.
@@ -71,6 +87,7 @@ public struct FixtureLaunch: Hashable, Sendable {
     static let folder = "--fixture-folder"
     static let instant = "--fixture-instant"
     static let rebase = "--fixture-rebase"
+    static let timeZone = "--fixture-time-zone"
   }
 }
 
@@ -85,6 +102,8 @@ extension FixtureLaunch {
     case unknownFixture(String)
     /// `--fixture-instant` is not an ISO 8601 UTC instant.
     case malformedInstant(String)
+    /// `--fixture-time-zone` names no time zone the system knows.
+    case unknownTimeZone(String)
   }
 }
 
@@ -142,6 +161,10 @@ public struct FixtureRun: Sendable {
   public let client: FeedClient
   /// The clock: running from the instant, or the system's for a rebased launch.
   public let timeSource: any TimeSource
+  /// The time zone the process writes times in, or `nil` for the device's: the launch's own, or
+  /// for a rebased launch one that the whole-hour move shifts, so each time reads as the
+  /// recording does in the launch's.
+  public let timeZone: TimeZone?
 }
 
 extension FixtureLaunch {
@@ -152,6 +175,12 @@ extension FixtureLaunch {
   ///   untouched.
   /// - A rebased launch moves the payloads by `now` minus the instant and commits them to
   ///   `sharedCache` before anything reads it, then runs on the system's clock.
+  ///
+  /// - With a time zone, a rebased launch moves the payloads by the whole hours nearest to now
+  ///   minus the instant, and runs in a fixed-offset zone that takes back that move modulo a day:
+  ///   a Rotation recorded at 15:00 in the launch's zone reads 15:00 at any hour of the run. The
+  ///   system clock then stands within half an hour of the instant in the recording, so an
+  ///   instant in the middle of a two-hour Rotation stays in it.
   ///
   /// The transport answers a locale file with no recording with an empty one, so that text set's
   /// names come from the shipped snapshot and its refresh does not fail.
@@ -167,7 +196,10 @@ extension FixtureLaunch {
     now: Date)
     throws -> FixtureRun
   {
-    let offset: Duration = .seconds(now.timeIntervalSince(instant).rounded(.towardZero))
+    let elapsed = now.timeIntervalSince(instant)
+    let offset: Duration = .seconds(isRebased && timeZone != nil
+      ? (elapsed / 3600).rounded() * 3600
+      : elapsed.rounded(.towardZero))
     var payloads: [Feed: Data] = [:]
     for fixture in [schedules, .festivals] + Fixture.allCases.filter({ $0.rawValue.hasPrefix("locale-") }) {
       guard let feed = fixture.feed else { continue }
@@ -188,13 +220,27 @@ extension FixtureLaunch {
       let clock: RunningClock = .init(startingAt: instant)
       let directory: URL = Self.processCacheDirectory(in: temporaryDirectory)
       let client: FeedClient = .init(transport: transport, cache: FeedCache(directory: directory), now: { clock.now })
-      return FixtureRun(client: client, timeSource: clock)
+      return FixtureRun(client: client, timeSource: clock, timeZone: timeZone)
     }
 
     for (feed, payload) in payloads {
       try sharedCache.commit(FeedRecord(body: payload, etag: nil, fetchTime: now), for: feed)
     }
-    return FixtureRun(client: FeedClient(transport: transport, cache: sharedCache), timeSource: SystemTimeSource())
+    return FixtureRun(
+      client: FeedClient(transport: transport, cache: sharedCache),
+      timeSource: SystemTimeSource(),
+      timeZone: timeZone.map { Self.zone(reading: $0, at: instant, movedBy: offset) })
+  }
+
+  /// The fixed-offset zone in which a time moved by `offset` reads as it did in `zone` at
+  /// `instant`: `zone`'s offset there less `offset` modulo a day, kept within the offsets a zone
+  /// can have.
+  static func zone(reading zone: TimeZone, at instant: Date, movedBy offset: Duration) -> TimeZone {
+    let day = 86400
+    let shift = (zone.secondsFromGMT(for: instant) - Int(offset.components.seconds)) % day
+    // From -12 to +12 hours, as every fixed-offset zone the formatters write.
+    let seconds = (shift + day + 12 * 3600) % day - 12 * 3600
+    return TimeZone(secondsFromGMT: seconds) ?? zone
   }
 
   /// The cache folder of an unrebased launch in `temporaryDirectory`: one per process, named with

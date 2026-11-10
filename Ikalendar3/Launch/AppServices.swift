@@ -29,10 +29,12 @@ struct AppServices {
   let clock: AppClock
   /// The in-session state.
   let status: AppStatus
+  /// The time zone a fixture launch writes times in, or `nil` for the device's.
+  let timeZone: TimeZone?
 
   /// The engine with its effects shell, the preferences on `defaults`, a clock reading
-  /// `timeSource` and the status, opening on the default Mode.
-  init(client: FeedClient, timeSource: any TimeSource, defaults: UserDefaults) {
+  /// `timeSource` and the status, opening on the default Mode, writing times in `timeZone`.
+  init(client: FeedClient, timeSource: any TimeSource, defaults: UserDefaults, timeZone: TimeZone? = nil) {
     let engine: RefreshEngine = .init(client: client, language: Self.language)
     let preferences: PreferenceStore = .init(defaults: defaults)
     self.engine = engine
@@ -40,6 +42,7 @@ struct AppServices {
     self.preferences = preferences
     clock = AppClock(source: timeSource)
     status = AppStatus(selectedPlace: preferences.defaultMode)
+    self.timeZone = timeZone
   }
 }
 
@@ -73,7 +76,11 @@ extension AppServices {
 
     #if DEBUG
     if let run = FixtureLaunch.run(sharedCache: FeedCache(directory: storage.feedDirectory)) {
-      return AppServices(client: run.client, timeSource: run.timeSource, defaults: storage.defaults)
+      return AppServices(
+        client: run.client,
+        timeSource: run.timeSource,
+        defaults: storage.defaults,
+        timeZone: run.timeZone)
     }
     if DebugLaunch.isOffline() {
       return AppServices(
@@ -108,7 +115,8 @@ extension AppServices {
 // MARK: - Environment
 
 extension View {
-  /// Injects the services and the app language, which picks every string, game term and Han face.
+  /// Injects the services, the app language, which picks every string, game term and Han face,
+  /// and a fixture launch's time zone.
   func environment(_ services: AppServices) -> some View {
     environment(services.engine)
       .environment(\.effects, services.effects)
@@ -116,6 +124,7 @@ extension View {
       .environment(services.clock)
       .environment(services.status)
       .environment(\.gameLanguage, AppServices.language)
+      .environment(\.timeZone, services.timeZone ?? .autoupdatingCurrent)
   }
 }
 
