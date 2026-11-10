@@ -53,6 +53,38 @@ struct ReminderSwitchesTests {
     #expect(center.pending.isEmpty)
   }
 
+  /// At launch the engine has published nothing yet, so a rebuild from the first reading would
+  /// remove every pending reminder until a refresh commits a feed.
+  @Test
+  func `The observer's first reading of the switches leaves the pending reminders`() async throws {
+    let suite = "ReminderSwitchesTests-\(UUID().uuidString)"
+    let defaults = try #require(UserDefaults(suiteName: suite))
+    defer { defaults.removePersistentDomain(forName: suite) }
+    let directory: URL = FileManager.default.temporaryDirectory.appending(path: suite, directoryHint: .isDirectory)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let preferences: PreferenceStore = .init(defaults: defaults)
+    preferences.isBigRunReminderOn = true
+    let pending = EventReminder.namespace + "bigRun.1789171200"
+    let center: FakePendingRequests = .init(pending: [pending])
+    let client: FeedClient = .init(transport: ScriptedTransport(), cache: FeedCache(directory: directory))
+    let shell: EffectsShell = .init(
+      engine: RefreshEngine(client: client, language: .enUS),
+      preferences: preferences,
+      reminders: ReminderReplacements(center: center))
+
+    let following = shell.followReminderSwitches()
+    defer { following.cancel() }
+    // Nothing marks a skipped reading, so the observer gets the main actor for a while; a rebuild
+    // would run on it at once.
+    try await Task.sleep(for: .milliseconds(200))
+    let afterFirstReading = center.pending
+    // The observer was following all along: a change rebuilds, here from the empty snapshot.
+    preferences.isEggstraWorkReminderOn = true
+    await waitUntil { center.pending.isEmpty }
+
+    #expect(afterFirstReading == [pending])
+  }
+
   /// An intent's shell builds its store as the intent starts, a copy of the suite then; the
   /// player turns Big Run off in Settings while the intent's refresh is held in flight.
   @Test
