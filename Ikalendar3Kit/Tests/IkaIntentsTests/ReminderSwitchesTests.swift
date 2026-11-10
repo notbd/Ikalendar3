@@ -109,8 +109,11 @@ struct ReminderSwitchesTests {
     await waitUntil { !transport.requests.isEmpty }
     settings.isBigRunReminderOn = false
     transport.release()
-    _ = await run.value
+    let result = await run.value
 
+    // Only a committed schedules feed plans reminders, so the empty list below is the switch's
+    // doing and not a refresh that planned nothing.
+    #expect(result.outcomes[.schedules] == .fetched(.updated))
     #expect(center.pending.isEmpty)
   }
 
