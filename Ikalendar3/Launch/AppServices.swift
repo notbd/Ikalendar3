@@ -29,12 +29,14 @@ struct AppServices {
   let clock: AppClock
   /// The in-session state.
   let status: AppStatus
+  #if DEBUG
   /// The time zone a fixture launch writes times in, or `nil` for the device's.
-  let timeZone: TimeZone?
+  var timeZone: TimeZone?
+  #endif
 
   /// The engine with its effects shell, the preferences on `defaults`, a clock reading
-  /// `timeSource` and the status, opening on the default Mode, writing times in `timeZone`.
-  init(client: FeedClient, timeSource: any TimeSource, defaults: UserDefaults, timeZone: TimeZone? = nil) {
+  /// `timeSource` and the status, opening on the default Mode.
+  init(client: FeedClient, timeSource: any TimeSource, defaults: UserDefaults) {
     let engine: RefreshEngine = .init(client: client, language: Self.language)
     let preferences: PreferenceStore = .init(defaults: defaults)
     self.engine = engine
@@ -42,7 +44,6 @@ struct AppServices {
     self.preferences = preferences
     clock = AppClock(source: timeSource)
     status = AppStatus(selectedPlace: preferences.defaultMode)
-    self.timeZone = timeZone
   }
 }
 
@@ -76,11 +77,9 @@ extension AppServices {
 
     #if DEBUG
     if let run = FixtureLaunch.run(sharedCache: FeedCache(directory: storage.feedDirectory)) {
-      return AppServices(
-        client: run.client,
-        timeSource: run.timeSource,
-        defaults: storage.defaults,
-        timeZone: run.timeZone)
+      var services: AppServices = .init(client: run.client, timeSource: run.timeSource, defaults: storage.defaults)
+      services.timeZone = run.timeZone
+      return services
     }
     if DebugLaunch.isOffline() {
       return AppServices(
@@ -115,8 +114,8 @@ extension AppServices {
 // MARK: - Environment
 
 extension View {
-  /// Injects the services, the app language, which picks every string, game term and Han face,
-  /// and a fixture launch's time zone.
+  /// Injects the services and the app language, which picks every string, game term and Han
+  /// face. In Debug, a fixture launch's time zone replaces SwiftUI's; nothing else sets it.
   func environment(_ services: AppServices) -> some View {
     environment(services.engine)
       .environment(\.effects, services.effects)
@@ -124,7 +123,11 @@ extension View {
       .environment(services.clock)
       .environment(services.status)
       .environment(\.gameLanguage, AppServices.language)
-      .environment(\.timeZone, services.timeZone ?? .autoupdatingCurrent)
+      #if DEBUG
+      .transformEnvironment(\.timeZone) { zone in
+        if let fixtureZone = services.timeZone { zone = fixtureZone }
+      }
+      #endif
   }
 }
 

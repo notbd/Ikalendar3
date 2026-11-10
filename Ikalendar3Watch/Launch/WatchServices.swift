@@ -27,17 +27,17 @@ struct WatchServices {
   let effects: WatchEffectsShell
   /// The one clock the pages read.
   let clock: AppClock
+  #if DEBUG
   /// The time zone a fixture launch writes times in, or `nil` for the device's.
-  let timeZone: TimeZone?
+  var timeZone: TimeZone?
+  #endif
 
-  /// The engine with its effects shell, and a clock reading `timeSource`, writing times in
-  /// `timeZone`.
-  init(client: FeedClient, timeSource: any TimeSource, timeZone: TimeZone? = nil) {
+  /// The engine with its effects shell, and a clock reading `timeSource`.
+  init(client: FeedClient, timeSource: any TimeSource) {
     let engine: RefreshEngine = .init(client: client, language: Self.language)
     self.engine = engine
     effects = WatchEffectsShell(engine: engine)
     clock = AppClock(source: timeSource)
-    self.timeZone = timeZone
   }
 }
 
@@ -58,7 +58,9 @@ extension WatchServices {
 
     #if DEBUG
     if let run = FixtureLaunch.run(sharedCache: cache) {
-      return WatchServices(client: run.client, timeSource: run.timeSource, timeZone: run.timeZone)
+      var services: WatchServices = .init(client: run.client, timeSource: run.timeSource)
+      services.timeZone = run.timeZone
+      return services
     }
     #endif
 
@@ -71,10 +73,15 @@ extension WatchServices {
 // MARK: - Environment
 
 extension View {
-  /// Injects the engine and the clock the pages read, and a fixture launch's time zone.
+  /// Injects the engine and the clock the pages read. In Debug, a fixture launch's time zone
+  /// replaces SwiftUI's; nothing else sets it.
   func environment(_ services: WatchServices) -> some View {
     environment(services.engine)
       .environment(services.clock)
-      .environment(\.timeZone, services.timeZone ?? .autoupdatingCurrent)
+      #if DEBUG
+      .transformEnvironment(\.timeZone) { zone in
+        if let fixtureZone = services.timeZone { zone = fixtureZone }
+      }
+      #endif
   }
 }
