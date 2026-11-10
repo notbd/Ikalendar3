@@ -95,7 +95,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
     --fixture-folder "$PWD/Ikalendar3Kit/Fixtures" --fixture-instant 2026-09-07T12:00:00Z --mode-page salmonRun --later-list
   ```
 
-- Mac runs start with `open -n <app> --args ...`: a Debug binary started directly from a shell runs but opens no window. macOS restores the window as the last run left it, so a run after one that quit with the window closed opens none; `-ApplePersistenceIgnoreState YES` after the app's options opens it anyway. `open -g` keeps the app behind the window in front.
+- Mac runs start with `open -n <app> --args ...`: a Debug binary started directly from a shell runs but opens no window. Every launch opens the main window, since the app never restores windows (`MacAppDelegate`), so no run needs `-ApplePersistenceIgnoreState YES`. Pass options that take no value (`--fixture-rebase`, `--fixture-offline`, `--event-cards`) last: the arguments are read as option and value pairs, so `--fixture-rebase --showcase menu-bar` leaves `menu-bar` over, and a launch with a word left over opens no main window (`--window-size` opens it anyway). `open -g` keeps the app behind the window in front.
 - The Mac window opens on the view stored in `pref.mac_layout` (`columns`, `sidebar` or `overview`) and the Style in `pref.style`, so a fixture launch picks both with `defaults write <suite> pref.mac_layout overview` before it starts.
 - Mac runs from a worktree pass the data options: an unsigned, unsandboxed Mac process gets the App Group folder that every worktree on the machine shares. Use a folder inside the worktree and a suite named after it, for example `--data-folder "$PWD/build/AppData" --defaults-suite "ikalendar3-$(basename "$PWD")"`.
 

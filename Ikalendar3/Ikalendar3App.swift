@@ -32,8 +32,8 @@ struct Ikalendar3App: App {
 
   var body: some Scene {
     #if os(macOS)
-    // One window, which the menu bar window's button brings back after it closes; the app keeps
-    // running in the menu bar.
+    // One window, which every launch opens (`MacAppDelegate`) and the menu bar window's button
+    // brings back after it closes; the app keeps running in the menu bar.
     Window(Text(verbatim: Self.name), id: Self.mainWindowID) {
       mainWindow
     }
@@ -125,9 +125,22 @@ struct Ikalendar3App: App {
 
 // MARK: - MacAppDelegate
 
-/// Keeps the app running in the menu bar after its window closes, so the menu bar window and the
-/// periodic refresh stay; with a single `Window` scene, SwiftUI would quit the app instead.
+/// The Mac app's launch and close behaviour, which its scenes cannot declare:
+///
+/// - Every launch opens the main window: the app never restores windows. A launch that restores
+///   a run whose window was closed (the run ended without a quit, such as a crash or a force quit,
+///   or the player keeps windows when quitting) would otherwise open none, only the menu bar
+///   entry; `defaultLaunchBehavior(.presented)` on the `Window`, alone or with
+///   `restorationBehavior(.disabled)`, does not change that.
+/// - The app keeps running in the menu bar after its window closes, so the menu bar window and the
+///   periodic refresh stay; with a single `Window` scene, SwiftUI would quit the app instead.
 final class MacAppDelegate: NSObject, NSApplicationDelegate {
+  /// Turns window restoration off before AppKit restores windows, which it does after this call.
+  /// A value set in the app's own defaults still wins over this registered one.
+  func applicationWillFinishLaunching(_: Notification) {
+    UserDefaults.standard.register(defaults: ["ApplePersistenceIgnoreState": true])
+  }
+
   func applicationShouldTerminateAfterLastWindowClosed(_: NSApplication) -> Bool {
     false
   }

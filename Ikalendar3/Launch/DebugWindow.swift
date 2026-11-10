@@ -59,9 +59,12 @@ extension View {
 
 #if os(macOS)
 extension View {
-  /// Opens the main window once this view appears, when the launch sizes it (`--window-size`):
-  /// some Debug launches on a data folder (rebased or offline) came up with no window and only the
-  /// menu bar entry, whose label this modifies. Opening a window that is open brings it forward.
+  /// Opens the main window once this view appears, when the launch sizes it (`--window-size`), for
+  /// the screenshot script. A launch whose arguments leave a word over opens no main window, only
+  /// the menu bar entry, whose label this modifies. The arguments are read as option and value
+  /// pairs, so an option that takes no value, followed by one that takes a value, leaves the
+  /// second one's value over: `--fixture-rebase --showcase menu-bar` leaves `menu-bar`. Opening a
+  /// window that is open brings it forward.
   func debugOpeningMainWindow() -> some View {
     modifier(MainWindowOpener())
   }
