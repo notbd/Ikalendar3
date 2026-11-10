@@ -274,10 +274,10 @@ expect_resource_copies() {
 
 # Fails when a built product holds a file named like a recorded payload in the package's
 # Fixtures folder (Debug launches read them by path), or a binary whose symbols or strings name
-# the fixture support module, a payload or a fixture launch option: `IkaFixtures` compiles to
-# nothing outside Debug, so one of its symbols, type names or source paths means Release code
-# links it. `nm` and `strings` leave out the debug map, which lists every compiled file and which
-# an archive strips.
+# the fixture support module, a payload, a fixture launch option or the showcase and window
+# options: `IkaFixtures` compiles to nothing outside Debug, so one of its symbols, type names or
+# source paths means Release code links it. `nm` and `strings` leave out the debug map, which
+# lists every compiled file and which an archive strips.
 expect_no_fixtures() {
   local payloads shipped binary holders=""
   payloads=$(find "$PACKAGE/Fixtures" -type f | sed 's|.*/||' | sort)
@@ -286,7 +286,7 @@ expect_no_fixtures() {
   # `grep -q` would stop reading early, and the writer's broken pipe would fail the pipeline.
   while IFS= read -r binary; do
     if { nm "$binary" 2>/dev/null || true; strings "$binary"; } \
-      | grep -F -f <(printf '%s\n' IkaFixtures --fixture "$payloads") >/dev/null; then
+      | grep -F -f <(printf '%s\n' IkaFixtures --fixture --showcase --window-size --landscape "$payloads") >/dev/null; then
       holders+=$'\n'"$binary"
     fi
   done < <(find "$1" -type f -perm -u+x)
