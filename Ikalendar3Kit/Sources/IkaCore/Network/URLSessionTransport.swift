@@ -10,22 +10,33 @@ import OSLog
 
 // MARK: - URLSessionTransport
 
-/// The shipping transport: a `URLSession` of its own with ikalendar 2's timeouts. It keeps no
-/// HTTP cache, so every 304 reaches the feed client, which keeps the only cache; and it keeps no
-/// cookies or credentials, so no request carries an identifier. It follows a redirect only to an
-/// address on the two hosts over HTTPS (`RedirectGuard`), so no answer can take a request
+/// The shipping transport: the process's one `URLSession`, with ikalendar 2's timeouts. It keeps
+/// no HTTP cache, so every 304 reaches the feed client, which keeps the only cache; and it keeps
+/// no cookies or credentials, so no request carries an identifier. It follows a redirect only to
+/// an address on the two hosts over HTTPS (`RedirectGuard`), so no answer can take a request
 /// anywhere else.
 public struct URLSessionTransport: HTTPTransport {
-  private let session: URLSession
+  /// The process's one shipping session. A session with a delegate lives until it is invalidated,
+  /// so every transport shares this one: an intent builds a transport for each run, and a session
+  /// each would stay in memory until the process ends.
+  static private let shared: URLSession = session(with: .ephemeral)
 
-  /// A transport with its own session.
+  let session: URLSession
+
+  /// A transport on the process's one session.
   public init() {
-    self.init(configuration: .ephemeral)
+    session = Self.shared
   }
 
+  /// A transport with a session of its own.
+  ///
   /// - Parameter configuration: Injectable so tests can stub answers through a `URLProtocol`;
   ///   the settings below apply to a copy, so the caller's object stays unchanged.
   init(configuration: URLSessionConfiguration) {
+    session = Self.session(with: configuration)
+  }
+
+  static private func session(with configuration: URLSessionConfiguration) -> URLSession {
     let configuration = configuration.copy() as? URLSessionConfiguration ?? configuration
     // A hanging server fails the request within seconds, not URLSession's 60 s default.
     configuration.timeoutIntervalForRequest = 10
@@ -35,7 +46,7 @@ public struct URLSessionTransport: HTTPTransport {
     configuration.httpShouldSetCookies = false
     configuration.httpCookieStorage = nil
     configuration.urlCredentialStorage = nil
-    session = URLSession(configuration: configuration, delegate: RedirectGuard(), delegateQueue: nil)
+    return URLSession(configuration: configuration, delegate: RedirectGuard(), delegateQueue: nil)
   }
 
   @concurrent

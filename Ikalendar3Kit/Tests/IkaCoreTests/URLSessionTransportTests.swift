@@ -26,6 +26,13 @@ struct URLSessionTransportTests {
     return URLSessionTransport(configuration: configuration)
   }
 
+  /// An intent builds a transport for each run, and a session with a delegate lives until it is
+  /// invalidated, so a session per transport would pile up until the process ends.
+  @Test
+  func `Every shipping transport uses the process's one session`() {
+    #expect(URLSessionTransport().session === URLSessionTransport().session)
+  }
+
   @Test(arguments: [200, 304, 500])
   func `An answer comes back with its status, headers and body as sent`(status: Int) async throws {
     let body: Data = .init(#"{"data":{}}"#.utf8)
