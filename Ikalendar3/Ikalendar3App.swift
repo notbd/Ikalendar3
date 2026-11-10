@@ -92,16 +92,18 @@ struct Ikalendar3App: App {
   }
 
   /// Registers the fonts and points image lookups at the resource framework before anything draws,
-  /// then builds this launch's objects.
+  /// then builds this launch's objects, and has the pending reminders follow their switches for
+  /// the app's whole life, whoever writes them.
   init() {
     BundledResources.load(from: IkaResources.bundle)
     let services: AppServices? = .forThisLaunch()
     _services = State(initialValue: services)
-    #if os(macOS)
     if !AppServices.isTestHost, let services {
+      services.effects.followReminderSwitches()
+      #if os(macOS)
       _backgroundRefresh = State(initialValue: MacBackgroundRefresh(shell: services.effects))
+      #endif
     }
-    #endif
   }
 }
 

@@ -23,7 +23,6 @@ struct DebugOptionsView: View {
   @Environment(PreferenceStore.self) private var preferences
   @Environment(AppStatus.self) private var status
   @Environment(\.gameLanguage) private var language
-  @Environment(\.effects) private var effects
   #if os(macOS)
   @Environment(\.openWindow) private var openWindow
   #endif
@@ -50,12 +49,10 @@ struct DebugOptionsView: View {
         }
         Button(text(.resetAppPreferences)) {
           preferences.resetAppPreferences()
-          rebuildReminders()
           confirm(.preferencesReset)
         }
         Button(text(.resetAll)) {
           preferences.resetAll()
-          rebuildReminders()
           showWelcomeScreen()
         }
       }
@@ -93,12 +90,6 @@ struct DebugOptionsView: View {
   }
 
   // MARK: Actions
-
-  /// Replaces the pending reminders after a reset turned their switches off, so none is left
-  /// scheduled for a switch that is now off.
-  private func rebuildReminders() {
-    Task { await effects?.rebuildReminders() }
-  }
 
   private func confirm(_ text: AboutText) {
     steps += 1

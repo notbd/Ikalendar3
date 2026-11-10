@@ -8,6 +8,7 @@
 #if !os(watchOS)
 import Foundation
 import IkaCore
+import Observation
 import WidgetKit
 
 // MARK: - EffectsShell
@@ -19,8 +20,8 @@ import WidgetKit
 /// whichever entry point started it.
 ///
 /// It replaces the app's pending event reminders as the plan says, after a refresh that committed a
-/// feed and whenever a reminder switch changes (`rebuildReminders()`), with the switches read from
-/// the preferences as it plans. Replacements take turns in the order the shell plans them
+/// feed and whenever a reminder switch changes (`followReminderSwitches()`), with the switches read
+/// from the preferences as it plans. Replacements take turns in the order the shell plans them
 /// (`ReminderReplacements`), so the latest switches always stand.
 ///
 /// On iOS it also starts Tracking, and every run re-arms each running Tracking from the cache.
@@ -63,9 +64,28 @@ public struct EffectsShell {
     return result
   }
 
+  /// Rebuilds the pending reminders each time the reminder switches change, whoever writes them
+  /// (Settings, Debug Options' resets, any later writer), until the returned task is cancelled.
+  /// The app starts it once at launch, so no writer rebuilds them itself.
+  ///
+  /// The switches are read as it is called, and only a change from them rebuilds: a rebuild at
+  /// launch would replace the pending reminders from a snapshot the first refresh has not
+  /// published yet.
+  @discardableResult
+  public func followReminderSwitches() -> Task<Void, Never> {
+    let initialKinds = preferences.reminderKinds
+    return Task {
+      var kinds = initialKinds
+      for await changedKinds in Observations({ preferences.reminderKinds }) where changedKinds != kinds {
+        kinds = changedKinds
+        await rebuildReminders()
+      }
+    }
+  }
+
   /// Replaces the pending reminders after a reminder switch changed, from the snapshot the engine
   /// shows, with no refresh.
-  public func rebuildReminders() async {
+  private func rebuildReminders() async {
     await apply(EffectsPlan(remindersChangedTo: reminderSettings, in: engine.snapshot, at: Date()))
   }
 

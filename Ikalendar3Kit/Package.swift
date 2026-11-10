@@ -48,5 +48,8 @@ let package = Package(
       name: "IkaDesignTests",
       dependencies: ["IkaDesign", "IkaCore", "IkaFixtures"],
       swiftSettings: swiftSettings),
-    .testTarget(name: "IkaIntentsTests", dependencies: ["IkaIntents"], swiftSettings: swiftSettings),
+    .testTarget(
+      name: "IkaIntentsTests",
+      dependencies: ["IkaIntents", "IkaCore", "IkaFixtures"],
+      swiftSettings: swiftSettings),
   ])
