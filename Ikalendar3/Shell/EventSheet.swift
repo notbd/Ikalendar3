@@ -6,6 +6,7 @@
 //
 
 import IkaCore
+import IkaDesign
 import SwiftUI
 
 // MARK: - EventSheet
@@ -40,8 +41,10 @@ enum EventSheet: Hashable, Identifiable {
 extension View {
   /// Presents the event sheet `item` holds as a form sheet: its screen under its own navigation
   /// bar with a close button, the failed-refresh toast over it. A form sheet keeps the Challenge
-  /// and Splatfest screens, which have only the iPhone list, near an iPhone's width. A Mac form
-  /// sheet is far shorter than an iPad's, so a Mac sheet takes an iPhone list's size instead.
+  /// and Splatfest screens, which have only the iPhone list, near an iPhone's width. The Salmon
+  /// Run screen also has a wide detail, from 540 pt, which an iPad form sheet is: the sheet
+  /// chooses the iPhone list (`detailLayout(.list)`), so all three show it. A Mac form sheet is far
+  /// shorter than an iPad's, so a Mac sheet takes an iPhone list's size instead.
   func eventSheetPresentation(item: Binding<EventSheet?>) -> some View {
     sheet(item: item) { sheet in
       EventSheetView(sheet: sheet)
@@ -73,6 +76,7 @@ private struct EventSheetView: View {
           }
         }
     }
+    .detailLayout(.list)
     .refreshFailureToast()
   }
 

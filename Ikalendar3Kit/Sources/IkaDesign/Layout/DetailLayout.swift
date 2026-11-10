@@ -10,7 +10,9 @@ import SwiftUI
 // MARK: - DetailLayout
 
 /// How a Mode's detail lays out its Schedule, decided by the detail's own width rather than the
-/// device: the iPhone list, or on iPad and Mac one wide current row over one table.
+/// device: the iPhone list, or on iPad and Mac one wide current row over one table. A place that
+/// shows screens as on iPhone by design, such as the iPad columns, chooses the list instead
+/// (`DetailLayoutChoice`).
 ///
 /// iPhone always gets the list: it runs in portrait only, where every model is narrower than
 /// `WideDetailMetrics.minimumWidth`.
@@ -30,6 +32,26 @@ public enum DetailLayout: Equatable, Sendable {
 
     self = .wide(WideDetailMetrics(width: width, dynamicTypeSize: dynamicTypeSize))
   }
+
+  /// The layout `choice` gives a detail `width` points wide at `dynamicTypeSize`.
+  public init(_ choice: DetailLayoutChoice, width: CGFloat, dynamicTypeSize: DynamicTypeSize) {
+    switch choice {
+      case .byWidth: self.init(width: width, dynamicTypeSize: dynamicTypeSize)
+      case .list: self = .list
+    }
+  }
+}
+
+// MARK: - DetailLayoutChoice
+
+/// Which detail layout the screens in a place show.
+public enum DetailLayoutChoice: Hashable, Sendable {
+  /// The wide detail where the screen is wide enough, else the iPhone list: the default, as in the
+  /// sidebar's detail.
+  case byWidth
+  /// The iPhone list at any width: the iPad and Mac columns and the event sheets, whose screens
+  /// stay as on iPhone however wide the window makes them.
+  case list
 }
 
 // MARK: - WideDetailMetrics
