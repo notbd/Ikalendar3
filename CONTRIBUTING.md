@@ -107,7 +107,7 @@ xcodebuild test -project Ikalendar3.xcodeproj -scheme Ikalendar3 -destination 'p
 - It builds Debug into `build/Dev` (`--derived-data` names another folder), creates its own iPhone, iPad and Apple Watch simulators of App Store sizes and deletes them at the end; `--iphone`, `--ipad` and `--watch` take existing UDIDs instead. It installs the app, sets the iPhone and iPad to dark appearance with a 9:41 status bar, switches the iPad to full-screen apps, and before each language sets the iPad's and the watch's system language and restarts them, so the iPad status bar's date and the watch's clock read in it too. Its rebased launches commit fixture payloads to each device's App Group cache, as `--fixture-rebase` does.
 - A simulator passed by UDID is put back at the end as it was found: its languages, appearance, status bar override, the iPad's multitasking setting, the App Group container as the installed app found it, and whether the simulator was booted. One that was booted restarts, so its languages apply. The app it installs stays installed, in place of any build that was there. A simulator it cannot put back is named in an error, with what it was saved in the output folder's `.borrowed`.
 - The Mac window is captured by its window id, so nothing else on the screen is.
-- A run of all 14 languages, builds included, took 35 minutes on a 10-core Apple silicon Mac. The watch simulator takes no status bar override, so its corner shows the real time, and the complications' watch face shows the same.
+- A run of all 14 languages took 64 minutes on a 10-core Apple silicon Mac, builds not included. The watch simulator takes no status bar override, so its corner shows the real time, and the complications' watch face shows the same.
 
 ## Project layout
 
