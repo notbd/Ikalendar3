@@ -1,12 +1,12 @@
 //
-//  WidgetParts.swift
+//  WidgetRotationParts.swift
 //  Ikalendar3
 //
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if !os(watchOS)
 import IkaCore
-import IkaDesign
 import SwiftUI
 import WidgetKit
 
@@ -144,3 +144,4 @@ struct StageCards: View {
     }
   }
 }
+#endif

@@ -7,7 +7,6 @@
 
 #if os(iOS)
 import IkaCore
-import IkaDesign
 import SwiftUI
 import WidgetKit
 
@@ -17,11 +16,16 @@ import WidgetKit
 /// Battle Mode's icon and the countdown), rectangular (the Battle Mode, the Rule and the
 /// countdown) or inline (the Rule and the countdown). It shows Splatfest Battle while a Splatfest
 /// replaces the Battle Mode, as every battle widget does, and marks stale data in every family.
-struct LockScreenBattleView: View {
+public struct LockScreenBattleView: View {
   let entry: ScheduleWidgetEntry<BattleWidgetContent>
   let family: WidgetFamily
 
-  var body: some View {
+  public init(entry: ScheduleWidgetEntry<BattleWidgetContent>, family: WidgetFamily) {
+    self.entry = entry
+    self.family = family
+  }
+
+  public var body: some View {
     Group {
       if let schedule = entry.schedule {
         switch family {

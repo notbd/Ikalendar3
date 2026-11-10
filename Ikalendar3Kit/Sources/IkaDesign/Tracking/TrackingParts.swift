@@ -6,25 +6,21 @@
 //
 
 #if os(iOS)
-import AppIntents
 import IkaCore
-import IkaDesign
-import IkaIntents
 import SwiftUI
-import WidgetKit
 
 // MARK: - LiveActivityText
 
-/// The strings the Live Activity writes itself, from this extension's `LiveActivity` string
-/// table. The raw value is the catalog key. The reminders are `IkaCore`'s, the Refresh button's
-/// word `IkaIntents`' (`TrackingText`), the Next tag Ink's (`InkText`).
+/// The strings the Live Activity writes itself, from `IkaDesign`'s `LiveActivity` string table.
+/// The raw value is the catalog key. The reminders are `IkaCore`'s, the Refresh button's word
+/// `IkaIntents`' (`TrackingText`), the Next tag Ink's (`InkText`).
 enum LiveActivityText: String {
   /// "Nothing later published yet".
   case nothingLater = "liveActivity.nothingLater"
 
   /// The string in a text set.
   func text(in language: GameLanguage) -> String {
-    Bundle.main.localizedString(forKey: rawValue, table: "LiveActivity", in: language)
+    Bundle.module.localizedString(forKey: rawValue, table: "LiveActivity", in: language)
   }
 }
 
@@ -32,12 +28,16 @@ enum LiveActivityText: String {
 
 /// The tracked Mode's bundled icon: the compact and minimal Dynamic Island, and beside its name.
 /// Decorative: the name or the sentence around it says the Mode.
-struct TrackingModeIcon: View {
+public struct TrackingModeIcon: View {
   @ScaledMetric(relativeTo: .caption) private var side: CGFloat = 20
 
   let mode: Mode
 
-  var body: some View {
+  public init(mode: Mode) {
+    self.mode = mode
+  }
+
+  public var body: some View {
     Image(decorative: BundledImage.name(for: ModeIcon(mode), size: .small), bundle: BundledImage.catalogBundle)
       .resizable()
       .scaledToFit()
@@ -389,21 +389,32 @@ struct TrackingFetchTime: View {
   }
 }
 
-// MARK: - TrackingRefreshButton
+// MARK: - TrackingRefreshLabel
 
-/// The Refresh button: the Live Activity intent that runs the app's effects shell, labelled with
-/// the word the reminders tell the player to tap.
-struct TrackingRefreshButton: View {
-  let language: GameLanguage
+/// The Refresh button's label, with the word the reminders tell the player to tap. The widget
+/// extension puts it in a button that runs the Refresh intent, which this module cannot name; both
+/// that button and the Debug showcase's take `trackingRefreshButtonStyle()`.
+public struct TrackingRefreshLabel: View {
+  let title: String
+  let systemImage: String
 
-  var body: some View {
-    Button(intent: RefreshTrackingIntent()) {
-      Label(TrackingText.refresh.text(in: language), systemImage: TrackingText.refresh.systemImage)
-        .font(.caption.weight(.semibold))
-        .lineLimit(1)
-    }
-    .buttonStyle(.bordered)
-    .tint(.white)
+  public init(title: String, systemImage: String) {
+    self.title = title
+    self.systemImage = systemImage
+  }
+
+  public var body: some View {
+    Label(title, systemImage: systemImage)
+      .font(.caption.weight(.semibold))
+      .lineLimit(1)
+  }
+}
+
+extension View {
+  /// The Refresh button's look: bordered, in white on Ink's dark materials.
+  public func trackingRefreshButtonStyle() -> some View {
+    buttonStyle(.bordered)
+      .tint(.white)
   }
 }
 #endif

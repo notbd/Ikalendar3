@@ -5,8 +5,8 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if os(watchOS)
 import IkaCore
-import IkaDesign
 import SwiftUI
 
 // MARK: - WatchItem
@@ -150,3 +150,4 @@ struct WatchEmptyView: View {
       .multilineTextAlignment(.center)
   }
 }
+#endif

@@ -7,6 +7,7 @@
 
 #if os(iOS)
 import ActivityKit
+import AppIntents
 import IkaCore
 import IkaDesign
 import IkaIntents
@@ -18,7 +19,8 @@ import WidgetKit
 /// Tracking's Live Activity, always in Ink: on the Lock Screen and in StandBy, in the Dynamic
 /// Island, and in the small family that the watch Smart Stack and CarPlay show. Every view picks
 /// what it shows by its render time and the system's stale flag (`TrackingRender`); the app's
-/// effects shell re-arms the content.
+/// effects shell re-arms the content. The views live in `IkaDesign`, so the app's Debug showcase
+/// draws the same ones.
 struct TrackingLiveActivity: Widget {
   var body: some WidgetConfiguration {
     ActivityConfiguration(for: TrackingAttributes.self) { context in
@@ -29,35 +31,20 @@ struct TrackingLiveActivity: Widget {
       let render: TrackingRender = .init(context)
       return DynamicIsland {
         DynamicIslandExpandedRegion(.leading) {
-          TrackingModeHeading(render: render)
-            .trackingEnvironment(render)
+          TrackingIsland.leading(render)
         }
         DynamicIslandExpandedRegion(.trailing) {
-          // Clear of the island's rounded corner.
-          TrackingCountdown(render: render)
-            .padding(.trailing, 6)
-            .trackingEnvironment(render)
+          TrackingIsland.trailing(render)
         }
         DynamicIslandExpandedRegion(.bottom) {
-          VStack(alignment: .leading, spacing: 6) {
-            HStack(alignment: .top, spacing: 8) {
-              TrackingCurrentView(render: render, detail: .names)
-              Spacer(minLength: 4)
-              TrackingFetchTime(render: render)
-            }
-            HStack(spacing: 8) {
-              TrackingNextLine(render: render)
-              Spacer(minLength: 4)
-              TrackingRefreshButton(language: render.terms.language)
-            }
+          TrackingIsland.bottom(render) {
+            TrackingRefreshButton(language: render.terms.language)
           }
-          .trackingEnvironment(render)
         }
       } compactLeading: {
         TrackingModeIcon(mode: render.mode)
       } compactTrailing: {
-        TrackingCountdown(render: render, isCompact: true)
-          .trackingEnvironment(render)
+        TrackingIsland.compactTrailing(render)
       } minimal: {
         TrackingModeIcon(mode: render.mode)
       }
@@ -77,76 +64,34 @@ private struct TrackingFamilyView: View {
   let render: TrackingRender
 
   var body: some View {
-    Group {
-      switch family {
-        case .small: TrackingSmallView(render: render)
-        case .medium: TrackingLockScreenView(render: render)
-        @unknown default: TrackingLockScreenView(render: render)
-      }
+    switch family {
+      case .small: TrackingSmallView(render: render)
+      case .medium: lockScreen
+      @unknown default: lockScreen
     }
-    .trackingEnvironment(render)
+  }
+
+  private var lockScreen: some View {
+    TrackingLockScreenView(render: render) {
+      TrackingRefreshButton(language: render.terms.language)
+    }
   }
 }
 
-// MARK: - TrackingLockScreenView
+// MARK: - TrackingRefreshButton
 
-/// The Lock Screen and StandBy: the Mode with the Refresh button, the item on with its countdown
-/// and Stages, then the next item or the reminder beside the fetch time. The system allows 160
-/// points of height, so the reminder gets the full width of its line.
-private struct TrackingLockScreenView: View {
-  let render: TrackingRender
+/// The Refresh button: the Live Activity intent that runs the app's effects shell, labelled with
+/// the word the reminders tell the player to tap.
+private struct TrackingRefreshButton: View {
+  let language: GameLanguage
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 6) {
-      HStack(spacing: 6) {
-        TrackingModeHeading(render: render)
-        Spacer(minLength: 4)
-        TrackingRefreshButton(language: render.terms.language)
-      }
-      TrackingCurrentView(render: render, detail: .cards)
-      HStack(spacing: 8) {
-        TrackingNextLine(render: render)
-        Spacer(minLength: 4)
-        TrackingFetchTime(render: render)
-      }
+    Button(intent: RefreshTrackingIntent()) {
+      TrackingRefreshLabel(
+        title: TrackingText.refresh.text(in: language),
+        systemImage: TrackingText.refresh.systemImage)
     }
-    .padding(12)
-    .background(InkBackground())
-  }
-}
-
-// MARK: - TrackingSmallView
-
-/// The small family on the watch and in CarPlay, where buttons do nothing: the Mode's icon, the
-/// item on and its countdown, or the reminder in their place.
-private struct TrackingSmallView: View {
-  let render: TrackingRender
-
-  var body: some View {
-    HStack(spacing: 8) {
-      TrackingModeIcon(mode: render.mode)
-      VStack(alignment: .leading, spacing: 2) {
-        TrackingCurrentView(render: render, detail: .title)
-        if let reminder = render.reminder {
-          TrackingReminderLabel(reminder: reminder, language: render.terms.language)
-        }
-        else {
-          TrackingCountdown(render: render, isCompact: true)
-        }
-      }
-      Spacer(minLength: 0)
-    }
-    .padding(8)
-  }
-}
-
-// MARK: - Environment
-
-extension View {
-  /// The app language, which picks every string, game term and Han face, on Ink's dark materials.
-  fileprivate func trackingEnvironment(_ render: TrackingRender) -> some View {
-    environment(\.gameLanguage, render.terms.language)
-      .environment(\.colorScheme, .dark)
+    .trackingRefreshButtonStyle()
   }
 }
 #endif

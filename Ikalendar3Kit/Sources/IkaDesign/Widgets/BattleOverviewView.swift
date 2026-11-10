@@ -5,8 +5,8 @@
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
+#if !os(watchOS)
 import IkaCore
-import IkaDesign
 import SwiftUI
 import WidgetKit
 
@@ -14,10 +14,14 @@ import WidgetKit
 
 /// The extra large widget in Ink: a column for each continuous Battle Mode with its current
 /// Rotation, or its pause, and how fresh the data is, on Ink's dotted background.
-struct BattleOverviewView: View {
+public struct BattleOverviewView: View {
   let entry: ScheduleWidgetEntry<[BattleWidgetContent]>
 
-  var body: some View {
+  public init(entry: ScheduleWidgetEntry<[BattleWidgetContent]>) {
+    self.entry = entry
+  }
+
+  public var body: some View {
     Group {
       if let schedule = entry.schedule {
         VStack(spacing: 10) {
@@ -51,3 +55,4 @@ struct BattleOverviewView: View {
     }
   }
 }
+#endif
