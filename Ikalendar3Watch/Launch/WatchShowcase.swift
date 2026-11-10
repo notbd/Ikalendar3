@@ -57,9 +57,11 @@ struct ComplicationsShowcase: View {
         .font(.system(size: 15, weight: .semibold))
       // The device's time, as the corner clock shows it: the watch simulator's status bar takes no
       // override.
-      Text(Date(), format: .dateTime.hour().minute())
+      Text(Date(), format: .dateTime.hour(.defaultDigits(amPM: .omitted)).minute())
         .font(.system(size: 56, weight: .semibold, design: .rounded))
         .monospacedDigit()
+        .lineLimit(1)
+        .minimumScaleFactor(0.5)
         .environment(\.timeZone, .autoupdatingCurrent)
       ModeComplicationLayout(entry: entry(.battle(.anarchySeries)), family: .accessoryRectangular)
         .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)

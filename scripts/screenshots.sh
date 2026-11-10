@@ -101,8 +101,17 @@ mac_pid=""
 readonly MAC_SUITE="ikalendar3-screenshots-$(basename "$ROOT")"
 readonly MAC_DATA="$output/.mac-data"
 
+# The system languages of the simulators passed by UDID, "<udid> <languages> <locale>", put back
+# at the end (`set_device_language` changes them).
+kept_languages=()
+
 cleanup() {
   [[ -z $mac_pid ]] || kill "$mac_pid" 2>/dev/null || true
+  for kept in "${kept_languages[@]+"${kept_languages[@]}"}"; do
+    read -r udid system_languages system_locale <<<"$kept"
+    xcrun simctl spawn "$udid" defaults write -g AppleLanguages "$system_languages" >/dev/null 2>&1 || true
+    xcrun simctl spawn "$udid" defaults write -g AppleLocale "$system_locale" >/dev/null 2>&1 || true
+  done
   for udid in "${created_simulators[@]+"${created_simulators[@]}"}"; do
     xcrun simctl shutdown "$udid" >/dev/null 2>&1 || true
     xcrun simctl delete "$udid" >/dev/null 2>&1 || true
@@ -192,6 +201,23 @@ for app in "$IOS_APP" "$WATCH_APP" "$MAC_APP"; do
   [[ -d $app ]] || fail "$app is missing; run without --skip-build"
 done
 
+# Sets the system language of simulator `udid` to `language` and restarts it, so the system's own
+# text around the app (the iPad status bar's date, the watch's clock) reads in it too.
+set_device_language() {
+  local udid=$1 language=$2
+  xcrun simctl spawn "$udid" defaults write -g AppleLanguages -array "$language"
+  xcrun simctl spawn "$udid" defaults write -g AppleLocale "$(locale_of "$language")"
+  xcrun simctl shutdown "$udid"
+  xcrun simctl boot "$udid"
+  xcrun simctl bootstatus "$udid" -b >/dev/null
+}
+
+# Overrides the status bar of simulator `udid` with the screenshots' usual one, at 9:41.
+override_status_bar() {
+  xcrun simctl status_bar "$1" override --time 9:41 --dataNetwork wifi --wifiMode active --wifiBars 3 \
+    --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
+}
+
 # MARK: Simulators
 
 # Unless the variable named `name` holds a UDID, creates a simulator of `type` into it, which
@@ -212,6 +238,14 @@ for udid in "$iphone" "$ipad" "$watch"; do
   xcrun simctl boot "$udid" 2>/dev/null || true
   xcrun simctl bootstatus "$udid" -b >/dev/null
 done
+for udid in "$ipad" "$watch"; do
+  [[ " ${created_simulators[*]+"${created_simulators[*]}"} " == *" $udid "* ]] && continue
+  system_languages=$(xcrun simctl spawn "$udid" defaults read -g AppleLanguages 2>/dev/null | tr -d ' \n') ||
+    system_languages="(en)"
+  system_locale=$(xcrun simctl spawn "$udid" defaults read -g AppleLocale 2>/dev/null) || system_locale=en_US
+  kept_languages+=("$udid $system_languages $system_locale")
+done
+
 # The iPad shows apps full screen, not as windows; SpringBoard reads it at boot.
 if [[ $(xcrun simctl spawn "$ipad" defaults read com.apple.springboard SBMedusaMultitaskingEnabled 2>/dev/null) != 0 ]]
 then
@@ -223,8 +257,7 @@ fi
 # The watch has no light appearance to leave.
 for udid in "$iphone" "$ipad"; do
   xcrun simctl ui "$udid" appearance dark
-  xcrun simctl status_bar "$udid" override --time 9:41 --dataNetwork wifi --wifiMode active --wifiBars 3 \
-    --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
+  override_status_bar "$udid"
   xcrun simctl install "$udid" "$IOS_APP"
 done
 xcrun simctl install "$watch" "$WATCH_APP"
@@ -337,6 +370,8 @@ for language in $languages; do
       check_size "$file" "$IPAD_PORTRAIT"
     fi
   }
+  set_device_language "$ipad" "$language"
+  override_status_bar "$ipad"
   pad_shot 07-ipad-columns regular_battle "$NORMAL_DAY" --landscape
   pad_shot 08-ipad-sidebar salmon_run "$NORMAL_DAY"
   pad_shot 09-ipad-splatfest regular_battle "$SPLATFEST"
@@ -363,6 +398,7 @@ for language in $languages; do
     capture "$watch" "$file"
     check_size "$file" "$WATCH_SIZE"
   }
+  set_device_language "$watch" "$language"
   watch_shot 14-watch-now
   watch_shot 15-watch-mode-page --mode-page salmonRun
   watch_shot 16-watch-complications --fixture-rebase --showcase complications
