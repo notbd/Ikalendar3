@@ -13,7 +13,7 @@ import SwiftUI
 
 /// What heads a Classic screen: the Mode's name, with Anarchy Battle's or Splatfest Battle's form
 /// under it, over the list, and the full name for the navigation bar. The name and form are the
-/// ones Ink's heading shows (`InkModeHeading`), so every Style splits a name alike.
+/// ones Ink's heading shows (`ModeNameAndForm`), so every Style splits a name alike.
 struct ClassicHeading: Equatable {
   /// The Mode's name: "Anarchy Battle".
   let name: String
