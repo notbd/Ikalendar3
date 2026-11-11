@@ -118,8 +118,10 @@ struct OnboardingView: View {
       .ikaFont(.heavy, size: 42, relativeTo: .largeTitle)
       // The face's own line gap spaces its lines twice as far apart as the system font's.
       .lineHeight(.multiple(factor: 1.1))
-      // At the largest text sizes the name alone outgrows the screen: it shrinks rather than
-      // breaking or being cut off.
+      // Past the second accessibility size the name alone outgrows a 6.1-inch screen and would
+      // break inside the word, so the 42-point title grows no further; it shrinks rather than being
+      // cut off when the screen is short.
+      .dynamicTypeSize(...DynamicTypeSize.accessibility2)
       .minimumScaleFactor(0.5)
       .foregroundStyle(.primary)
       .modifier(Entrance(part: .title, hasStarted: hasEntered))
