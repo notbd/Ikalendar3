@@ -45,11 +45,15 @@ struct ClassicChallengeSection: View {
 
     return VStack(alignment: .leading, spacing: Scoped.cellSpacingV) {
       Text(verbatim: texts.name)
-        .scaledLimitedLine(for: metrics.arrangement)
+        .classicLines(for: metrics.arrangement)
         .ikaFont(.heavy, size: Scoped.nameFontSize, relativeTo: .title2)
+        // The heavy face is wide: past this size its longest word ("Jump-a-thon") no longer fits a
+        // 390-point iPhone's cell and splits.
+        .dynamicTypeSize(...ClassicMetrics.displayTitleLargestSize)
       if !texts.description.isEmpty {
         Text(verbatim: texts.displayDescription)
           .fixedSize(horizontal: false, vertical: true)
+          .lineHeight(.multiple(factor: ClassicMetrics.wrappedLineHeightFactor))
           .ikaFont(.light, size: Scoped.descriptionFontSize, relativeTo: .headline)
       }
       ClassicBattleSecondaryCell(
@@ -64,6 +68,7 @@ struct ClassicChallengeSection: View {
       if !texts.rulesText.isEmpty {
         Text(verbatim: texts.displayRulesText)
           .fixedSize(horizontal: false, vertical: true)
+          .lineHeight(.multiple(factor: ClassicMetrics.wrappedLineHeightFactor))
           .foregroundStyle(.secondary)
           .ikaFont(.light, size: Scoped.rulesTextFontSize, relativeTo: .footnote)
       }
@@ -88,7 +93,7 @@ struct ClassicChallengeSection: View {
           ClassicTag(text: tag.text(in: terms.language))
         }
         Text(verbatim: timeFormat.battleRange(from: marked.window.startTime, to: marked.window.endTime, now: now))
-          .scaledLimitedLine(for: metrics.arrangement)
+          .classicLines(for: metrics.arrangement)
           .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       }
 

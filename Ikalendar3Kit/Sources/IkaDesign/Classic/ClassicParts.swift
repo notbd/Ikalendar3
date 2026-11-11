@@ -65,11 +65,24 @@ struct ClassicStageLabel: View {
 
   var body: some View {
     Text(verbatim: name)
-      .scaledLimitedLine(for: arrangement)
+      .classicLines(for: arrangement)
       .ikaFont(.light, size: fontSize, relativeTo: .body)
       .padding(.horizontal, ClassicMetrics.StageLabel.paddingH)
       .padding(.vertical, ClassicMetrics.StageLabel.paddingV)
       .glassEffect(.regular.interactive(), in: .rect(cornerRadius: ClassicMetrics.StageLabel.cornerRadius))
+  }
+}
+
+// MARK: - View
+
+extension View {
+  /// Fits a text the way `arrangement` asks (`scaledLimitedLine(for:)`): shrunk onto one line side
+  /// by side; wrapped at full size when stacked, with its lines at Classic's line height and all
+  /// of them shown, however little height its stack offers.
+  func classicLines(for arrangement: CellArrangement) -> some View {
+    scaledLimitedLine(for: arrangement)
+      .lineHeight(arrangement == .stacked ? .multiple(factor: ClassicMetrics.wrappedLineHeightFactor) : nil)
+      .fixedSize(horizontal: false, vertical: arrangement == .stacked)
   }
 }
 
@@ -97,7 +110,7 @@ struct ClassicStatusCell: View {
 
   var body: some View {
     Text(verbatim: text)
-      .scaledLimitedLine(for: arrangement)
+      .classicLines(for: arrangement)
       .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       .foregroundStyle(.secondary)
       .frame(maxWidth: .infinity, alignment: .leading)

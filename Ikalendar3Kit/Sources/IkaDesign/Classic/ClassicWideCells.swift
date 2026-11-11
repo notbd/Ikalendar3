@@ -98,7 +98,7 @@ struct ClassicBattleTableRow: View {
             .shadow(radius: ClassicMetrics.shadowRadius)
             .frame(height: wide.half.length(.tableRuleIconHeight))
           Text(verbatim: terms.name(of: setting.rule))
-            .scaledLimitedLine(for: .sideBySide)
+            .classicLines(for: .sideBySide)
             .ikaFont(.light, size: ClassicMetrics.BattleSecondary.ruleFontSize, relativeTo: .body)
         }
       } trailing: {
@@ -192,7 +192,7 @@ struct ClassicShiftTableRow: View {
           in: terms.language,
           timeFormat.span(.seconds(shift.startTime.timeIntervalSince(now)))))
           .countdownRoll(value: now)
-          .scaledLimitedLine(for: .sideBySide)
+          .classicLines(for: .sideBySide)
           .foregroundStyle(.secondary)
           .ikaFont(.light, size: ClassicMetrics.BattlePrimary.remainingTimeFontSize, relativeTo: .headline)
       }
@@ -290,7 +290,7 @@ private struct ClassicWideProgress: View {
         .frame(width: side, height: side)
       Text(verbatim: ClassicText.timeLeft.text(in: terms.language, format.span(progress.timeLeft)))
         .countdownRoll(value: now)
-        .scaledLimitedLine(for: .sideBySide)
+        .classicLines(for: .sideBySide)
         .foregroundStyle(.secondary)
         .ikaFont(.light, size: ClassicMetrics.BattlePrimary.remainingTimeFontSize, relativeTo: .headline)
     }
@@ -328,7 +328,7 @@ private struct ClassicWideTimeText: View {
 
   var body: some View {
     Text(verbatim: text)
-      .scaledLimitedLine(for: .sideBySide)
+      .classicLines(for: .sideBySide)
       .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
   }
 }

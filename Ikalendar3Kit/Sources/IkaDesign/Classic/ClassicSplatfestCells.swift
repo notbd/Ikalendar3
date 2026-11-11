@@ -38,13 +38,16 @@ struct ClassicSplatfestCard: View {
           .frame(width: iconSize, height: iconSize)
         Text(verbatim: terms.splatfest(splatfest.id).title)
           .fixedSize(horizontal: false, vertical: true)
+          .lineHeight(.multiple(factor: ClassicMetrics.wrappedLineHeightFactor))
           .ikaFont(.heavy, size: Scoped.titleFontSize, relativeTo: .title2)
       }
+      // As a Challenge's name: past this size a long word of a title ("instrument") splits.
+      .dynamicTypeSize(...ClassicMetrics.displayTitleLargestSize)
 
       ClassicTeamList(splatfest: splatfest, terms: terms, arrangement: metrics.arrangement)
 
       Text(verbatim: timeFormat.range(of: splatfest, now: now))
-        .scaledLimitedLine(for: metrics.arrangement)
+        .classicLines(for: metrics.arrangement)
         .foregroundStyle(.secondary)
         .ikaFont(.light, size: Scoped.timeFontSize, relativeTo: .subheadline)
 
@@ -123,13 +126,15 @@ struct ClassicTeamList: View {
       ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
         let color: SRGBColor = .init(team.color)
 
-        HStack(spacing: ClassicMetrics.Header.tagPaddingH) {
+        // The swatch beside a name's first line when the name wraps: the stacked line box is
+        // close to the glyphs, and a single line's box centres them.
+        HStack(alignment: arrangement == .stacked ? .top : .center, spacing: ClassicMetrics.Header.tagPaddingH) {
           Circle()
             .fill(Color(color))
             .overlay(Circle().strokeBorder(.primary.opacity(0.25), lineWidth: 1))
             .frame(width: swatchSize, height: swatchSize)
           Text(verbatim: team.name)
-            .scaledLimitedLine(for: arrangement)
+            .classicLines(for: arrangement)
             .foregroundStyle(Color(color.readableTint(on: Style.classic.panel(in: colorScheme), for: .text)))
             .ikaFont(.heavy, size: Scoped.teamFontSize, relativeTo: .headline)
         }
@@ -185,7 +190,7 @@ struct ClassicTricolorSection: View {
       layout {
         ClassicTag(text: ModeLabel.tricolor.text(in: terms.language))
         Text(verbatim: timeFormat.battleRange(from: tricolor.item.startTime, to: tricolor.item.endTime, now: now))
-          .scaledLimitedLine(for: metrics.arrangement)
+          .classicLines(for: metrics.arrangement)
           .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       }
       .accessibilityElement(children: .combine)
@@ -213,7 +218,7 @@ struct ClassicProgressBar: View {
     VStack(alignment: .trailing, spacing: ClassicMetrics.Header.progressSpacing) {
       Text(verbatim: ClassicText.timeLeft.text(in: terms.language, timeFormat.span(progress.timeLeft)))
         .countdownRoll(value: now)
-        .scaledLimitedLine(for: arrangement)
+        .classicLines(for: arrangement)
         .fixedSize(horizontal: false, vertical: true)
         .multilineTextAlignment(.trailing)
         .foregroundStyle(.secondary)

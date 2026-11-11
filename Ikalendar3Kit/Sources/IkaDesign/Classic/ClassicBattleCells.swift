@@ -106,7 +106,7 @@ struct ClassicBattleSection: View {
       }
       if let window = row.window {
         Text(verbatim: timeFormat.battleRange(from: window.startTime, to: window.endTime, now: now))
-          .scaledLimitedLine(for: metrics.arrangement)
+          .classicLines(for: metrics.arrangement)
           .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       }
     }
@@ -207,7 +207,7 @@ struct ClassicBattlePrimaryCell: View {
   private var remainingTime: some View {
     Text(verbatim: ClassicText.timeLeft.text(in: terms.language, timeFormat.span(progress.timeLeft)))
       .countdownRoll(value: now)
-      .scaledLimitedLine(for: metrics.arrangement)
+      .classicLines(for: metrics.arrangement)
       .foregroundStyle(.secondary)
       .ikaFont(.light, size: Scoped.remainingTimeFontSize, relativeTo: .headline)
   }
@@ -218,8 +218,9 @@ struct ClassicBattlePrimaryCell: View {
 // MARK: - ClassicPrimaryRuleTitle
 
 /// The featured Rotation's Rule name, large in the light face as ikalendar 2 set it, at the size
-/// that also fits every other Rule's, so the title keeps one size from Rotation to Rotation;
-/// wrapped at full size when stacked.
+/// that also fits every other Rule's, so the title keeps one size from Rotation to Rotation.
+/// When stacked it wraps at a title's size instead: side by side, 48 points is only the largest
+/// size the fitting starts from, and grown to an accessibility size it would split "Rainmaker".
 struct ClassicPrimaryRuleTitle: View {
   let rule: RuleID
   let terms: GameTerms
@@ -241,9 +242,13 @@ struct ClassicPrimaryRuleTitle: View {
   }
 
   private func title(_ name: String) -> some View {
-    Text(verbatim: name)
-      .scaledLimitedLine(for: arrangement)
-      .ikaFont(.light, size: ClassicMetrics.BattlePrimary.ruleTitleFontSize, relativeTo: .title)
+    let size: CGFloat = arrangement == .stacked
+      ? ClassicMetrics.BattlePrimary.ruleTitleStackedFontSize
+      : ClassicMetrics.BattlePrimary.ruleTitleFontSize
+
+    return Text(verbatim: name)
+      .classicLines(for: arrangement)
+      .ikaFont(.light, size: size, relativeTo: .title)
   }
 }
 
@@ -319,7 +324,7 @@ struct ClassicBattleSecondaryCell: View {
 
   private func title(_ name: String) -> some View {
     Text(verbatim: name)
-      .scaledLimitedLine(for: metrics.arrangement)
+      .classicLines(for: metrics.arrangement)
       .ikaFont(.light, size: Scoped.ruleFontSize, relativeTo: .body)
   }
 
@@ -376,7 +381,7 @@ struct ClassicBattleStageCard: View {
           picture
             .layoutPriority(1)
           Text(verbatim: name)
-            .scaledLimitedLine(for: arrangement)
+            .classicLines(for: arrangement)
             .multilineTextAlignment(.center)
             .ikaFont(.light, size: ClassicMetrics.BattleSecondary.stageFontSize, relativeTo: .body)
         }

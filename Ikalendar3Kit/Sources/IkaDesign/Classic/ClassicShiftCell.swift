@@ -53,7 +53,7 @@ struct ClassicShiftSection: View {
           in: terms.language,
           timeFormat.span(.seconds(shift.startTime.timeIntervalSince(now)))))
           .countdownRoll(value: now)
-          .scaledLimitedLine(for: metrics.arrangement)
+          .classicLines(for: metrics.arrangement)
           .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       }
     }
@@ -159,7 +159,7 @@ struct ClassicShiftCell: View {
 
   private func timeText(_ text: String) -> some View {
     Text(verbatim: text)
-      .scaledLimitedLine(for: metrics.arrangement)
+      .classicLines(for: metrics.arrangement)
       .ikaFont(.light, size: Scoped.timeTextFontSize, relativeTo: .headline)
   }
 
@@ -180,7 +180,7 @@ struct ClassicShiftCell: View {
     ProgressView(value: progress.sharePassed) {
       Text(verbatim: ClassicText.timeLeft.text(in: terms.language, timeFormat.span(progress.timeLeft)))
         .countdownRoll(value: now)
-        .scaledLimitedLine(for: metrics.arrangement)
+        .classicLines(for: metrics.arrangement)
         .ikaFont(.light, size: Scoped.progressFontSize, relativeTo: .headline)
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
@@ -235,7 +235,7 @@ struct ClassicShiftStageCard: View {
                 .padding(Scoped.overlayPadding)
             }
           Text(verbatim: stageName)
-            .scaledLimitedLine(for: arrangement)
+            .classicLines(for: arrangement)
             .multilineTextAlignment(.center)
             .ikaFont(.light, size: Scoped.stageLabelFontSize, relativeTo: .body)
         }

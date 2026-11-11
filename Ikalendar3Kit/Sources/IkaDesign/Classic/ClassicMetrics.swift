@@ -16,6 +16,13 @@ import SwiftUI
 enum ClassicMetrics {
   /// The shadow under pictures and icons.
   static let shadowRadius: CGFloat = 2
+  /// The line height of a text that wraps, as a multiple of its font size. SplatNet 3's faces set a
+  /// line box twice their size, made for their Han glyphs, which leaves wrapped Latin lines about
+  /// a line apart.
+  static let wrappedLineHeightFactor: CGFloat = 1.2
+  /// The largest text size a title in the heavy face grows to, a Challenge's or a Splatfest's: its
+  /// longest words then still fit a 390-point iPhone's cell.
+  static let displayTitleLargestSize: DynamicTypeSize = .accessibility1
 
   /// A Stage name on its glass label.
   enum StageLabel {
@@ -45,6 +52,8 @@ enum ClassicMetrics {
     static let cellPaddingBottom: CGFloat = 6
     static let ruleSectionSpacing: CGFloat = 8
     static let ruleTitleFontSize: CGFloat = 48
+    /// The Rule name's size when the cell stacks.
+    static let ruleTitleStackedFontSize: CGFloat = 22
     static let ruleTitlePaddingV: CGFloat = 4
     static let remainingTimeFontSize: CGFloat = 15
     static let stageCornerRadius: CGFloat = 12
