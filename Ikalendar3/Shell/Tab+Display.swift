@@ -123,7 +123,9 @@ extension AppTab {
   /// What the tab bar's glass shows behind the selected tab over `style`'s ground when the bar is
   /// in `barScheme`, at the end that is harder to read on, as measured from iOS 27.2 simulator
   /// captures: #1F1F20 to #3A3A3C when dark; when light, #E6E6E8 to #EFF2F3 over Classic (taken as
-  /// #D8D8DC, for a margin) and #92928F over Ink's grey board (`InkBoard`, #969793).
+  /// #D8D8DC, for a margin) and #92928F over Ink's grey board (`InkBoard`, #969793). These are
+  /// reference grounds, taken over each Style's plain ground: the glass also takes the colour of
+  /// what scrolls under it, so over a bright Stage image a label can read lower than on them.
   static func selectedGlass(style: Style, in barScheme: ColorScheme) -> SRGBColor {
     switch (style, barScheme) {
       case (_, .dark),

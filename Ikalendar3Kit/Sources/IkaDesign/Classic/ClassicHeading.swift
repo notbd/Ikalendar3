@@ -55,9 +55,10 @@ struct ClassicHeading: Equatable {
 /// title and in its face: the Mode's name and, for a Mode with forms, the form under it in the
 /// secondary colour, as a large title's subtitle reads.
 ///
-/// It leaves its trailing end to the Mode stamp, which hangs over it, and is at least as tall as
-/// the stamp's visible part (`Heading.minimumHeight`), so no row starts under the stamp. Side by side, a name too
-/// long for the rest shrinks to fit its line, as ikalendar 2's texts do, down to
+/// It leaves its trailing end to the Mode stamp, which hangs over it, and is tall enough
+/// (`Heading.minimumHeight`) that, with the gap to the first header, the list starts below the
+/// stamp's visible part: no row starts under the stamp. Side by side, a name too long for the
+/// rest shrinks to fit its line, as ikalendar 2's texts do, down to
 /// `Heading.minimumScaleFactor`: the longest name of the 14 text sets ("Combate amistoso") needs
 /// about 0.75 on a 390-point iPhone. From the first accessibility text size it wraps between
 /// words instead, and stops growing there, as the system's large title does.
