@@ -17,11 +17,12 @@ import SwiftUI
 /// Challenge and Salmon Run, with the Splatfest tab in Regular Battle's place while a Splatfest
 /// runs. An iPad window of compact width shows them too (`WindowLayout.tabs`).
 ///
-/// Each tab shows its short name (`AppTab.shortTitle(in:)`), and VoiceOver reads the full one. It
-/// plays ikalendar 2's Mode switch haptic, shows the failed-refresh toast above the tab bar
-/// (`AppRootView` keeps it), and shows Settings and the track button at the leading end of each
-/// tab's toolbar, which leaves the trailing end to the Style's Mode stamp. A second tap on the
-/// selected Anarchy or Splatfest tab shows the Series and Open (or Open and Pro) menu above it.
+/// Each tab shows its short name (`AppTab.shortTitle(in:)`), and VoiceOver reads the full one;
+/// the selected tab takes its Mode colour, as in ikalendar 2. It plays ikalendar 2's Mode switch
+/// haptic, shows the failed-refresh toast above the tab bar (`AppRootView` keeps it), and shows
+/// Settings and the track button at the leading end of each tab's toolbar, which leaves the
+/// trailing end to the Style's Mode stamp. A second tap on the selected Anarchy or Splatfest tab
+/// shows the Series and Open (or Open and Pro) menu above it.
 struct ModeTabsView: View {
   @Environment(RefreshEngine.self) private var engine
   @Environment(AppClock.self) private var clock
@@ -29,6 +30,8 @@ struct ModeTabsView: View {
   @Environment(PreferenceStore.self) private var preferences
   @Environment(\.gameLanguage) private var language
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.colorScheme) private var colorScheme
+  @Environment(\.splatfestTeamColors) private var splatfestColors
 
   var body: some View {
     @Bindable var status = status
@@ -54,12 +57,16 @@ struct ModeTabsView: View {
               .animation(menuAnimation, value: status.presentedMenu)
           }
           .refreshFailureToast()
+          // The Mode colour below tints the tab bar only: the screen keeps the system's tint, so
+          // its toolbar buttons stay as they are.
+          .tint(nil)
         } label: {
           Label(tab.shortTitle(in: language), systemImage: tab.systemImage)
             .accessibilityLabel(tab.title(in: language))
         }
       }
     }
+    .tint(selectedTab.tint(in: colorScheme, splatfestColors: splatfestColors).map { Color($0) })
     .interceptingTabReselection(isEnabled: selectedTab.repeatedSelectionAction != .scrollToTop) {
       status.select(selectedTab)
     }

@@ -7,6 +7,8 @@
 
 import Foundation
 import IkaCore
+import IkaDesign
+import SwiftUI
 
 // MARK: - ModeTab
 
@@ -44,6 +46,17 @@ extension ModeTab {
       case .salmonRun: "lifepreserver.fill"
     }
   }
+
+  /// The tab's Mode colour.
+  var color: ModeColor {
+    switch self {
+      case .regularBattle: .regularBattle
+      case .anarchy: .anarchy
+      case .xBattle: .xBattle
+      case .challenge: .challenge
+      case .salmonRun: .salmonRun
+    }
+  }
 }
 
 // MARK: - AppTab
@@ -71,6 +84,25 @@ extension AppTab {
       case .mode(let tab): tab.systemImage
       case .splatfest: "party.popper.fill"
     }
+  }
+
+  /// The selected tab's colour, as ikalendar 2 tints it: its Mode colour, or for the Splatfest
+  /// tab its first team's, in the nearest tint that reads as text on the tab bar's glass in
+  /// `colorScheme`. `nil` for a Splatfest with no team colours known.
+  func tint(in colorScheme: ColorScheme, splatfestColors: [SRGBColor]) -> SRGBColor? {
+    let base: SRGBColor? =
+      switch self {
+        case .mode(let tab): tab.color.base
+        case .splatfest: splatfestColors.first
+      }
+    return base?.readableTint(on: Self.tabBarGlass(in: colorScheme), for: .text)
+  }
+
+  /// What the tab bar's glass shows behind its items over the app's own ground, at the end that
+  /// is harder to read on: about #1F1F20 to #3A3A3C in dark appearance and #E6E6E8 to #EFF2F3 in
+  /// light, as measured on iOS 26, with a margin on the light side.
+  static private func tabBarGlass(in colorScheme: ColorScheme) -> SRGBColor {
+    colorScheme == .dark ? .init(hex: 0x3A3A3C) : .init(hex: 0xD8D8DC)
   }
 }
 
