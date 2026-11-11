@@ -6,6 +6,7 @@
 //
 
 import IkaCore
+import IkaDesign
 import IkaIntents
 import SwiftUI
 
