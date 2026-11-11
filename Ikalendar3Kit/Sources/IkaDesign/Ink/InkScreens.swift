@@ -280,18 +280,52 @@ private struct InkModeHeadingView: View {
 // MARK: - InkNote
 
 /// A taped panel in the featured place that says why nothing is current: a pause by a Splatfest,
-/// with the return time, or nothing on right now.
+/// with the return time, or nothing on right now. The sentence stands in the heavy face on a
+/// hatched panel, like a shutter pulled down, so the place reads as closed and not as missing.
 struct InkNote: View {
   let text: String
 
   var body: some View {
     Text(verbatim: text)
-      .inkFont(.label)
+      .inkFont(.headline)
+      .lineHeight(.tight)
       .fixedSize(horizontal: false, vertical: true)
       .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.vertical, InkScreenMetrics.notePadding)
+      .background {
+        InkHatch(pitch: InkScreenMetrics.noteHatchPitch)
+          .fill(InkDecoration.noteHatch)
+          .clipShape(RoughRectangle(roughness: InkMetrics.panelRoughness, step: InkMetrics.panelRoughStep))
+          // Out to the panel's edge, under the tape.
+          .padding(-InkMetrics.panelPadding)
+          .accessibilityHidden(true)
+      }
       .inkPanel(isTaped: true)
   }
 }
+
+// MARK: - InkHatch
+
+/// Diagonal stripes leaning like Ink's tags, every `pitch` points, each half a pitch wide.
+private struct InkHatch: Shape {
+  let pitch: CGFloat
+
+  func path(in rect: CGRect) -> Path {
+    // A stripe runs from the bottom edge up to the top edge, `rect.height` further along.
+    var path: Path = .init()
+    var start: CGFloat = rect.minX - rect.height
+    while start < rect.maxX {
+      path.move(to: CGPoint(x: start, y: rect.maxY))
+      path.addLine(to: CGPoint(x: start + rect.height, y: rect.minY))
+      path.addLine(to: CGPoint(x: start + rect.height + pitch / 2, y: rect.minY))
+      path.addLine(to: CGPoint(x: start + pitch / 2, y: rect.maxY))
+      path.closeSubpath()
+      start += pitch
+    }
+    return path
+  }
+}
+
 // MARK: - InkFetchTimeTag
 
 /// The fetch time at the end of the list, on a black tag like a time: readable on the board in
