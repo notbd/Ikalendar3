@@ -43,6 +43,10 @@ public struct ClassicChallengeScreenView: View {
       if screen.challenges.isEmpty {
         Section {
           ClassicStatusCell(text: ScreenText.nothingCurrent.text(in: terms.language), arrangement: metrics.arrangement)
+        } header: {
+          // As a Battle Mode's screen says why nothing is on.
+          ClassicTag(text: ClassicText.now.text(in: terms.language))
+            .accessibilityHidden(true)
         }
       }
       ForEach(screen.challenges, id: \.challenge.id) { listing in
