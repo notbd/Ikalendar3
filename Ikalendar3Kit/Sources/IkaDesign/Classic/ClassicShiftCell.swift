@@ -228,7 +228,7 @@ struct ClassicShiftStageCard: View {
           }
 
       case .stacked:
-        VStack(alignment: .trailing, spacing: ClassicMetrics.BattleSecondary.stageSpacingV) {
+        VStack(spacing: ClassicMetrics.BattleSecondary.stageSpacingV) {
           picture
             .overlay(alignment: .bottomLeading) {
               king
@@ -236,7 +236,7 @@ struct ClassicShiftStageCard: View {
             }
           Text(verbatim: stageName)
             .scaledLimitedLine(for: arrangement)
-            .multilineTextAlignment(.trailing)
+            .multilineTextAlignment(.center)
             .ikaFont(.light, size: Scoped.stageLabelFontSize, relativeTo: .body)
         }
     }

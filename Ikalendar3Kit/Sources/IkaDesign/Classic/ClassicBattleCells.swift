@@ -340,6 +340,11 @@ struct ClassicBattleSecondaryCell: View {
 /// A battle Stage's picture with its name: on a glass label over the picture in the featured
 /// cell, under the picture in a later one and whenever the cell stacks, where a wrapped name
 /// would cover the picture.
+///
+/// A name under its picture is centred on it, as the Rule's name is under its icon. ikalendar 2
+/// set it flush right, which read as one alignment while its narrower face kept names shorter
+/// than the picture; SplatNet 3's face fills most of the width with a long name, so flush right
+/// read as centred for one name and flush right for the other.
 struct ClassicBattleStageCard: View {
   /// Which cell the card sits in.
   enum Role {
@@ -367,12 +372,12 @@ struct ClassicBattleStageCard: View {
 
       case (.primary, .stacked),
            (.secondary, _):
-        VStack(alignment: .trailing, spacing: ClassicMetrics.BattleSecondary.stageSpacingV) {
+        VStack(spacing: ClassicMetrics.BattleSecondary.stageSpacingV) {
           picture
             .layoutPriority(1)
           Text(verbatim: name)
             .scaledLimitedLine(for: arrangement)
-            .multilineTextAlignment(.trailing)
+            .multilineTextAlignment(.center)
             .ikaFont(.light, size: ClassicMetrics.BattleSecondary.stageFontSize, relativeTo: .body)
         }
     }
