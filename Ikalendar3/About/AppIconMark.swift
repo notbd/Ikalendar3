@@ -17,7 +17,7 @@ struct AppIconMark: View {
 
   var body: some View {
     RoundedRectangle(cornerRadius: size * 0.2237, style: .continuous)
-      .fill(Color.accentColor.gradient)
+      .fill(Color(.appAccent).gradient)
       .overlay {
         Image(systemName: "calendar")
           .font(.system(size: size * 0.5, weight: .semibold))

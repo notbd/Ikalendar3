@@ -15,7 +15,9 @@ import SwiftUI
 /// only), Appearance, Style, Language, Reminders, then About and Credits.
 ///
 /// Every control writes straight to the preferences store, which persists the value and which
-/// every screen observes, so a new Style or colour scheme applies at once. iPhone and iPad present
+/// every screen observes, so a new Style or colour scheme applies at once. Settings and the pages
+/// it opens take the app's accent, ikalendar 2's orange (the `AppAccent` colour: #A25F00 in light,
+/// 4.5:1 on the grouped background; #FF9F0A in dark, 8.3:1 on a cell). iPhone and iPad present
 /// it from the tabs (`settingsPresentation(isPresented:)`); the Mac shows it in its standard
 /// Settings window, opened with Command-comma, without the iPhone-only rows.
 struct SettingsView: View {
@@ -51,6 +53,8 @@ struct SettingsView: View {
       }
       #endif
     }
+    // On the stack, so the pages it opens (About, Credits) take it too.
+    .tint(Color(.appAccent))
     #if os(macOS)
     // The Settings window can stay open after every schedule window closes, so it applies the
     // scheme itself.
