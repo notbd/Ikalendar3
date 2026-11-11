@@ -69,6 +69,8 @@ public struct InkEventCard: View {
       width = newWidth
     }
     .inkPanel()
+    // Also where the card stands alone, on a sheet or the iPad event strip.
+    .environment(\.inkSetsWrappedTagsClose, true)
     .task(id: art) {
       artImage = art.flatMap(Image.init(storedFile:))
     }

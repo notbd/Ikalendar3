@@ -204,6 +204,7 @@ struct InkScheduleList<ReflowValue: Equatable, Panels: View>: View {
       }
     }
     .listReflow(value: reflowValue)
+    .environment(\.inkSetsWrappedTagsClose, true)
     .background { InkBoard().ignoresSafeArea() }
     .inkModeStampDock(icon: icon, title: title)
   }

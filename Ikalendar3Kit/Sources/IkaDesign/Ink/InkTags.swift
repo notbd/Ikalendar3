@@ -62,6 +62,7 @@ public struct InkTimeTag: View {
 struct InkTagLabel: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
   @Environment(\.widgetRenderingMode) private var renderingMode
+  @Environment(\.inkSetsWrappedTagsClose) private var setsWrappedLinesClose
 
   let text: Text
   let style: InkTextStyle
@@ -84,10 +85,23 @@ struct InkTagLabel: View {
   private var label: some View {
     text
       .inkFont(style)
+      .lineHeight(isWrappedClose ? .multiple(factor: InkMetrics.wrappedTagLineHeight) : nil)
       .scaledLimitedLine(for: dynamicTypeSize.isAccessibilitySize ? .stacked : .sideBySide)
       .padding(.horizontal, InkMetrics.tagHorizontalPadding)
       .padding(.vertical, InkMetrics.tagVerticalPadding)
   }
+
+  /// Whether the tag wraps with its lines set close.
+  private var isWrappedClose: Bool {
+    setsWrappedLinesClose && dynamicTypeSize.isAccessibilitySize
+  }
+}
+
+extension EnvironmentValues {
+  /// Whether an Ink tag that wraps sets its lines closer than the faces' own line boxes, which
+  /// spread a wrapped tag apart. Ink's screens set it; widgets, the Live Activity and the watch
+  /// keep the faces' line boxes.
+  @Entry var inkSetsWrappedTagsClose: Bool = false
 }
 
 // MARK: - SkewedRectangle

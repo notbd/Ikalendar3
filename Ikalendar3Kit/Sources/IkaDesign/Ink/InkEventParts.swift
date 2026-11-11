@@ -19,6 +19,7 @@ struct InkTitle: View {
   var body: some View {
     Text(verbatim: text)
       .inkFont(.tag)
+      .lineHeight(.tight)
       .fixedSize(horizontal: false, vertical: true)
   }
 }
@@ -44,6 +45,7 @@ struct InkRuleLabel: View {
         .frame(width: iconSize, height: iconSize)
       Text(verbatim: terms.name(of: rule))
         .inkFont(.tag)
+        .lineHeight(.tight)
         .foregroundStyle(Color(accent.onPanel(in: colorScheme).foreground))
         .scaledLimitedLine(for: arrangement)
     }
