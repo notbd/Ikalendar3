@@ -112,7 +112,7 @@ public struct InkSplatfestScreenView: View {
     { metrics in
       InkEventCard(item: .splatfest(screen.card), terms: terms, now: now)
       if let tricolor = screen.tricolorTurfWar {
-        InkTricolorPanel(tricolor: tricolor, terms: terms, writer: writer, metrics: metrics)
+        InkTricolorPanel(tricolor: tricolor, terms: terms, now: now, writer: writer, metrics: metrics)
           .accessibilityElement(children: .ignore)
           .accessibilityLabel(writer.sentence(for: tricolor.item, at: now))
       }
@@ -143,7 +143,7 @@ public struct InkSplatfestScreenView: View {
         setting: setting,
         terms: terms,
         accent: accent,
-        timeRange: format.timeRange(of: entry.item),
+        timeRange: format.range(of: entry.item, now: now),
         writer: writer,
         metrics: metrics)
         .accessibilityElement(children: .ignore)
@@ -151,14 +151,15 @@ public struct InkSplatfestScreenView: View {
     }
   }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkChallengePanel
 
-/// One Challenge's panel: its name, description, Rule over a dotted rule, Stages and rules text,
-/// then a row per window. Taped while one of its windows is on.
+/// One Challenge's panel: its name, description, Rule over a dotted rule and Stages, then a row
+/// per window, and the rules text last, since when it plays matters more than its small print.
+/// Taped while one of its windows is on.
 private struct InkChallengePanel: View {
   @Environment(\.colorScheme) private var colorScheme
   @TimeSettings private var time
@@ -211,7 +212,7 @@ private struct InkChallengePanel: View {
 
     return VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing / 2) {
       InkPanelHeader(
-        timeRange: format.timeRange(of: window.window, withWeekday: true),
+        timeRange: format.range(of: window.window, now: now),
         arrangement: metrics.arrangement)
       {
         if let place {
@@ -231,7 +232,7 @@ private struct InkChallengePanel: View {
     .accessibilityLabel(writer.sentence(for: ChallengeWindow(challenge: challenge, window: window.window), at: now))
   }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
 }
 
 // MARK: - InkTricolorPanel
@@ -243,13 +244,14 @@ private struct InkTricolorPanel: View {
 
   let tricolor: Running<TricolorTurfWar>
   let terms: GameTerms
+  let now: Date
   let writer: SentenceWriter
   let metrics: CellMetrics
 
   var body: some View {
     VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
       InkPanelHeader(
-        timeRange: time.format(terms.language).timeRange(of: tricolor.item, withWeekday: true),
+        timeRange: time.inkFormat(terms.language).range(of: tricolor.item, now: now),
         arrangement: metrics.arrangement)
       {
         InkModeTag(Text(verbatim: ModeLabel.tricolor.text(in: terms.language)), accent: .splatfest)

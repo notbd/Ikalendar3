@@ -65,7 +65,7 @@ public struct InkWideBattleScreenView: View {
         case .running:
           EmptyView()
         case .paused(let returnTime):
-          InkNote(text: ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now)))
+          InkNote(text: ScreenText.paused.text(in: terms.language, format.time(returnTime, now: now)))
         case .nothingCurrent:
           InkNote(text: ScreenText.nothingCurrent.text(in: terms.language))
       }
@@ -73,7 +73,7 @@ public struct InkWideBattleScreenView: View {
       ForEach(entries.filter { $0.place.progress != nil }) { entry in
         if let setting = entry.item.setting, let progress = entry.place.progress {
           InkWideRow {
-            InkWideTags(timeRange: format.timeRange(of: entry.item)) {
+            InkWideTags(timeRange: format.range(of: entry.item, now: now)) {
               InkStateTag(place: entry.place, accent: accent)
             }
             InkWideRule(rule: setting.rule, accent: accent, style: .headline, terms: terms)
@@ -94,7 +94,7 @@ public struct InkWideBattleScreenView: View {
       InkTablePanel(entries: entries.filter { $0.place.progress == nil }) { entry in
         if let setting = entry.item.setting {
           WideTableColumns(wide: wide, spacing: InkScreenMetrics.cardSpacing) {
-            InkWideTags(timeRange: format.timeRange(of: entry.item)) {
+            InkWideTags(timeRange: format.range(of: entry.item, now: now)) {
               InkStateTag(place: entry.place, accent: accent)
             }
           } middle: {
@@ -114,7 +114,7 @@ public struct InkWideBattleScreenView: View {
     .contentMargins(.horizontal, wide.sideMargin, for: .scrollContent)
   }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 
@@ -223,7 +223,7 @@ public struct InkWideSalmonRunScreenView: View {
   private func tags(of entry: InkPanelEntry<Shift>) -> some View {
     let accent: InkAccent = .init(ModeColor(entry.item.kind))
 
-    return InkWideTags(timeRange: format.timeRange(of: entry.item, withWeekday: true)) {
+    return InkWideTags(timeRange: format.range(of: entry.item, now: now)) {
       if let label = entry.item.kind.label {
         InkModeTag(Text(verbatim: label.text(in: terms.language)), accent: accent)
       }
@@ -231,7 +231,7 @@ public struct InkWideSalmonRunScreenView: View {
     }
   }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 

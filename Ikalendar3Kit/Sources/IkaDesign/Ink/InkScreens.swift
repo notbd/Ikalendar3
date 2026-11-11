@@ -62,7 +62,7 @@ public struct InkBattleScreenView: View {
         case .running:
           EmptyView()
         case .paused(let returnTime):
-          InkNote(text: ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now)))
+          InkNote(text: ScreenText.paused.text(in: terms.language, format.time(returnTime, now: now)))
         case .nothingCurrent:
           InkNote(text: ScreenText.nothingCurrent.text(in: terms.language))
       }
@@ -74,7 +74,7 @@ public struct InkBattleScreenView: View {
             setting: setting,
             terms: terms,
             accent: InkAccent(ModeColor(screen.mode)),
-            timeRange: format.timeRange(of: entry.item),
+            timeRange: format.range(of: entry.item, now: now),
             writer: writer,
             metrics: metrics)
             .accessibilityElement(children: .ignore)
@@ -84,7 +84,7 @@ public struct InkBattleScreenView: View {
     }
   }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 
@@ -150,22 +150,22 @@ public struct InkSalmonRunScreenView: View {
     InkShiftPanel(
       entry: entry,
       terms: terms,
-      timeRange: format.timeRange(of: entry.item, withWeekday: true),
+      timeRange: format.range(of: entry.item, now: now),
       writer: writer,
       metrics: metrics)
       .accessibilityElement(children: .ignore)
       .accessibilityLabel(writer.sentence(for: entry.item, at: now))
   }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkScheduleList
 
-/// What every Ink screen shares around its panels: the dotted background, the heading and the
-/// docking stamp, the panels' metrics for the screen's width and text size, the reflow when a
-/// panel leaves, and the fetch time at the end.
+/// What every Ink screen shares around its panels: the board, the heading with the Mode stamp
+/// that docks into the bar, the panels' metrics for the screen's width and text size, the reflow
+/// when a panel leaves, and the fetch time at the end.
 struct InkScheduleList<ReflowValue: Equatable, Panels: View>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
