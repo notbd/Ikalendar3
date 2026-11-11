@@ -12,8 +12,9 @@ import SwiftUI
 // MARK: - InkBattlePanel
 
 /// A Rotation's panel, ikalendar 2's primary and secondary cell on Ink's materials. The featured
-/// panel (Now) is taped and shows the Rule large over a dotted rule, the two Stages side by side
-/// and the progress; later panels put the Rule in a column beside smaller Stages.
+/// panel (Now) is taped and shows the Rule large in the accent over a dotted rule, the two Stages
+/// side by side and the progress; later panels put the Rule in a column beside smaller Stages,
+/// its name in the panel's own text colour on up to two lines, so it reads at its small size.
 ///
 /// The panel owns the namespaces its Rule icon, Rule name and Stage cards share between the two
 /// looks, so when the Rotation becomes current they glide into the featured look. The featured
@@ -61,7 +62,13 @@ struct InkBattlePanel: View {
         ruleImage
           .frame(height: metrics.length(InkScreenMetrics.ruleIconHeight))
           .matchedGeometryEffect(id: entry.id, in: ruleIcon)
-        ruleText(style: .headline)
+          // A name that wraps takes the row's width, and would squeeze the icon.
+          .layoutPriority(1)
+        ruleText
+          .inkFont(.headline)
+          .lineHeight(.tight)
+          .foregroundStyle(Color(accent.onPanel(in: colorScheme).foreground))
+          .scaledLimitedLine(for: metrics.arrangement)
           .matchedGeometryEffect(id: entry.id, in: ruleName)
       }
       InkDottedRule()
@@ -93,6 +100,7 @@ struct InkBattlePanel: View {
         VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
           HStack(spacing: InkScreenMetrics.cardSpacing) {
             secondaryRuleImage
+              .layoutPriority(1)
             secondaryRuleText
           }
           stages(imageSize: .medium, isSource: false)
@@ -106,9 +114,15 @@ struct InkBattlePanel: View {
       .matchedGeometryEffect(id: entry.id, in: ruleIcon, isSource: false)
   }
 
+  /// The Rule's name in the panel's text colour: in the column, centred on up to two lines
+  /// before it shrinks.
   private var secondaryRuleText: some View {
-    ruleText(style: .label)
+    ruleText
+      .inkFont(.label)
+      .lineHeight(.tight)
       .multilineTextAlignment(metrics.arrangement == .sideBySide ? .center : .leading)
+      .lineLimit(metrics.arrangement == .sideBySide ? 2 : nil)
+      .minimumScaleFactor(metrics.arrangement.minimumScaleFactor)
       .matchedGeometryEffect(id: entry.id, in: ruleName, isSource: false)
   }
 
@@ -120,12 +134,8 @@ struct InkBattlePanel: View {
       .scaledToFit()
   }
 
-  /// The Rule's name in the accent, tinted to stay readable on the panel.
-  private func ruleText(style: InkTextStyle) -> some View {
+  private var ruleText: Text {
     Text(verbatim: terms.name(of: setting.rule))
-      .inkFont(style)
-      .foregroundStyle(Color(accent.onPanel(in: colorScheme).foreground))
-      .scaledLimitedLine(for: metrics.arrangement)
   }
 
   /// The two Stage cards: side by side at equal width, or one over the other when stacked.
@@ -154,7 +164,11 @@ struct InkBattlePanel: View {
   }
 
   private func stageCard(_ stage: StageID, imageSize: BundledImage.Size) -> some View {
-    InkStageCard(stage: stage, name: Text(verbatim: terms.name(of: stage)), imageSize: imageSize)
+    InkStageCard(
+      stage: stage,
+      name: Text(verbatim: terms.name(of: stage)),
+      imageSize: imageSize,
+      nameReachesTrailingEdge: true)
   }
 }
 #endif

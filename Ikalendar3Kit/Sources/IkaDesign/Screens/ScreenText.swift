@@ -29,8 +29,8 @@ public enum ScreenText: String, CaseIterable, Sendable {
   /// "Couldn't refresh".
   case refreshFailed = "screen.refreshFailed"
   /// "%1$@ - %2$@", a range's start and end joined as the game joins them: a wave dash in
-  /// Japanese and Korean. Classic and Timeline join their ranges with it; Ink and the widgets
-  /// write theirs through `ScheduleFormat`, with the locale's own joiner.
+  /// Japanese and Korean. Every Style's screens join their ranges with it; the widgets write
+  /// theirs through `ScheduleFormat`, with the locale's own joiner.
   case timeRange = "screen.timeRange"
   /// "Try Again", the empty state's button.
   case tryAgain = "screen.tryAgain"

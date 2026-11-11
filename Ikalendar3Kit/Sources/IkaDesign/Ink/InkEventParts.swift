@@ -19,6 +19,7 @@ struct InkTitle: View {
   var body: some View {
     Text(verbatim: text)
       .inkFont(.tag)
+      .lineHeight(.tight)
       .fixedSize(horizontal: false, vertical: true)
   }
 }
@@ -44,6 +45,7 @@ struct InkRuleLabel: View {
         .frame(width: iconSize, height: iconSize)
       Text(verbatim: terms.name(of: rule))
         .inkFont(.tag)
+        .lineHeight(.tight)
         .foregroundStyle(Color(accent.onPanel(in: colorScheme).foreground))
         .scaledLimitedLine(for: arrangement)
     }
@@ -75,44 +77,34 @@ struct InkStageRow: View {
 
   private var cards: some View {
     ForEach(stages, id: \.self) { stage in
-      InkStageCard(stage: stage, name: Text(verbatim: terms.name(of: stage)), imageSize: imageSize)
+      InkStageCard(
+        stage: stage,
+        name: Text(verbatim: terms.name(of: stage)),
+        imageSize: imageSize,
+        nameReachesTrailingEdge: true)
     }
   }
 }
 
 // MARK: - InkTeamList
 
-/// A Splatfest's teams, one per line: a swatch of the team's colour from the feed, growing with
-/// the text size, then the team's name in that colour, tinted to read on Ink's panel. Only teams
-/// whose names the terms carry are listed (`GameTerms.teams(of:)`), so a colour never stands alone.
+/// A Splatfest's teams, each name on a tag in the team's colour from the feed, as the game shows
+/// a team: in one row, or one per line where the row does not fit. Only teams whose names the
+/// terms carry are listed (`GameTerms.teams(of:)`), so a colour never stands alone.
 struct InkTeamList: View {
-  @Environment(\.colorScheme) private var colorScheme
-
-  @ScaledMetric(relativeTo: .subheadline) private var swatchHeight: CGFloat = InkScreenMetrics.teamSwatchSize.height
-
   let splatfest: Splatfest
   let terms: GameTerms
 
   var body: some View {
-    let panel: SRGBColor = Style.ink.panel(in: colorScheme)
+    ViewThatFits(in: .horizontal) {
+      HStack(spacing: InkScreenMetrics.cardSpacing) { tags }
+      VStack(alignment: .leading, spacing: InkScreenMetrics.cardSpacing / 2) { tags }
+    }
+  }
 
-    VStack(alignment: .leading, spacing: InkScreenMetrics.cardSpacing / 2) {
-      ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
-        let color: SRGBColor = .init(team.color)
-
-        HStack(spacing: InkScreenMetrics.cardSpacing) {
-          SkewedRectangle(slant: InkMetrics.tagSlant)
-            .fill(Color(color))
-            .frame(
-              width: swatchHeight * InkScreenMetrics.teamSwatchSize.width / InkScreenMetrics.teamSwatchSize.height,
-              height: swatchHeight)
-            .accessibilityHidden(true)
-          Text(verbatim: team.name)
-            .inkFont(.tag)
-            .foregroundStyle(Color(color.readableTint(on: panel, for: .text)))
-            .fixedSize(horizontal: false, vertical: true)
-        }
-      }
+  private var tags: some View {
+    ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
+      InkTeamTag(Text(verbatim: team.name), color: SRGBColor(team.color))
     }
   }
 }

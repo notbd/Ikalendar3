@@ -69,6 +69,8 @@ public struct InkEventCard: View {
       width = newWidth
     }
     .inkPanel()
+    // Also where the card stands alone, on a sheet or the iPad event strip.
+    .environment(\.inkSetsWrappedTagsClose, true)
     .task(id: art) {
       artImage = art.flatMap(Image.init(storedFile:))
     }
@@ -130,15 +132,9 @@ public struct InkEventCard: View {
 
   // MARK: Parts
 
-  /// A Challenge window's range as a Rotation's, with the weekday since it is announced days
-  /// ahead; an event spanning days with each end's date.
+  /// The event's start and end, as every Ink panel writes a window.
   private var range: String {
-    switch item {
-      case .challenge(let window): format.timeRange(of: window, withWeekday: true)
-      case .splatfest,
-           .bigRun,
-           .eggstraWork: format.dateRange(of: item)
-    }
+    format.range(of: item, now: now)
   }
 
   /// A Splatfest's stored art; the other events have none.
@@ -150,7 +146,7 @@ public struct InkEventCard: View {
 
   private var arrangement: CellArrangement { dynamicTypeSize.isAccessibilitySize ? .stacked : .sideBySide }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 

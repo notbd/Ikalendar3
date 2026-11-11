@@ -12,9 +12,9 @@ import SwiftUI
 // MARK: - InkChallengeScreenView
 
 /// Ink's Challenge screen, in the look of its Battle Mode screens: the Challenges heading and
-/// stamp over the dotted background, then a panel per Challenge with its name, description,
-/// Rule, Stages and rules text, and a time tag per window, the current one tagged "Now!" with its
-/// progress and the next one "Next". The panel holding the current window is taped.
+/// stamp on the board, then a panel per Challenge with its name, description, Rule and Stages, a
+/// time tag per window, the current one tagged "Now!" with its progress and the next one "Next",
+/// and its rules text last. The panel holding the current window is taped.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store.
 public struct InkChallengeScreenView: View {
@@ -112,7 +112,7 @@ public struct InkSplatfestScreenView: View {
     { metrics in
       InkEventCard(item: .splatfest(screen.card), terms: terms, now: now)
       if let tricolor = screen.tricolorTurfWar {
-        InkTricolorPanel(tricolor: tricolor, terms: terms, writer: writer, metrics: metrics)
+        InkTricolorPanel(tricolor: tricolor, terms: terms, now: now, writer: writer, metrics: metrics)
           .accessibilityElement(children: .ignore)
           .accessibilityLabel(writer.sentence(for: tricolor.item, at: now))
       }
@@ -143,7 +143,7 @@ public struct InkSplatfestScreenView: View {
         setting: setting,
         terms: terms,
         accent: accent,
-        timeRange: format.timeRange(of: entry.item),
+        timeRange: format.range(of: entry.item, now: now),
         writer: writer,
         metrics: metrics)
         .accessibilityElement(children: .ignore)
@@ -151,14 +151,15 @@ public struct InkSplatfestScreenView: View {
     }
   }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkChallengePanel
 
-/// One Challenge's panel: its name, description, Rule over a dotted rule, Stages and rules text,
-/// then a row per window. Taped while one of its windows is on.
+/// One Challenge's panel: its name, description, Rule over a dotted rule and Stages, then a row
+/// per window, and the rules text last, since when it plays matters more than its small print.
+/// Taped while one of its windows is on.
 private struct InkChallengePanel: View {
   @Environment(\.colorScheme) private var colorScheme
   @TimeSettings private var time
@@ -176,12 +177,15 @@ private struct InkChallengePanel: View {
     let isOn: Bool = listing.windows.contains { $0.mark.isCurrent }
 
     VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
-      VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing / 2) {
+      // Closer than the panel's rows, but clear of each other at the texts' close line heights.
+      VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing * 0.7) {
         Text(verbatim: texts.name)
           .inkFont(.headline)
+          .lineHeight(.tight)
           .fixedSize(horizontal: false, vertical: true)
         Text(verbatim: texts.displayDescription)
           .inkFont(.body)
+          .lineHeight(.multiple(factor: InkScreenMetrics.runningTextLineHeight))
           .fixedSize(horizontal: false, vertical: true)
       }
       .accessibilityElement(children: .combine)
@@ -189,16 +193,18 @@ private struct InkChallengePanel: View {
       InkRuleLabel(rule: challenge.rule, terms: terms, accent: accent, arrangement: metrics.arrangement)
       InkDottedRule()
       InkStageRow(stages: challenge.stages, terms: terms, imageSize: .medium, arrangement: metrics.arrangement)
-      Text(verbatim: texts.displayRulesText)
-        .inkFont(.caption)
-        .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
-        .fixedSize(horizontal: false, vertical: true)
-      VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
+      VStack(alignment: .leading, spacing: InkScreenMetrics.windowRowSpacing) {
         ForEach(listing.windows, id: \.window) { window in
           row(window, of: challenge, accent: accent)
         }
       }
       .padding(.top, InkScreenMetrics.panelRowSpacing / 2)
+      InkDottedRule()
+      Text(verbatim: texts.displayRulesText)
+        .inkFont(.caption)
+        .lineHeight(.multiple(factor: InkScreenMetrics.runningTextLineHeight))
+        .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
+        .fixedSize(horizontal: false, vertical: true)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .inkPanel(isTaped: isOn)
@@ -211,7 +217,7 @@ private struct InkChallengePanel: View {
 
     return VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing / 2) {
       InkPanelHeader(
-        timeRange: format.timeRange(of: window.window, withWeekday: true),
+        timeRange: format.range(of: window.window, now: now),
         arrangement: metrics.arrangement)
       {
         if let place {
@@ -231,7 +237,7 @@ private struct InkChallengePanel: View {
     .accessibilityLabel(writer.sentence(for: ChallengeWindow(challenge: challenge, window: window.window), at: now))
   }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
 }
 
 // MARK: - InkTricolorPanel
@@ -243,13 +249,14 @@ private struct InkTricolorPanel: View {
 
   let tricolor: Running<TricolorTurfWar>
   let terms: GameTerms
+  let now: Date
   let writer: SentenceWriter
   let metrics: CellMetrics
 
   var body: some View {
     VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
       InkPanelHeader(
-        timeRange: time.format(terms.language).timeRange(of: tricolor.item, withWeekday: true),
+        timeRange: time.inkFormat(terms.language).range(of: tricolor.item, now: now),
         arrangement: metrics.arrangement)
       {
         InkModeTag(Text(verbatim: ModeLabel.tricolor.text(in: terms.language)), accent: .splatfest)
