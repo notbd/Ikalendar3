@@ -88,16 +88,25 @@ public struct InkEventCard: View {
       }
 
     return layout {
-      HStack(spacing: InkScreenMetrics.cardSpacing) {
-        ModeIconPicture(kind.icon, size: .medium)
-          .frame(width: iconSize, height: iconSize)
-        InkModeTag(Text(verbatim: kind.label.text(in: terms.language)), accent: kind.accent)
+      // The name goes under its icon where the row cannot hold it on one line, as at the largest
+      // text sizes, so it never breaks inside a word beside the icon.
+      ViewThatFits(in: .horizontal) {
+        HStack(spacing: InkScreenMetrics.cardSpacing) { name(kind) }
+        VStack(alignment: .leading, spacing: InkScreenMetrics.cardSpacing) { name(kind) }
       }
       if arrangement == .sideBySide {
         Spacer(minLength: 0)
       }
       InkStateTag(place: place, accent: kind.accent)
     }
+  }
+
+  /// The event's icon and its name tag.
+  @ViewBuilder
+  private func name(_ kind: InkEventKind) -> some View {
+    ModeIconPicture(kind.icon, size: .medium)
+      .frame(width: iconSize, height: iconSize)
+    InkModeTag(Text(verbatim: kind.label.text(in: terms.language)), accent: kind.accent)
   }
 
   // MARK: Content

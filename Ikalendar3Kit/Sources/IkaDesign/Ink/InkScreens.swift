@@ -217,11 +217,13 @@ struct InkScheduleList<ReflowValue: Equatable, Panels: View>: View {
 ///
 /// The stamp lies under the first panel: the panel covers the splat's lower edge by a fixed
 /// amount whatever the name's height, and the splat runs off the screen's trailing edge, so it
-/// meets its neighbours on purpose and never covers a tag. From the first accessibility text size
+/// meets its neighbours on purpose and never covers a tag. On iPhone its top rises into the
+/// navigation bar's row beside a short name, so the first panel sits higher. From the first accessibility text size
 /// the name sits under a smaller stamp at full width instead, so it wraps rather than truncates.
 private struct InkModeHeadingView: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.gameLanguage) private var language
+  @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
   let heading: InkModeHeading
   let icon: ModeIcon
@@ -233,9 +235,12 @@ private struct InkModeHeadingView: View {
       case .sideBySide:
         name
           .padding(.trailing, InkScreenMetrics.stampReserve)
-          // At least as tall as the splat is above the first panel, so the splat stays under
-          // the bar.
-          .frame(maxWidth: .infinity, minHeight: InkScreenMetrics.headingMinHeight, alignment: .leading)
+          // At least as tall as the splat is above the first panel, less what the stamp may
+          // rise into the bar's row. The name starts at the top there, right under the bar.
+          .frame(
+            maxWidth: .infinity,
+            minHeight: InkScreenMetrics.splatHeightAbovePanel - stampRise,
+            alignment: stampRise > 0 ? .topLeading : .leading)
           .background(alignment: .bottomTrailing) {
             stamp()
               .offset(y: InkScreenMetrics.panelSpacing + InkScreenMetrics.splatPanelOverlap)
@@ -247,6 +252,7 @@ private struct InkModeHeadingView: View {
           stamp(scale: InkScreenMetrics.stackedStampScale)
             .frame(height: InkScreenMetrics.splatSize * InkScreenMetrics.stackedStampScale, alignment: .top)
             .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(.top, -stampRise)
           name
         }
     }
@@ -268,6 +274,12 @@ private struct InkModeHeadingView: View {
     .padding(.leading, InkScreenMetrics.headingLeadingPadding)
     .accessibilityElement(children: .combine)
     .accessibilityAddTraits(.isHeader)
+  }
+
+  /// How far the stamp rises into the navigation bar's row: on iPhone, where the row's trailing
+  /// end is free at rest. An iPad's and a Mac's toolbars hold buttons there.
+  private var stampRise: CGFloat {
+    horizontalSizeClass == .compact ? InkScreenMetrics.stampRise : 0
   }
 
   /// The stamp at `scale` of its size, reaching past the screen's trailing edge.

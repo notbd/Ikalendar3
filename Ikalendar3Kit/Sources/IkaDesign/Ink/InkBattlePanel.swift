@@ -114,16 +114,31 @@ struct InkBattlePanel: View {
       .matchedGeometryEffect(id: entry.id, in: ruleIcon, isSource: false)
   }
 
-  /// The Rule's name in the panel's text colour: in the column, centred on up to two lines
-  /// before it shrinks.
+  /// The Rule's name in the panel's text colour. In the column it is centred on one line where
+  /// that fits, else on two lines broken between words, which shrink rather than break a word.
   private var secondaryRuleText: some View {
-    ruleText
-      .inkFont(.label)
-      .lineHeight(.tight)
-      .multilineTextAlignment(metrics.arrangement == .sideBySide ? .center : .leading)
-      .lineLimit(metrics.arrangement == .sideBySide ? 2 : nil)
-      .minimumScaleFactor(metrics.arrangement.minimumScaleFactor)
-      .matchedGeometryEffect(id: entry.id, in: ruleName, isSource: false)
+    let name: String = terms.name(of: setting.rule)
+    let balanced: String = InkRuleName.balanced(name)
+
+    return Group {
+      switch metrics.arrangement {
+        case .sideBySide:
+          ViewThatFits(in: .horizontal) {
+            Text(verbatim: name)
+              .lineLimit(1)
+            // As many lines as the text has, so a line too wide shrinks and cannot wrap again.
+            Text(verbatim: balanced)
+              .scaledLimitedLine(lineLimit: balanced.contains("\n") ? 2 : 1)
+          }
+          .multilineTextAlignment(.center)
+
+        case .stacked:
+          Text(verbatim: name)
+      }
+    }
+    .inkFont(.label)
+    .lineHeight(.tight)
+    .matchedGeometryEffect(id: entry.id, in: ruleName, isSource: false)
   }
 
   // MARK: Parts
