@@ -54,6 +54,7 @@ struct ClassicShiftSection: View {
           timeFormat.span(.seconds(shift.startTime.timeIntervalSince(now)))))
           .countdownRoll(value: now)
           .classicLines(for: metrics.arrangement)
+          .foregroundStyle(.classicSecondary)
           .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       }
     }

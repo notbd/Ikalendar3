@@ -69,7 +69,7 @@ struct ClassicChallengeSection: View {
         Text(verbatim: texts.displayRulesText)
           .fixedSize(horizontal: false, vertical: true)
           .lineHeight(.multiple(factor: ClassicMetrics.wrappedLineHeightFactor))
-          .foregroundStyle(.secondary)
+          .foregroundStyle(.classicSecondary)
           .ikaFont(.light, size: Scoped.rulesTextFontSize, relativeTo: .footnote)
       }
     }
@@ -107,7 +107,7 @@ struct ClassicChallengeSection: View {
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
-    .foregroundStyle(marked.mark == .over ? .secondary : .primary)
+    .foregroundStyle(marked.mark == .over ? AnyShapeStyle(.classicSecondary) : AnyShapeStyle(.primary))
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(writer.sentence(
       for: ChallengeWindow(challenge: listing.challenge, window: marked.window),

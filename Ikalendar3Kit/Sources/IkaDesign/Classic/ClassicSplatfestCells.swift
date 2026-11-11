@@ -70,7 +70,7 @@ struct ClassicSplatfestCard: View {
 
       Text(verbatim: timeFormat.range(of: splatfest, now: now))
         .classicLines(for: metrics.arrangement)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.classicSecondary)
         .ikaFont(.light, size: Scoped.timeFontSize, relativeTo: .subheadline)
 
       if splatfest.isRunning(at: now) {
@@ -213,6 +213,7 @@ struct ClassicTricolorSection: View {
         ClassicTag(text: ModeLabel.tricolor.text(in: terms.language))
         Text(verbatim: timeFormat.battleRange(from: tricolor.item.startTime, to: tricolor.item.endTime, now: now))
           .classicLines(for: metrics.arrangement)
+          .foregroundStyle(.classicSecondary)
           .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       }
       .accessibilityElement(children: .combine)
@@ -243,7 +244,7 @@ struct ClassicProgressBar: View {
         .classicLines(for: arrangement)
         .fixedSize(horizontal: false, vertical: true)
         .multilineTextAlignment(.trailing)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.classicSecondary)
         .ikaFont(.light, size: ClassicMetrics.BattlePrimary.remainingTimeFontSize, relativeTo: .headline)
       ProgressView(value: progress.sharePassed)
         .tint(tint)

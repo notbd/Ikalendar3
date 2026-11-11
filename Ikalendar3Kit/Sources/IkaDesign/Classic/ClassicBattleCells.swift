@@ -107,6 +107,7 @@ struct ClassicBattleSection: View {
       if let window = row.window {
         Text(verbatim: timeFormat.battleRange(from: window.startTime, to: window.endTime, now: now))
           .classicLines(for: metrics.arrangement)
+          .foregroundStyle(.classicSecondary)
           .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       }
     }
@@ -208,7 +209,7 @@ struct ClassicBattlePrimaryCell: View {
     Text(verbatim: ClassicText.timeLeft.text(in: terms.language, timeFormat.span(progress.timeLeft)))
       .countdownRoll(value: now)
       .classicLines(for: metrics.arrangement)
-      .foregroundStyle(.secondary)
+      .foregroundStyle(.classicSecondary)
       .ikaFont(.light, size: Scoped.remainingTimeFontSize, relativeTo: .headline)
   }
 

@@ -150,7 +150,7 @@ public struct ClassicEventCard: View {
         timeFormat.span(.seconds(item.startTime.timeIntervalSince(now)))))
         .countdownRoll(value: now)
         .classicLines(for: arrangement)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.classicSecondary)
         .ikaFont(.light, size: ClassicMetrics.BattlePrimary.remainingTimeFontSize, relativeTo: .headline)
     }
   }

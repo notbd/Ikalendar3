@@ -193,7 +193,7 @@ struct ClassicShiftTableRow: View {
           timeFormat.span(.seconds(shift.startTime.timeIntervalSince(now)))))
           .countdownRoll(value: now)
           .classicLines(for: .sideBySide)
-          .foregroundStyle(.secondary)
+          .foregroundStyle(.classicSecondary)
           .ikaFont(.light, size: ClassicMetrics.BattlePrimary.remainingTimeFontSize, relativeTo: .headline)
       }
     } middle: {
@@ -291,7 +291,7 @@ private struct ClassicWideProgress: View {
       Text(verbatim: ClassicText.timeLeft.text(in: terms.language, format.span(progress.timeLeft)))
         .countdownRoll(value: now)
         .classicLines(for: .sideBySide)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.classicSecondary)
         .ikaFont(.light, size: ClassicMetrics.BattlePrimary.remainingTimeFontSize, relativeTo: .headline)
     }
   }

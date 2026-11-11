@@ -132,6 +132,23 @@ extension ColorPair {
   }
 }
 
+// MARK: - ClassicSecondaryStyle
+
+/// A Classic screen's secondary text, such as a row's time range or a countdown: the system's
+/// secondary colour in dark appearance, as ikalendar 2 drew it, and a darker grey in light, where
+/// the system's reaches only about 3.4:1 on Classic's cells and ground, short of the 4.5:1 text
+/// needs.
+struct ClassicSecondaryStyle: ShapeStyle {
+  func resolve(in environment: EnvironmentValues) -> Color {
+    environment.colorScheme == .dark ? .secondary : Color(ClassicMetrics.secondaryTextLight)
+  }
+}
+
+extension ShapeStyle where Self == ClassicSecondaryStyle {
+  /// A Classic screen's secondary text (`ClassicSecondaryStyle`).
+  static var classicSecondary: ClassicSecondaryStyle { .init() }
+}
+
 // MARK: - ModeColor
 
 extension ModeColor {

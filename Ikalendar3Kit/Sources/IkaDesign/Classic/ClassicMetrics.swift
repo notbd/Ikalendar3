@@ -23,6 +23,9 @@ enum ClassicMetrics {
   /// The largest text size a title in the heavy face grows to, a Challenge's or a Splatfest's: its
   /// longest words then still fit a 390-point iPhone's cell.
   static let displayTitleLargestSize: DynamicTypeSize = .accessibility1
+  /// Secondary text in light appearance (`ClassicSecondaryStyle`): 4.5:1 on Classic's white cells
+  /// and on the grouped ground around them.
+  static let secondaryTextLight: SRGBColor = .init(hex: 0x6C6C70)
 
   /// A Stage name on its glass label.
   enum StageLabel {

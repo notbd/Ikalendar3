@@ -77,7 +77,7 @@ struct ClassicHeadingView: View {
       if let form = heading.form {
         Text(verbatim: form)
           .font(.title3.weight(.semibold))
-          .foregroundStyle(Color.secondary)
+          .foregroundStyle(.classicSecondary)
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
