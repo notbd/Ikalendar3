@@ -149,10 +149,11 @@ enum ClassicMetrics {
   enum Stamp {
     static let size: CGFloat = 128
     static let offsetX: CGFloat = -10
-    /// From the top of the list, under the inline navigation bar: the stamp's top sits where
-    /// ikalendar 2's did, 6 points under the top of the bar's 44-point row, since ikalendar 2's
-    /// -90 hung it from under the 96 points of that row and the large title.
-    static let offsetY: CGFloat = -38
+    /// From the top of the list, under the inline navigation bar: the stamp's top sits 6 points
+    /// over the top of the bar's 44-point row, which holds nothing at its trailing end at rest
+    /// since Settings moved to the leading end. ikalendar 2's stamp sat 12 points lower, beside
+    /// its Settings button; raised, it needs less room under the heading (`Heading.minimumHeight`).
+    static let offsetY: CGFloat = -50
     /// The stamp's resting 2D tilt.
     static let rotationDegrees: Double = 8
     static let badgeSize: CGFloat = 44
@@ -170,4 +171,10 @@ enum ClassicMetrics {
     static let sectionSpacing: CGFloat = 8
   }
 }
+    /// The heading's least height, so the first row starts under the stamp's visible part at any
+    /// width, a narrow iPad column's too, where the row cannot pass beside it: the stamp ends 5%
+    /// opaque at 90% of its height, which its tilt lowers to 85 points under the list's top at its
+    /// trailing corner, less the 12 points it is raised by; the first row's header starts 22
+    /// points under the heading's end.
+    static let minimumHeight: CGFloat = 52
 #endif
