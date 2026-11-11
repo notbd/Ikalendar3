@@ -349,15 +349,28 @@ private struct InkFetchTimeTag: View {
   let isStale: Bool
 
   var body: some View {
+    // As wide as its text where that fits on one line. A label too long for the column, as at
+    // the largest text sizes, takes the column's width and wraps inside the tag.
+    ViewThatFits(in: .horizontal) {
+      tag(label.fixedSize())
+      tag(label.fixedSize(horizontal: false, vertical: true))
+    }
+    .frame(maxWidth: .infinity)
+  }
+
+  /// The label, in the dark appearance the black tag needs in both appearances.
+  private var label: some View {
     FetchTimeLabel(fetchTime: fetchTime, now: now, isStale: isStale)
-      // The tag is black in both appearances.
       .environment(\.colorScheme, .dark)
-      // As wide as its text, and no wider than the screen: a long label wraps inside the tag.
-      .fixedSize(horizontal: false, vertical: true)
+  }
+
+  private func tag(_ label: some View) -> some View {
+    label
       .padding(.horizontal, InkMetrics.tagHorizontalPadding + 3)
       .padding(.vertical, InkMetrics.tagVerticalPadding + 2)
-      .background(Color(InkPair.tagText.colors(in: .dark).background), in: SkewedRectangle(slant: InkMetrics.tagSlant))
-      .frame(maxWidth: .infinity)
+      .background(
+        Color(InkPair.tagText.colors(in: .dark).background),
+        in: SkewedRectangle(slant: InkMetrics.tagSlant))
   }
 }
 #endif
