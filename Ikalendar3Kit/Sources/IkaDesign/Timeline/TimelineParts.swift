@@ -77,15 +77,46 @@ struct TimelineShiftContent: View {
 
 // MARK: - TimelineStatusContent
 
-/// Why no Rotation or Shift is on: paused until a return time, or nothing current.
+/// Why no Rotation or Shift is on: paused until a return time, or nothing current. It takes the
+/// current slot's place as a panel hatched like a closed lane, so it reads as the state of now
+/// and not as a missing picture.
 struct TimelineStatusContent: View {
   let text: String
 
   var body: some View {
     Text(verbatim: text)
-      .ikaFont(.light, size: 16, relativeTo: .body)
+      .ikaFont(.heavy, size: 18, relativeTo: .headline)
+      .lineHeight(TimelineMetrics.wrappedLineHeight)
       .foregroundStyle(.white)
       .fixedSize(horizontal: false, vertical: true)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, TimelineMetrics.cardPadding)
+      .padding(.vertical, TimelineMetrics.statusPadding)
+      .background {
+        TimelineHatching()
+          .background(TimelinePalette.strip)
+      }
+      .clipShape(.rect(cornerRadius: TimelineMetrics.pictureCornerRadius))
+  }
+}
+
+// MARK: - TimelineHatching
+
+/// Faint diagonal stripes, as the game hatches a closed area.
+private struct TimelineHatching: View {
+  var body: some View {
+    Canvas { context, size in
+      let pitch: CGFloat = TimelineMetrics.hatchPitch
+      var path: Path = .init()
+      var x: CGFloat = -size.height
+      while x < size.width {
+        path.move(to: CGPoint(x: x, y: size.height))
+        path.addLine(to: CGPoint(x: x + size.height, y: 0))
+        x += pitch
+      }
+      context.stroke(path, with: .color(TimelinePalette.hatch), lineWidth: pitch / 2)
+    }
+    .accessibilityHidden(true)
   }
 }
 

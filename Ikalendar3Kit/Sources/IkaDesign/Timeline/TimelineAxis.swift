@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - TimelineAxis
 
 /// SplatNet 3's time axis: a Mode-colour line down the left with one slot per entry, each hung on
-/// its 24-hour start pin, a day mark where the axis reaches a new day, and the current item's
+/// its start pin, a day mark where the axis reaches a new day, and the current item's
 /// progress filled in along its slot.
 struct TimelineAxis<Item: TimeWindow & Hashable & Sendable, SlotContent: View>: View {
   let entries: [TimelineEntry<Item>]
@@ -68,7 +68,7 @@ struct TimelineAxis<Item: TimeWindow & Hashable & Sendable, SlotContent: View>: 
 /// spans the space below it so the line runs on unbroken.
 private struct TimelineSlot<Content: View>: View {
   let color: TimelineTint
-  let pin: String?
+  let pin: AttributedString?
   /// The share of the item passed while it runs, or `nil`.
   let progress: Double?
   let arrangement: CellArrangement
@@ -132,23 +132,40 @@ private struct TimelineTrack: View {
 
 // MARK: - TimelinePin
 
-/// A start time on the axis: in the Mode colour while its item runs, light grey otherwise.
+/// A start time on the axis: in the Mode colour while its item runs, light grey otherwise. Every
+/// pin is at least the pin column's width with its time centred, so 12-hour times of different
+/// lengths line up; their AM or PM is set smaller, as a clock face sets it.
 struct TimelinePin: View {
-  let text: String
+  @Environment(\.gameLanguage) private var language
+  @ScaledMetric(relativeTo: .subheadline) private var dayPeriodSize: CGFloat = 11
+
+  let text: AttributedString
   let color: TimelineTint
   let isCurrent: Bool
 
   var body: some View {
     let colors: ColorPair = isCurrent ? color.asFill : TimelinePalette.idlePin
 
-    Text(verbatim: text)
+    Text(styledText)
       .ikaFont(.heavy, size: 15, relativeTo: .subheadline)
       .monospacedDigit()
       .scaledLimitedLine(lineLimit: 1, minScaleFactor: 0.5)
       .foregroundStyle(Color(colors.foreground))
       .padding(.horizontal, 7)
       .padding(.vertical, 2)
+      .frame(minWidth: TimelineMetrics.pinWidth)
       .background(Color(colors.background), in: .rect(cornerRadius: TimelineMetrics.pinCornerRadius))
+  }
+
+  /// The time with its AM or PM in the smaller size.
+  private var styledText: AttributedString {
+    var text = text
+    let dayPeriod: Font = FontCascade(role: .heavy, language: language, registered: FontRegistry.registered)
+      .font(size: dayPeriodSize)
+    for run in text.runs where run.foundation.dateField == .amPM {
+      text[run.range].swiftUI.font = dayPeriod
+    }
+    return text
   }
 }
 

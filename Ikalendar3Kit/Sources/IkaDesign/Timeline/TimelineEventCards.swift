@@ -135,6 +135,7 @@ struct TimelineSplatfestCard: View {
           }
           Text(verbatim: texts.title)
             .ikaFont(.heavy, size: 18, relativeTo: .headline)
+            .lineHeight(TimelineMetrics.wrappedLineHeight)
             .foregroundStyle(.white)
             .fixedSize(horizontal: false, vertical: true)
           ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
@@ -195,6 +196,7 @@ struct TimelineChallengeTitle: View {
   var body: some View {
     Text(verbatim: terms.challenge(challenge.id).name)
       .ikaFont(.heavy, size: 20, relativeTo: .title3)
+      .lineHeight(TimelineMetrics.wrappedLineHeight)
       .foregroundStyle(.white)
       .fixedSize(horizontal: false, vertical: true)
   }

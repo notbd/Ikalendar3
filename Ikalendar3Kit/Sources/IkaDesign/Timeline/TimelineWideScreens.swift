@@ -14,7 +14,7 @@ import SwiftUI
 /// Timeline's wide Battle Mode detail on iPad and Mac: the black header (with the Series and Open
 /// strip on Anarchy) and an announced Splatfest's card as on iPhone, then, in a centred column,
 /// the current Rotation as one wide row (start pin, Rule, progress ring with "Now" and the
-/// countdown beside both Stages) over one table of every later Rotation, each on its 24-hour pin
+/// countdown beside both Stages) over one table of every later Rotation, each on its start pin
 /// with a day mark where the table reaches a new day.
 ///
 /// It receives `IkaCore` values only and reads no store.
@@ -51,11 +51,9 @@ public struct TimelineWideBattleScreenView: View {
       icon: ModeIcon(Mode.battle(screen.mode)),
       title: screen.mode.name(in: terms.language),
       headerName: screen.mode.timelineHeaderName(in: terms.language),
+      strip: screen.mode.isAnarchy ? TimelineFormStrip(shown: screen.mode, language: terms.language) : nil,
       reflowValue: entries.map(\.id))
     {
-      if screen.mode.isAnarchy {
-        TimelineFormStrip(shown: screen.mode, language: terms.language)
-      }
       if let card = screen.announcedSplatfest {
         TimelineSplatfestCard(card: card, terms: terms, now: now)
           .padding(.horizontal, TimelineMetrics.contentTrailing)
@@ -82,7 +80,7 @@ public struct TimelineWideBattleScreenView: View {
           case .paused(let returnTime):
             TimelineStatusContent(text: ScreenText.paused.text(
               in: terms.language,
-              time.format(terms.language).time(returnTime, relativeTo: now)))
+              format.time(returnTime, relativeTo: now)))
 
           case .nothingCurrent:
             TimelineStatusContent(text: ScreenText.nothingCurrent.text(in: terms.language))

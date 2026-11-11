@@ -12,9 +12,9 @@ import SwiftUI
 // MARK: - TimelineChallengeScreenView
 
 /// Timeline's Challenge screen, after SplatNet 3's schedule page: the black header, then each
-/// Challenge with its name, description, Rule, Stages and rules text, its six windows on a
-/// Challenge-colour time axis under their day marks, the current one's progress filled in and
-/// ended ones greyed.
+/// Challenge with its name, description, Rule and Stages, its six windows on a Challenge-colour
+/// time axis under their day marks, the current one's progress filled in and ended ones greyed,
+/// and its rules text last: when it runs matters more than its fine print.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store.
 public struct TimelineChallengeScreenView: View {
@@ -78,6 +78,7 @@ public struct TimelineChallengeScreenView: View {
         } sentence: { entry in
           entry.item.map { writer.sentence(for: $0, at: now) } ?? ""
         }
+        TimelineChallengeRules(challenge: listing.challenge, terms: terms)
       }
     } footer: {
       FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
@@ -126,9 +127,9 @@ public struct TimelineSplatfestScreenView: View {
       icon: .splatfestBattle,
       title: RotationMode.splatfestBattle(screen.form).name(in: terms.language),
       headerName: ModeLabel.splatfestBattle.text(in: terms.language),
+      strip: TimelineFormStrip(shown: screen.form, language: terms.language),
       reflowValue: entries.map(\.id))
     {
-      TimelineFormStrip(shown: screen.form, language: terms.language)
       TimelineSplatfestCard(card: screen.card, terms: terms, now: now)
         .padding(.horizontal, TimelineMetrics.contentTrailing)
         .padding(.top, TimelineMetrics.axisTop)
@@ -197,34 +198,48 @@ extension TimelineSplatfestScreenView {
 
 // MARK: - TimelineChallengeDetails
 
-/// What a Challenge's axis hangs under: its name and description, its Rule, its Stages joined in
-/// one strip, and its rules text.
+/// What a Challenge's axis hangs under: its name and description, its Rule, and its Stages
+/// joined in one strip.
 private struct TimelineChallengeDetails: View {
   let challenge: Challenge
   let terms: GameTerms
   let arrangement: CellArrangement
 
   var body: some View {
-    let texts = terms.challenge(challenge.id)
-
     VStack(alignment: .leading, spacing: 8) {
       TimelineChallengeTitle(challenge: challenge, terms: terms)
         .accessibilityAddTraits(.isHeader)
-      Text(verbatim: texts.displayDescription)
+      Text(verbatim: terms.challenge(challenge.id).displayDescription)
         .ikaFont(.light, size: 14, relativeTo: .subheadline)
+        .lineHeight(TimelineMetrics.wrappedLineHeight)
         .foregroundStyle(TimelinePalette.secondaryText)
         .fixedSize(horizontal: false, vertical: true)
       TimelineRuleLabel(rule: challenge.rule, terms: terms, arrangement: arrangement)
       TimelineStageStrip(stages: challenge.stages, terms: terms, arrangement: arrangement)
-      Text(verbatim: texts.displayRulesText)
-        .ikaFont(.light, size: 13, relativeTo: .footnote)
-        .foregroundStyle(TimelinePalette.secondaryText)
-        .fixedSize(horizontal: false, vertical: true)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .padding(.leading, TimelineMetrics.axisLineLeading)
     .padding(.trailing, TimelineMetrics.contentTrailing)
     .padding(.top, TimelineMetrics.axisTop + 8)
+  }
+}
+
+// MARK: - TimelineChallengeRules
+
+/// A Challenge's rules text, under its windows.
+private struct TimelineChallengeRules: View {
+  let challenge: Challenge
+  let terms: GameTerms
+
+  var body: some View {
+    Text(verbatim: terms.challenge(challenge.id).displayRulesText)
+      .ikaFont(.light, size: 13, relativeTo: .footnote)
+      .lineHeight(TimelineMetrics.wrappedLineHeight)
+      .foregroundStyle(TimelinePalette.secondaryText)
+      .fixedSize(horizontal: false, vertical: true)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.leading, TimelineMetrics.axisLineLeading)
+      .padding(.trailing, TimelineMetrics.contentTrailing)
   }
 }
 

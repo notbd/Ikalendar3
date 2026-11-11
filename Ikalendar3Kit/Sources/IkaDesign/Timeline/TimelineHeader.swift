@@ -11,8 +11,9 @@ import SwiftUI
 
 // MARK: - TimelineHeader
 
-/// SplatNet 3's black header: the Mode stamp and the Mode's name, centred. Its black runs on up
-/// behind the navigation bar and the pull-to-refresh space, so the top reads as one header.
+/// SplatNet 3's black header where it leads the list, on iPad and Mac: the Mode stamp and the
+/// Mode's name, centred. Its black runs on up behind the navigation bar and the pull-to-refresh
+/// space, so the top reads as one header.
 struct TimelineHeader: View {
   let icon: ModeIcon
   let name: String
@@ -41,6 +42,31 @@ struct TimelineHeader: View {
   /// How far the header's black reaches up past its top edge: beyond any navigation bar and
   /// pull-to-refresh space.
   static private let backdropHeight: CGFloat = 1000
+}
+
+// MARK: - TimelineBarTitle
+
+/// The header as the navigation bar holds it at iPhone width: the Mode stamp and the Mode's name,
+/// centred in the black bar.
+struct TimelineBarTitle: View {
+  let icon: ModeIcon
+  let name: String
+
+  var body: some View {
+    HStack(spacing: 7) {
+      Image(decorative: BundledImage.name(for: icon, size: .medium), bundle: BundledImage.catalogBundle)
+        .resizable()
+        .scaledToFit()
+        .frame(width: TimelineMetrics.barStampSize, height: TimelineMetrics.barStampSize)
+      Text(verbatim: name)
+        .ikaFont(.heavy, size: 18, relativeTo: .headline)
+        .scaledLimitedLine(lineLimit: 1, minScaleFactor: 0.6)
+        .foregroundStyle(.white)
+        .accessibilityAddTraits(.isHeader)
+    }
+    // A bar keeps its height, as the system's own titles do.
+    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+  }
 }
 
 // MARK: - TimelineModeStamp
@@ -117,7 +143,8 @@ struct TimelineFormStrip: View {
       }
     }
     .frame(maxWidth: .infinity, minHeight: TimelineMetrics.stripHeight)
-    .background(TimelinePalette.strip)
+    // Only behind the strip: where it sits under the bar, the bar stays black.
+    .background(TimelinePalette.strip, ignoresSafeAreaEdges: [])
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(Text(verbatim: forms.first(where: \.isShown)?.label.text(in: language) ?? ""))
   }
