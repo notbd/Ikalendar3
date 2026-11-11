@@ -164,7 +164,11 @@ struct InkBattlePanel: View {
   }
 
   private func stageCard(_ stage: StageID, imageSize: BundledImage.Size) -> some View {
-    InkStageCard(stage: stage, name: Text(verbatim: terms.name(of: stage)), imageSize: imageSize)
+    InkStageCard(
+      stage: stage,
+      name: Text(verbatim: terms.name(of: stage)),
+      imageSize: imageSize,
+      nameReachesTrailingEdge: true)
   }
 }
 #endif

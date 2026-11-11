@@ -75,7 +75,11 @@ struct InkStageRow: View {
 
   private var cards: some View {
     ForEach(stages, id: \.self) { stage in
-      InkStageCard(stage: stage, name: Text(verbatim: terms.name(of: stage)), imageSize: imageSize)
+      InkStageCard(
+        stage: stage,
+        name: Text(verbatim: terms.name(of: stage)),
+        imageSize: imageSize,
+        nameReachesTrailingEdge: true)
     }
   }
 }
