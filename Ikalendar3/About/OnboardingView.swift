@@ -22,7 +22,6 @@ struct OnboardingView: View {
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
-  @Environment(\.colorScheme) private var colorScheme
 
   /// Choreography timing, relative to the screen's appearance unless noted.
   private enum Timing {
@@ -138,11 +137,11 @@ struct OnboardingView: View {
         .padding(.vertical, 10)
         .padding(.horizontal)
         .frame(maxWidth: .infinity)
-        // White reads 5.0:1 on the light accent, black 10.2:1 on the dark one.
-        .foregroundStyle(colorScheme == .dark ? Color.black : Color.white)
+        // On the accent fill (`accentFill`): 9.6:1 in light, 10.2:1 in dark.
+        .foregroundStyle(.black)
     }
     .buttonStyle(.glassProminent)
-    .tint(Color(.appAccent))
+    .tint(.accentFill)
     .sensoryFeedback(Haptic.done, trigger: preferences.shouldShowOnboarding) { _, isShown in !isShown }
     .modifier(Entrance(part: .button, hasStarted: hasEntered))
     .phaseAnimator([1, 0.95], trigger: buttonPulses) { content, scale in
