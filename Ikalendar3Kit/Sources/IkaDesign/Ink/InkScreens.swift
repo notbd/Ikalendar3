@@ -12,8 +12,8 @@ import SwiftUI
 // MARK: - InkBattleScreenView
 
 /// Ink's Battle Mode screen: ikalendar 2's primary and secondary layout on the game's materials.
-/// The Mode's heading and stamp over the dotted background, an announced Splatfest's card on
-/// Regular Battle's screen, the current Rotation's taped panel, then a panel per later Rotation.
+/// The Mode's heading and stamp on the board, an announced Splatfest's card on Regular Battle's
+/// screen, the current Rotation's taped panel, then a panel per later Rotation.
 /// A finished Rotation leaves and the next glides into the featured panel.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store. Pull to
@@ -191,15 +191,9 @@ struct InkScheduleList<ReflowValue: Equatable, Panels: View>: View {
 
     ScrollView {
       LazyVStack(spacing: InkScreenMetrics.panelSpacing) {
-        InkModeHeadingView(
-          heading: heading,
-          accent: accent,
-          arrangement: metrics.arrangement,
-          stampReserve: width * InkScreenMetrics.stampReservedShare)
+        InkModeHeadingView(heading: heading, icon: icon, accent: accent, arrangement: metrics.arrangement)
         panels(metrics)
-        FetchTimeLabel(fetchTime: fetchTime, now: now, isStale: isStale)
-          // On Ink's black background in both appearances, until ticket 56 designs the light one.
-          .environment(\.colorScheme, .dark)
+        InkFetchTimeTag(fetchTime: fetchTime, now: now, isStale: isStale)
       }
       .padding(.horizontal, InkScreenMetrics.screenPadding)
       .padding(.bottom, InkScreenMetrics.panelSpacing)
@@ -210,52 +204,76 @@ struct InkScheduleList<ReflowValue: Equatable, Panels: View>: View {
       }
     }
     .listReflow(value: reflowValue)
-    .background { InkBackground().ignoresSafeArea() }
-    .inkModeStamp(icon: icon, accent: accent, title: title)
+    .background { InkBoard().ignoresSafeArea() }
+    .inkModeStampDock(icon: icon, title: title)
   }
 }
 
 // MARK: - InkModeHeadingView
 
 /// The Mode's name over the list in the heavy face, with Anarchy Battle's or Splatfest Battle's
-/// form on a tag in the accent under it. It leaves the trailing side to the stamp and is at least as tall as the splat,
-/// and
-/// from the first accessibility text size sits under the stamp at full width instead, so the name
-/// wraps rather than truncates.
+/// form on a tag in the accent under it, and the Mode stamp on the trailing side.
+///
+/// The stamp lies under the first panel: the panel covers the splat's lower edge by a fixed
+/// amount whatever the name's height, and the splat runs off the screen's trailing edge, so it
+/// meets its neighbours on purpose and never covers a tag. From the first accessibility text size
+/// the name sits under a smaller stamp at full width instead, so it wraps rather than truncates.
 private struct InkModeHeadingView: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.gameLanguage) private var language
 
   let heading: InkModeHeading
+  let icon: ModeIcon
   let accent: InkAccent
   let arrangement: CellArrangement
-  /// The width beside the heading the stamp takes.
-  let stampReserve: CGFloat
 
   var body: some View {
+    switch arrangement {
+      case .sideBySide:
+        name
+          .padding(.trailing, InkScreenMetrics.stampReserve)
+          // At least as tall as the splat is above the first panel, so the splat stays under
+          // the bar.
+          .frame(maxWidth: .infinity, minHeight: InkScreenMetrics.headingMinHeight, alignment: .leading)
+          .background(alignment: .bottomTrailing) {
+            stamp()
+              .offset(y: InkScreenMetrics.panelSpacing + InkScreenMetrics.splatPanelOverlap)
+          }
+
+      case .stacked:
+        VStack(alignment: .leading, spacing: 0) {
+          // Smaller over a name this large, which leaves the stamp a row of its own.
+          stamp(scale: InkScreenMetrics.stackedStampScale)
+            .frame(height: InkScreenMetrics.splatSize * InkScreenMetrics.stackedStampScale, alignment: .top)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+          name
+        }
+    }
+  }
+
+  private var name: some View {
     VStack(alignment: .leading, spacing: InkScreenMetrics.headingSpacing) {
       Text(verbatim: heading.name.text(in: language))
         .inkFont(.title)
         // The heavy face's tall line box leaves a gap between wrapped lines that the game's
         // headings do not have.
         .lineHeight(.tight)
-        .foregroundStyle(Color(InkPair.backgroundText.colors(in: colorScheme).foreground))
+        .foregroundStyle(Color(InkPair.boardText.colors(in: colorScheme).foreground))
         .fixedSize(horizontal: false, vertical: true)
       if let form = heading.form {
         InkModeTag(Text(verbatim: form.text(in: language)), accent: accent)
       }
     }
-    .padding(InkScreenMetrics.headingPadding)
-    .padding(.trailing, arrangement == .sideBySide ? stampReserve : 0)
-    .padding(.top, arrangement == .stacked ? InkScreenMetrics.splatSize : 0)
-    // Beside the stamp, the first panel starts under the splat, so the splat never covers its
-    // state tag.
-    .frame(
-      maxWidth: .infinity,
-      minHeight: arrangement == .sideBySide ? InkScreenMetrics.splatSize - InkScreenMetrics.splatPanelOverlap : nil,
-      alignment: .topLeading)
+    .padding(.leading, InkScreenMetrics.headingLeadingPadding)
     .accessibilityElement(children: .combine)
     .accessibilityAddTraits(.isHeader)
+  }
+
+  /// The stamp at `scale` of its size, reaching past the screen's trailing edge.
+  private func stamp(scale: CGFloat = 1) -> some View {
+    InkModeStamp(icon: icon, accent: accent)
+      .scaleEffect(scale, anchor: .topTrailing)
+      .offset(x: InkScreenMetrics.screenPadding + InkScreenMetrics.stampBleed)
   }
 }
 
@@ -272,6 +290,26 @@ struct InkNote: View {
       .fixedSize(horizontal: false, vertical: true)
       .frame(maxWidth: .infinity, alignment: .leading)
       .inkPanel(isTaped: true)
+  }
+}
+// MARK: - InkFetchTimeTag
+
+/// The fetch time at the end of the list, on a black tag like a time: readable on the board in
+/// both appearances.
+private struct InkFetchTimeTag: View {
+  let fetchTime: Date
+  let now: Date
+  let isStale: Bool
+
+  var body: some View {
+    FetchTimeLabel(fetchTime: fetchTime, now: now, isStale: isStale)
+      // The tag is black in both appearances.
+      .environment(\.colorScheme, .dark)
+      .fixedSize()
+      .padding(.horizontal, InkMetrics.tagHorizontalPadding + 3)
+      .padding(.vertical, InkMetrics.tagVerticalPadding + 2)
+      .background(Color(InkPair.tagText.colors(in: .dark).background), in: SkewedRectangle(slant: InkMetrics.tagSlant))
+      .frame(maxWidth: .infinity)
   }
 }
 #endif
