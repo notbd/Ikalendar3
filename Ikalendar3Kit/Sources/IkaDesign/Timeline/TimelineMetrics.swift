@@ -94,8 +94,8 @@ enum TimelinePalette {
   static let secondaryText: Color = .init(SRGBColor(hex: 0xD8DDE3))
   /// The stripes over a status panel.
   static let hatch: Color = .white.opacity(0.05)
-  /// The text of a Challenge window that has ended.
-  static let pastText: Color = .init(SRGBColor(hex: 0x8D949C))
+  /// The text of a Challenge window that has ended, greyed but still 4.5:1 on the page.
+  static let pastText: Color = .init(SRGBColor(hex: 0x969DA5))
   /// The axis track's opacity before and after the current item's progress.
   static let trackOpacity: Double = 0.35
 }
