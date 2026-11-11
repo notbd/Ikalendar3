@@ -46,7 +46,7 @@ public struct InkBattleScreenView: View {
       later: screen.later)
 
     InkScheduleList(
-      heading: InkModeHeading(mode),
+      heading: ModeNameAndForm(mode),
       icon: ModeIcon(mode),
       accent: InkAccent(ModeColor(mode)),
       title: screen.mode.name(in: terms.language),
@@ -125,7 +125,7 @@ public struct InkSalmonRunScreenView: View {
       later: screen.later)
 
     InkScheduleList(
-      heading: InkModeHeading(.salmonRun),
+      heading: ModeNameAndForm(.salmonRun),
       icon: .salmonRun,
       accent: InkAccent(.salmonRun),
       title: Mode.salmonRun.name(in: terms.language),
@@ -169,7 +169,7 @@ public struct InkSalmonRunScreenView: View {
 struct InkScheduleList<ReflowValue: Equatable, Panels: View>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-  let heading: InkModeHeading
+  let heading: ModeNameAndForm
   /// The stamp's icon.
   let icon: ModeIcon
   /// The stamp's splat and the heading's form tag.
@@ -225,7 +225,7 @@ private struct InkModeHeadingView: View {
   @Environment(\.gameLanguage) private var language
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-  let heading: InkModeHeading
+  let heading: ModeNameAndForm
   let icon: ModeIcon
   let accent: InkAccent
   let arrangement: CellArrangement

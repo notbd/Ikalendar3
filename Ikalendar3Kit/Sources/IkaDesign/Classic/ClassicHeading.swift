@@ -24,18 +24,18 @@ struct ClassicHeading: Equatable {
 
   /// The heading of `mode`.
   init(_ mode: Mode, in language: GameLanguage) {
-    self.init(InkModeHeading(mode), title: mode.name(in: language), in: language)
+    self.init(ModeNameAndForm(mode), title: mode.name(in: language), in: language)
   }
 
   /// The heading of Splatfest Battle in `form`, over the Splatfest screen.
   init(splatfestBattle form: SplatfestBattleForm, in language: GameLanguage) {
     self.init(
-      InkModeHeading(splatfestBattle: form),
+      ModeNameAndForm(splatfestBattle: form),
       title: RotationMode.splatfestBattle(form).name(in: language),
       in: language)
   }
 
-  private init(_ heading: InkModeHeading, title: String, in language: GameLanguage) {
+  private init(_ heading: ModeNameAndForm, title: String, in language: GameLanguage) {
     name = heading.name.text(in: language)
     form = heading.form?.text(in: language)
     self.title = title

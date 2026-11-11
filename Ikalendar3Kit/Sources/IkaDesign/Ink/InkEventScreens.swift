@@ -101,7 +101,7 @@ public struct InkSplatfestScreenView: View {
     let afterwards: [InkPanelEntry<Rotation>] = screen.afterwards.map { InkPanelEntry(item: $0, place: .later) }
 
     InkScheduleList(
-      heading: InkModeHeading(splatfestBattle: screen.form),
+      heading: ModeNameAndForm(splatfestBattle: screen.form),
       icon: ModeIcon(mode),
       accent: .splatfest,
       title: mode.name(in: terms.language),

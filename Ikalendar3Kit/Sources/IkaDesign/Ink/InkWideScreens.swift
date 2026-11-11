@@ -49,7 +49,7 @@ public struct InkWideBattleScreenView: View {
     let accent: InkAccent = .init(ModeColor(mode))
 
     InkScheduleList(
-      heading: InkModeHeading(mode),
+      heading: ModeNameAndForm(mode),
       icon: ModeIcon(mode),
       accent: accent,
       title: screen.mode.name(in: terms.language),
@@ -160,7 +160,7 @@ public struct InkWideSalmonRunScreenView: View {
       later: screen.later)
 
     InkScheduleList(
-      heading: InkModeHeading(.salmonRun),
+      heading: ModeNameAndForm(.salmonRun),
       icon: .salmonRun,
       accent: InkAccent(.salmonRun),
       title: Mode.salmonRun.name(in: terms.language),

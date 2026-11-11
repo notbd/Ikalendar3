@@ -27,7 +27,7 @@ struct NowRow: View {
 
   var body: some View {
     let content: SummaryRowContent = .init(summary, writer: writer, format: time.format(terms.language), now: now)
-    let heading: InkModeHeading = .init(summary)
+    let heading: ModeNameAndForm = .init(summary)
     let accent: InkAccent = .init(content.color)
 
     VStack(alignment: .leading, spacing: WatchMetrics.lineSpacing) {
