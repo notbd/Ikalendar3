@@ -11,9 +11,9 @@ import SwiftUI
 
 // MARK: - ClassicChallengeSection
 
-/// One Challenge in Classic's Challenge list: a cell with its name, description, Rule, Stages and
-/// rules text, then one row per window with ikalendar 2's "Now:" and "Next:" tags, the current
-/// window carrying its progress bar.
+/// One Challenge in Classic's Challenge list, under its kind's tag: a cell with its name,
+/// description, Rule, Stages and rules text, then one row per window with ikalendar 2's "Now:"
+/// and "Next:" tags, the current window carrying its progress bar.
 struct ClassicChallengeSection: View {
   typealias Scoped = ClassicMetrics.Challenge
 
@@ -34,6 +34,12 @@ struct ClassicChallengeSection: View {
       ForEach(listing.windows, id: \.window) { window in
         windowRow(window)
       }
+    } header: {
+      // Headed as Classic heads every row, here by its kind on the Mode colour, as an event card
+      // and a Big Run are, which also keeps the card's top clear of the Mode stamp.
+      ClassicKindTag(text: ModeLabel.challenges.text(in: terms.language), color: .challenge)
+        // The screen and the card's sentence name the Challenge.
+        .accessibilityHidden(true)
     }
   }
 
