@@ -44,12 +44,11 @@ public struct ClassicWideBattleScreenView: View {
 
     ClassicScheduleList(
       icon: ModeIcon(Mode.battle(screen.mode)),
+      heading: ClassicHeading(.battle(screen.mode), in: terms.language),
       reflowValue: rows.map(\.id))
     { metrics in
       if let card = screen.announcedSplatfest {
-        Section {
-          ClassicSplatfestCard(card: card, terms: terms, now: now, metrics: metrics)
-        }
+        ClassicSplatfestSection(card: card, terms: terms, now: now, metrics: metrics)
       }
       ForEach(rows.filter { !$0.isUpcoming }) { row in
         if case .current(let running) = row {
@@ -109,6 +108,7 @@ public struct ClassicWideSalmonRunScreenView: View {
 
     ClassicScheduleList(
       icon: ModeIcon(.salmonRun),
+      heading: ClassicHeading(.salmonRun, in: terms.language),
       reflowValue: rows.map(\.id))
     { metrics in
       ForEach(rows.filter { !$0.isTableRow }) { row in

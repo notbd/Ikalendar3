@@ -39,6 +39,9 @@ struct ClassicWideBattleCell: View {
           HStack(spacing: ClassicMetrics.BattlePrimary.ruleSectionSpacing) {
             ClassicPicture(name: BundledImage.name(for: setting.rule, size: .large))
               .shadow(radius: ClassicMetrics.shadowRadius)
+              .classicIconGroundInLight(
+                padding: ClassicMetrics.BattleSecondary.ruleImagePadding,
+                in: .rect(cornerRadius: ClassicMetrics.BattleSecondary.ruleImageCornerRadius))
               .frame(height: wide.half.length(.battleRuleSectionHeight))
             ClassicPrimaryRuleTitle(rule: setting.rule, terms: terms, arrangement: .sideBySide)
               .frame(height: wide.half.length(.battleRuleSectionHeight))
@@ -96,9 +99,12 @@ struct ClassicBattleTableRow: View {
         HStack(spacing: ClassicMetrics.BattlePrimary.ruleSectionSpacing) {
           ClassicPicture(name: BundledImage.name(for: setting.rule, size: .medium))
             .shadow(radius: ClassicMetrics.shadowRadius)
+            .classicIconGroundInLight(
+              padding: ClassicMetrics.Shift.weaponPadding,
+              in: .rect(cornerRadius: ClassicMetrics.Shift.kingSalmonidCornerRadius))
             .frame(height: wide.half.length(.tableRuleIconHeight))
           Text(verbatim: terms.name(of: setting.rule))
-            .scaledLimitedLine(for: .sideBySide)
+            .classicLines(for: .sideBySide)
             .ikaFont(.light, size: ClassicMetrics.BattleSecondary.ruleFontSize, relativeTo: .body)
         }
       } trailing: {
@@ -192,8 +198,8 @@ struct ClassicShiftTableRow: View {
           in: terms.language,
           timeFormat.span(.seconds(shift.startTime.timeIntervalSince(now)))))
           .countdownRoll(value: now)
-          .scaledLimitedLine(for: .sideBySide)
-          .foregroundStyle(.secondary)
+          .classicLines(for: .sideBySide)
+          .foregroundStyle(.classicSecondary)
           .ikaFont(.light, size: ClassicMetrics.BattlePrimary.remainingTimeFontSize, relativeTo: .headline)
       }
     } middle: {
@@ -212,7 +218,7 @@ struct ClassicShiftTableRow: View {
           .shadow(radius: ClassicMetrics.shadowRadius)
           .padding(ClassicMetrics.Shift.weaponPadding)
           .frame(width: wide.half.length(.tableWeaponSize), height: wide.half.length(.tableWeaponSize))
-          .adaptiveGlassEffect(in: .rect(cornerRadius: ClassicMetrics.Shift.weaponCornerRadius))
+          .classicIconGround(in: .rect(cornerRadius: ClassicMetrics.Shift.weaponCornerRadius))
       }
     }
     .accessibilityElement(children: .ignore)
@@ -290,8 +296,8 @@ private struct ClassicWideProgress: View {
         .frame(width: side, height: side)
       Text(verbatim: ClassicText.timeLeft.text(in: terms.language, format.span(progress.timeLeft)))
         .countdownRoll(value: now)
-        .scaledLimitedLine(for: .sideBySide)
-        .foregroundStyle(.secondary)
+        .classicLines(for: .sideBySide)
+        .foregroundStyle(.classicSecondary)
         .ikaFont(.light, size: ClassicMetrics.BattlePrimary.remainingTimeFontSize, relativeTo: .headline)
     }
   }
@@ -328,7 +334,7 @@ private struct ClassicWideTimeText: View {
 
   var body: some View {
     Text(verbatim: text)
-      .scaledLimitedLine(for: .sideBySide)
+      .classicLines(for: .sideBySide)
       .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
   }
 }

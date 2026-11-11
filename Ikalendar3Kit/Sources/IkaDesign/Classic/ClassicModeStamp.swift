@@ -14,14 +14,20 @@ import SwiftUI
 /// ikalendar 2's tilted Mode stamp over the list's top trailing corner, which docks into a 44 pt
 /// glass badge in the navigation bar as the list scrolls, with ticket 12's stamp math.
 ///
-/// The dock progress is measured from where the list rests under the expanded large title, not
-/// from the current top inset, as ikalendar 2 deliberately does: the inset shrinks by the title's
-/// height as the title collapses, and stays shrunk when a row above the viewport rolls off.
+/// The screen's name heads the list itself (`ClassicHeadingView`) rather than the bar's large
+/// title, which ran under the stamp when long, so the bar stays inline. Its title, the screen's
+/// full name in the system's inline title font, fades in with the badge, as the large title
+/// handed over to the inline one in ikalendar 2.
+///
+/// The dock progress is measured from where the list rests, not from the current top inset, as
+/// ikalendar 2 deliberately does: the inset stays shrunk when a row above the viewport rolls off.
 private struct ClassicModeStampDock: ViewModifier {
   let icon: ModeIcon
+  /// The screen's full name, for the navigation bar.
+  let title: String
 
   @State private var dockProgress: Double = 0
-  /// The list's top content inset at rest under the expanded large title.
+  /// The list's top content inset at rest under the inline navigation bar.
   @State private var restingTopInset: CGFloat = 0
   /// How far the top inset has grown past its resting value: the pull-to-refresh spinner's height
   /// while a refresh runs, 0 otherwise.
@@ -32,10 +38,10 @@ private struct ClassicModeStampDock: ViewModifier {
       .onScrollGeometryChange(for: CGFloat.self) { geometry in
         geometry.contentInsets.top
       } action: { _, topInset in
-        // Kept from the first layout, where the large title is expanded: later insets also grow
-        // by the pull-to-refresh spinner.
-        if restingTopInset == 0 { restingTopInset = topInset }
-        refreshTopInset = max(topInset - restingTopInset, 0)
+        // The smallest inset seen: the first layout can still carry the default large title
+        // before the inline bar applies, and later insets grow by the pull-to-refresh spinner.
+        restingTopInset = restingTopInset == 0 ? topInset : min(restingTopInset, topInset)
+        refreshTopInset = topInset - restingTopInset
       }
       .onScrollGeometryChange(for: Double.self) { [restingTopInset] geometry in
         ModeStampMath.dockProgress(contentOffsetY: geometry.contentOffset.y, restingTopInset: restingTopInset)
@@ -49,7 +55,14 @@ private struct ClassicModeStampDock: ViewModifier {
           .offset(x: ClassicMetrics.Stamp.offsetX, y: ClassicMetrics.Stamp.offsetY - refreshTopInset)
           .allowsHitTesting(false)
       }
+      .toolbarTitleDisplayMode(.inline)
       .toolbar {
+        ToolbarItem(placement: .principal) {
+          Text(verbatim: title)
+            .font(.headline)
+            .lineLimit(1)
+            .opacity(ModeStampMath.badgeOpacity(progress: dockProgress))
+        }
         ToolbarItem(placement: .topBarTrailing) {
           ClassicModeBadge(icon: icon)
             .opacity(ModeStampMath.badgeOpacity(progress: dockProgress))
@@ -63,9 +76,9 @@ private struct ClassicModeStampDock: ViewModifier {
 
 extension View {
   /// Hangs `icon`'s Mode stamp over this scroll view's top trailing corner and docks it into the
-  /// navigation bar badge as the view scrolls.
-  func classicModeStamp(_ icon: ModeIcon) -> some View {
-    modifier(ClassicModeStampDock(icon: icon))
+  /// navigation bar badge as the view scrolls, while `title` fades into the bar.
+  func classicModeStamp(_ icon: ModeIcon, title: String) -> some View {
+    modifier(ClassicModeStampDock(icon: icon, title: title))
   }
 }
 

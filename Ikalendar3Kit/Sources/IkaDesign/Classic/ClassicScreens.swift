@@ -43,12 +43,11 @@ public struct ClassicBattleScreenView: View {
 
     ClassicScheduleList(
       icon: ModeIcon(Mode.battle(screen.mode)),
+      heading: ClassicHeading(.battle(screen.mode), in: terms.language),
       reflowValue: rows.map(\.id))
     { metrics in
       if let card = screen.announcedSplatfest {
-        Section {
-          ClassicSplatfestCard(card: card, terms: terms, now: now, metrics: metrics)
-        }
+        ClassicSplatfestSection(card: card, terms: terms, now: now, metrics: metrics)
       }
       ForEach(rows) { row in
         ClassicBattleSection(row: row, mode: .battle(screen.mode), terms: terms, now: now, metrics: metrics)
@@ -88,6 +87,7 @@ public struct ClassicSalmonRunScreenView: View {
 
     ClassicScheduleList(
       icon: ModeIcon(.salmonRun),
+      heading: ClassicHeading(.salmonRun, in: terms.language),
       reflowValue: rows.map(\.id))
     { metrics in
       ForEach(rows) { row in
@@ -112,11 +112,13 @@ public struct ClassicSalmonRunScreenView: View {
 
 /// What every Classic screen shares: ikalendar 2's inset grouped list with hidden row
 /// separators, its rows sized for the list's width and text size, rows moving into place as the
-/// clock changes them and, on iPhone and iPad, the Mode stamp docking into its badge.
+/// clock changes them and, on iPhone and iPad, the screen's name over the list with the Mode stamp
+/// that docks into its badge. The Mac window names the screen itself.
 struct ClassicScheduleList<ReflowValue: Equatable, Rows: View, Footer: View>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   let icon: ModeIcon
+  let heading: ClassicHeading
   /// The rows' identities: the rows move into place when it changes.
   let reflowValue: ReflowValue
   @ViewBuilder let rows: (CellMetrics) -> Rows
@@ -124,8 +126,16 @@ struct ClassicScheduleList<ReflowValue: Equatable, Rows: View, Footer: View>: Vi
 
   var body: some View {
     GeometryReader { geometry in
+      let metrics: CellMetrics = .init(width: geometry.size.width, dynamicTypeSize: dynamicTypeSize)
+
       List {
-        rows(CellMetrics(width: geometry.size.width, dynamicTypeSize: dynamicTypeSize))
+        #if os(iOS)
+        Section { } header: {
+          ClassicHeadingView(heading: heading, arrangement: metrics.arrangement)
+        }
+        .listSectionSpacing(ClassicMetrics.Heading.sectionSpacing)
+        #endif
+        rows(metrics)
           .listRowSeparator(.hidden)
         Section { } footer: {
           footer()
@@ -134,7 +144,7 @@ struct ClassicScheduleList<ReflowValue: Equatable, Rows: View, Footer: View>: Vi
       .classicListStyle()
       .listReflow(value: reflowValue)
       #if os(iOS)
-      .classicModeStamp(icon)
+      .classicModeStamp(icon, title: heading.title)
       #endif
     }
   }

@@ -85,13 +85,16 @@ public struct ClassicEventCard: View {
     switch item {
       case .challenge(let window):
         Text(verbatim: terms.challenge(window.challenge.id).name)
-          .scaledLimitedLine(for: arrangement)
+          .classicLines(for: arrangement)
           .ikaFont(.heavy, size: Scoped.titleFontSize, relativeTo: .title3)
         HStack(spacing: Scoped.spacing) {
           ClassicPicture(name: BundledImage.name(for: window.challenge.rule, size: .medium))
+            .classicIconGroundInLight(
+              padding: ClassicMetrics.Shift.weaponPadding,
+              in: .rect(cornerRadius: ClassicMetrics.Shift.kingSalmonidCornerRadius))
             .frame(width: ruleIconSize, height: ruleIconSize)
           Text(verbatim: terms.name(of: window.challenge.rule))
-            .scaledLimitedLine(for: arrangement)
+            .classicLines(for: arrangement)
             .ikaFont(.light, size: Scoped.detailFontSize, relativeTo: .body)
         }
         stages(window.challenge.stages)
@@ -133,7 +136,7 @@ public struct ClassicEventCard: View {
   /// The event's times, then its progress while it runs or a countdown to its start.
   @ViewBuilder private var times: some View {
     Text(verbatim: range)
-      .scaledLimitedLine(for: arrangement)
+      .classicLines(for: arrangement)
       .ikaFont(.light, size: Scoped.detailFontSize, relativeTo: .headline)
 
     if item.isRunning(at: now) {
@@ -149,8 +152,8 @@ public struct ClassicEventCard: View {
         in: terms.language,
         timeFormat.span(.seconds(item.startTime.timeIntervalSince(now)))))
         .countdownRoll(value: now)
-        .scaledLimitedLine(for: arrangement)
-        .foregroundStyle(.secondary)
+        .classicLines(for: arrangement)
+        .foregroundStyle(.classicSecondary)
         .ikaFont(.light, size: ClassicMetrics.BattlePrimary.remainingTimeFontSize, relativeTo: .headline)
     }
   }
