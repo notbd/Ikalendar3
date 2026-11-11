@@ -31,17 +31,14 @@ struct ModeTabsView: View {
   @Environment(\.gameLanguage) private var language
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.colorScheme) private var colorScheme
-  @Environment(\.splatfestTeamColors) private var splatfestColors
 
   var body: some View {
     @Bindable var status = status
     let snapshot = engine.snapshot
     let now = clock.now
     let selectedTab = snapshot.tab(in: status.selectedPlace, at: now)
-    let selectedColor = selectedTab.selectedColor(
-      style: preferences.style,
-      in: colorScheme,
-      splatfestColors: splatfestColors)
+    let selectedColor = selectedTab.selectedColor(style: preferences.style, in: colorScheme)
+    let barScheme: ColorScheme = AppTab.barColorScheme(style: preferences.style, in: colorScheme)
     // Every tap on a tab bar item reaches the setter, a second tap on the selected tab included
     // unless the interceptor below keeps it from the system.
     let selection: Binding = .init(
@@ -64,6 +61,9 @@ struct ModeTabsView: View {
           // The tab view's Mode colour tints the tab bar only: the screen keeps the system's tint,
           // so its toolbar buttons stay as they are.
           .tint(nil)
+          // Only where the bar's appearance differs from the app's (Timeline in light): any
+          // preference here also drops the selected tab's tint.
+          .toolbarColorScheme(barScheme == colorScheme ? nil : barScheme, for: .tabBar)
         } label: {
           Label {
             Text(verbatim: tab.shortTitle(in: language))
@@ -125,12 +125,12 @@ struct ModeTabsView: View {
   }
 
   /// The tab bar's tint: the selected tab's colour, or the primary colour where only its icon
-  /// takes the colour (`SelectedTabColor.icon`).
-  private func barTint(_ color: SelectedTabColor?) -> Color? {
+  /// takes a colour or it has none (`SelectedTabColor`).
+  private func barTint(_ color: SelectedTabColor) -> Color {
     switch color {
       case .tint(let color): Color(color)
-      case .icon: .primary
-      case nil: nil
+      case .icon,
+           .primary: .primary
     }
   }
 
