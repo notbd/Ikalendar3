@@ -91,9 +91,7 @@ public struct ClassicSplatfestScreenView: View {
       heading: ClassicHeading(splatfestBattle: screen.form, in: terms.language),
       reflowValue: (rows + afterwards).map(\.id))
     { metrics in
-      Section {
-        ClassicSplatfestCard(card: screen.card, terms: terms, now: now, metrics: metrics)
-      }
+      ClassicSplatfestSection(card: screen.card, terms: terms, now: now, metrics: metrics)
       if let tricolor = screen.tricolorTurfWar {
         ClassicTricolorSection(tricolor: tricolor, terms: terms, now: now, metrics: metrics)
       }

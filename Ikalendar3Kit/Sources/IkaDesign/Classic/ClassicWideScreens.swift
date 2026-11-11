@@ -48,9 +48,7 @@ public struct ClassicWideBattleScreenView: View {
       reflowValue: rows.map(\.id))
     { metrics in
       if let card = screen.announcedSplatfest {
-        Section {
-          ClassicSplatfestCard(card: card, terms: terms, now: now, metrics: metrics)
-        }
+        ClassicSplatfestSection(card: card, terms: terms, now: now, metrics: metrics)
       }
       ForEach(rows.filter { !$0.isUpcoming }) { row in
         if case .current(let running) = row {

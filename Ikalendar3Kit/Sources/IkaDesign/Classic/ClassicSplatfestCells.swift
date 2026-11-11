@@ -9,6 +9,28 @@
 import IkaCore
 import SwiftUI
 
+// MARK: - ClassicSplatfestSection
+
+/// The Splatfest card's row, headed as Classic heads every row: by a tag, here the grey one an
+/// event without a Mode colour takes, as Tricolor Turf War's. The header also keeps the card clear
+/// of the Mode stamp's lower half, as the "Now:" header keeps a Rotation's cell.
+struct ClassicSplatfestSection: View {
+  let card: SplatfestCard
+  let terms: GameTerms
+  let now: Date
+  let metrics: CellMetrics
+
+  var body: some View {
+    Section {
+      ClassicSplatfestCard(card: card, terms: terms, now: now, metrics: metrics)
+    } header: {
+      ClassicTag(text: ModeLabel.splatfest.text(in: terms.language))
+        // The card's sentence names the Splatfest.
+        .accessibilityHidden(true)
+    }
+  }
+}
+
 // MARK: - ClassicSplatfestCard
 
 /// Classic's Splatfest card, on the Splatfest screen and on Regular Battle's screen while a
