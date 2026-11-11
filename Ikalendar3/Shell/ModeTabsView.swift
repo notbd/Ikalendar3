@@ -17,7 +17,8 @@ import SwiftUI
 /// Challenge and Salmon Run, with the Splatfest tab in Regular Battle's place while a Splatfest
 /// runs. An iPad window of compact width shows them too (`WindowLayout.tabs`).
 ///
-/// It plays ikalendar 2's Mode switch haptic, shows the failed-refresh toast above the tab bar
+/// Each tab shows its short name (`AppTab.shortTitle(in:)`), and VoiceOver reads the full one. It
+/// plays ikalendar 2's Mode switch haptic, shows the failed-refresh toast above the tab bar
 /// (`AppRootView` keeps it), and shows Settings and the track button at the leading end of each
 /// tab's toolbar, which leaves the trailing end to the Style's Mode stamp. A second tap on the
 /// selected Anarchy or Splatfest tab shows the Series and Open (or Open and Pro) menu above it.
@@ -54,7 +55,8 @@ struct ModeTabsView: View {
           }
           .refreshFailureToast()
         } label: {
-          Label(tab.title(in: language), systemImage: tab.systemImage)
+          Label(tab.shortTitle(in: language), systemImage: tab.systemImage)
+            .accessibilityLabel(tab.title(in: language))
         }
       }
     }
