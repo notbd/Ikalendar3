@@ -55,8 +55,9 @@ struct TimelineFormat {
     range(from: start, to: end) { $0.weekday(.abbreviated) }
   }
 
-  /// A Splatfest's start and end with their weekdays and dates, since it is announced weeks
-  /// ahead: "Sat, 10/31, 09:00 - Mon, 11/2, 09:00".
+  /// A Splatfest's start and end with their weekdays and dates: "Sat, 10/31, 09:00 - Mon, 11/2,
+  /// 09:00". Unlike a Shift's range it carries the dates, since a Splatfest is announced weeks
+  /// ahead and its card stands above the axis, with no day mark over it.
   func dateRange(from start: Date, to end: Date) -> String {
     range(from: start, to: end) { $0.weekday(.abbreviated).month(.defaultDigits).day() }
   }
