@@ -46,8 +46,12 @@ enum InkScreenMetrics {
   static let splatPanelOverlap: CGFloat = 30
   /// The width beside the Mode name the stamp takes: the splat's part on the screen and a gap.
   static let stampReserve: CGFloat = splatSize - stampBleed - screenPadding + 6
-  /// The heading's least height beside the stamp: the splat's part above the first panel.
-  static let headingMinHeight: CGFloat = splatSize - splatPanelOverlap - panelSpacing
+  /// How far the stamp may rise into the navigation bar's row on iPhone, whose trailing end is
+  /// free: the row's height.
+  static let stampRise: CGFloat = 44
+  /// The splat's part above the first panel: the heading's least height beside the stamp where
+  /// the stamp stays under the bar.
+  static let splatHeightAbovePanel: CGFloat = splatSize - splatPanelOverlap - panelSpacing
   /// The stamp's scale over the Mode name, from the first accessibility text size.
   static let stackedStampScale: CGFloat = 0.72
   /// The navigation bar badge the stamp docks into, round.
