@@ -12,9 +12,9 @@ import SwiftUI
 // MARK: - InkChallengeScreenView
 
 /// Ink's Challenge screen, in the look of its Battle Mode screens: the Challenges heading and
-/// stamp over the dotted background, then a panel per Challenge with its name, description,
-/// Rule, Stages and rules text, and a time tag per window, the current one tagged "Now!" with its
-/// progress and the next one "Next". The panel holding the current window is taped.
+/// stamp on the board, then a panel per Challenge with its name, description, Rule and Stages, a
+/// time tag per window, the current one tagged "Now!" with its progress and the next one "Next",
+/// and its rules text last. The panel holding the current window is taped.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store.
 public struct InkChallengeScreenView: View {
@@ -177,12 +177,15 @@ private struct InkChallengePanel: View {
     let isOn: Bool = listing.windows.contains { $0.mark.isCurrent }
 
     VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
-      VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing / 2) {
+      // Closer than the panel's rows, but clear of each other at the texts' close line heights.
+      VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing * 0.7) {
         Text(verbatim: texts.name)
           .inkFont(.headline)
+          .lineHeight(.tight)
           .fixedSize(horizontal: false, vertical: true)
         Text(verbatim: texts.displayDescription)
           .inkFont(.body)
+          .lineHeight(.multiple(factor: InkScreenMetrics.runningTextLineHeight))
           .fixedSize(horizontal: false, vertical: true)
       }
       .accessibilityElement(children: .combine)
@@ -190,16 +193,18 @@ private struct InkChallengePanel: View {
       InkRuleLabel(rule: challenge.rule, terms: terms, accent: accent, arrangement: metrics.arrangement)
       InkDottedRule()
       InkStageRow(stages: challenge.stages, terms: terms, imageSize: .medium, arrangement: metrics.arrangement)
-      Text(verbatim: texts.displayRulesText)
-        .inkFont(.caption)
-        .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
-        .fixedSize(horizontal: false, vertical: true)
-      VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
+      VStack(alignment: .leading, spacing: InkScreenMetrics.windowRowSpacing) {
         ForEach(listing.windows, id: \.window) { window in
           row(window, of: challenge, accent: accent)
         }
       }
       .padding(.top, InkScreenMetrics.panelRowSpacing / 2)
+      InkDottedRule()
+      Text(verbatim: texts.displayRulesText)
+        .inkFont(.caption)
+        .lineHeight(.multiple(factor: InkScreenMetrics.runningTextLineHeight))
+        .foregroundStyle(Color(InkPair.panelSecondaryText.colors(in: colorScheme).foreground))
+        .fixedSize(horizontal: false, vertical: true)
     }
     .frame(maxWidth: .infinity, alignment: .leading)
     .inkPanel(isTaped: isOn)
