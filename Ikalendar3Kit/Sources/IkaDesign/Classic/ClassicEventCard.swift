@@ -89,6 +89,9 @@ public struct ClassicEventCard: View {
           .ikaFont(.heavy, size: Scoped.titleFontSize, relativeTo: .title3)
         HStack(spacing: Scoped.spacing) {
           ClassicPicture(name: BundledImage.name(for: window.challenge.rule, size: .medium))
+            .classicIconGroundInLight(
+              padding: ClassicMetrics.Shift.weaponPadding,
+              in: .rect(cornerRadius: ClassicMetrics.Shift.kingSalmonidCornerRadius))
             .frame(width: ruleIconSize, height: ruleIconSize)
           Text(verbatim: terms.name(of: window.challenge.rule))
             .classicLines(for: arrangement)

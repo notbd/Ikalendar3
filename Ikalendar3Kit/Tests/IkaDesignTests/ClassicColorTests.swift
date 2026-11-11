@@ -11,7 +11,7 @@ import Testing
 @testable import IkaDesign
 
 /// Pins the colours Classic draws itself rather than taking from the system: its grey tags, and
-/// its secondary text in light appearance.
+/// its secondary text and the ground of the game's icons in light appearance.
 struct ClassicColorTests {
   @Test(arguments: [ColorScheme.light, .dark])
   func `A tag's text reaches 4.5 to 1 on its fill`(colorScheme: ColorScheme) {
@@ -24,6 +24,13 @@ struct ClassicColorTests {
 
     #expect(tag.background.relativeLuminance > Style.classic.panel(in: .dark).relativeLuminance + 0.2)
     #expect(tag.foreground == .black)
+  }
+
+  @Test
+  func `White icons keep 3 to 1 on their ground in light appearance`() {
+    let ratio: Double = SRGBColor.white.contrastRatio(with: ClassicMetrics.iconGroundLight)
+
+    #expect(ratio >= ContrastTarget.largeTextAndIcons.minimumRatio)
   }
 
   @Test(arguments: [SRGBColor.white, Style.classic.panel(in: .light)])

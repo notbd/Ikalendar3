@@ -285,7 +285,7 @@ struct ClassicWeaponsCard: View {
           .scaledToFit()
           .shadow(radius: ClassicMetrics.shadowRadius)
           .padding(ClassicMetrics.Shift.weaponPadding)
-          .adaptiveGlassEffect(in: .rect(cornerRadius: ClassicMetrics.Shift.weaponCornerRadius))
+          .classicIconGround(in: .rect(cornerRadius: ClassicMetrics.Shift.weaponCornerRadius))
           .accessibilityLabel(Text(verbatim: terms.name(of: weapon)))
       }
     }

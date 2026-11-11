@@ -26,6 +26,9 @@ enum ClassicMetrics {
   /// Secondary text in light appearance (`ClassicSecondaryStyle`): 4.5:1 on Classic's white cells
   /// and on the grouped ground around them.
   static let secondaryTextLight: SRGBColor = .init(hex: 0x6C6C70)
+  /// What the game's icons sit on in light appearance (`ClassicIconGround`): white reaches 3:1 on
+  /// it with room to spare, so the lightest icons keep their edges.
+  static let iconGroundLight: SRGBColor = .init(hex: 0x3A3A3C)
 
   /// A Stage name on its glass label.
   enum StageLabel {

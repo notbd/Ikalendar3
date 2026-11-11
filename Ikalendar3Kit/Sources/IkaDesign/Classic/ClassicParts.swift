@@ -73,6 +73,54 @@ struct ClassicStageLabel: View {
   }
 }
 
+// MARK: - ClassicIconGround
+
+/// What one of the game's icons sits on, a Rule's or a weapon's: ikalendar 2's adaptive glass in
+/// dark appearance, and a solid dark grey in light. The game draws its icons for its dark grounds,
+/// and some, such as Turf War's white and lime or the silver weapons, all but vanish on light
+/// glass.
+///
+/// An icon that stands on the panel itself in ikalendar 2, as the featured Rule's does, keeps
+/// doing so in dark appearance and gets the grey, `padding` wider than the icon, in light only.
+private struct ClassicIconGround<GroundShape: Shape>: ViewModifier {
+  @Environment(\.colorScheme) private var colorScheme
+
+  let shape: GroundShape
+  /// Whether dark appearance draws the glass, as under an icon on a tile.
+  let isTiledInDark: Bool
+  /// How far the light ground reaches past an icon that stands on the panel in dark appearance.
+  let padding: CGFloat
+
+  func body(content: Content) -> some View {
+    switch (colorScheme, isTiledInDark) {
+      case (.dark, true):
+        content.adaptiveGlassEffect(in: shape)
+      case (.dark, false):
+        content
+      case (_, true):
+        content.background(Color(ClassicMetrics.iconGroundLight), in: shape)
+      case (_, false):
+        content
+          .padding(padding)
+          .background(Color(ClassicMetrics.iconGroundLight), in: shape)
+    }
+  }
+}
+
+extension View {
+  /// Sets one of the game's icons on a tile of Classic's ground for it in `shape`
+  /// (`ClassicIconGround`).
+  func classicIconGround(in shape: some Shape) -> some View {
+    modifier(ClassicIconGround(shape: shape, isTiledInDark: true, padding: 0))
+  }
+
+  /// Sets one of the game's icons that stands on the panel in dark appearance on Classic's ground
+  /// for it in light, `padding` wider than the icon (`ClassicIconGround`).
+  func classicIconGroundInLight(padding: CGFloat, in shape: some Shape) -> some View {
+    modifier(ClassicIconGround(shape: shape, isTiledInDark: false, padding: padding))
+  }
+}
+
 // MARK: - View
 
 extension View {

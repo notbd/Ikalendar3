@@ -190,6 +190,9 @@ struct ClassicBattlePrimaryCell: View {
     HStack(alignment: .center, spacing: Scoped.ruleSectionSpacing) {
       ClassicPicture(name: BundledImage.name(for: setting.rule, size: .large))
         .shadow(radius: ClassicMetrics.shadowRadius)
+        .classicIconGroundInLight(
+          padding: ClassicMetrics.BattleSecondary.ruleImagePadding,
+          in: .rect(cornerRadius: ClassicMetrics.BattleSecondary.ruleImageCornerRadius))
         .frame(height: metrics.arrangement == .stacked ? metrics.length(.battleRuleSectionHeight) : nil)
         .layoutPriority(1)
         .matchedGeometryEffect(id: GlidePart.ruleIcon, in: glide)
@@ -302,7 +305,7 @@ struct ClassicBattleSecondaryCell: View {
       .shadow(radius: ClassicMetrics.shadowRadius)
       .frame(height: metrics.length(.battleSecondaryRuleImageHeight))
       .padding(Scoped.ruleImagePadding)
-      .adaptiveGlassEffect(in: .rect(cornerRadius: Scoped.ruleImageCornerRadius))
+      .classicIconGround(in: .rect(cornerRadius: Scoped.ruleImageCornerRadius))
       .matchedGeometryEffect(id: GlidePart.ruleIcon, in: glide, isSource: false)
   }
 
