@@ -86,48 +86,64 @@ extension AppTab {
     }
   }
 
-  /// How the selected tab shows its colour, as ikalendar 2 tints it: its Mode colour, or for the
-  /// Splatfest tab its first team's, on the tab bar's glass over `style`'s ground in
-  /// `colorScheme`. `nil` for a Splatfest with no team colours known.
+  /// How the selected tab shows its colour on the tab bar's glass over `style`'s ground in
+  /// `colorScheme`: its Mode colour, as ikalendar 2 tints it. Splatfest Battle has no colour of its
+  /// own and every Style draws it neutral, so the Splatfest tab takes the primary colour.
   ///
-  /// The label and icon take the nearest tint of the colour that reads as text (4.5:1) on the
-  /// glass. Over Ink's grey board in light appearance no such tint still reads as the colour (the
-  /// glass behind the selected tab measures #92928F, where Regular Battle's would be #292E00), so
-  /// there the label stays primary and only the icon takes the colour, at the 3:1 icons need.
-  func selectedColor(style: Style, in colorScheme: ColorScheme, splatfestColors: [SRGBColor]) -> SelectedTabColor? {
-    let base: SRGBColor? =
-      switch self {
-        case .mode(let tab): tab.color.base
-        case .splatfest: splatfestColors.first
-      }
-    guard let base else { return nil }
+  /// The label and icon take the nearest tint of the Mode colour that reads as text (4.5:1) on the
+  /// glass. Two Styles differ in light appearance:
+  /// - Ink lies on a grey board, where the light glass turns mid grey and no such tint still reads
+  ///   as the colour (Regular Battle's would be #292E00): the label stays primary and only the icon
+  ///   takes the colour, at the 3:1 icons need.
+  /// - Timeline keeps its page dark, and light glass over it flips between mid grey and dark with
+  ///   what scrolls under it, so no one label colour reads on both: its tab bar is dark
+  ///   (`barColorScheme`), which draws the selected label in its own white, and the icon takes the
+  ///   tint of the dark bar.
+  func selectedColor(style: Style, in colorScheme: ColorScheme) -> SelectedTabColor {
+    guard case .mode(let tab) = self else { return .primary }
 
-    if style == .ink, colorScheme == .light {
-      return .icon(base.readableTint(on: Self.inkBoardGlass, for: .largeTextAndIcons))
+    let barScheme: ColorScheme = Self.barColorScheme(style: style, in: colorScheme)
+    let glass: SRGBColor = Self.selectedGlass(style: style, in: barScheme)
+    switch (style, colorScheme) {
+      case (.ink, .light):
+        return .icon(tab.color.base.readableTint(on: glass, for: .largeTextAndIcons))
+      case (.timeline, .light):
+        return .icon(tab.color.base.readableTint(on: glass, for: .text))
+      default:
+        return .tint(tab.color.base.readableTint(on: glass, for: .text))
     }
-    return .tint(base.readableTint(on: Self.tabBarGlass(in: colorScheme), for: .text))
   }
 
-  /// What the tab bar's glass shows behind its items over the app's own ground, at the end that
-  /// is harder to read on: about #1F1F20 to #3A3A3C in dark appearance and #E6E6E8 to #EFF2F3 in
-  /// light, as measured on iOS 26, with a margin on the light side.
-  static private func tabBarGlass(in colorScheme: ColorScheme) -> SRGBColor {
-    colorScheme == .dark ? .init(hex: 0x3A3A3C) : .init(hex: 0xD8D8DC)
+  /// The tab bar's appearance over `style`'s ground: dark for Timeline, whose page is dark in both
+  /// appearances; `colorScheme` for the others.
+  static func barColorScheme(style: Style, in colorScheme: ColorScheme) -> ColorScheme {
+    style == .timeline ? .dark : colorScheme
   }
 
-  /// The glass behind the selected tab over Ink's grey board (`InkBoard`, #969793) in light
-  /// appearance, as measured: #92928F, where black reads 6.7:1 and white 3.1:1.
-  static private let inkBoardGlass: SRGBColor = .init(hex: 0x92928F)
+  /// What the tab bar's glass shows behind the selected tab over `style`'s ground when the bar is
+  /// in `barScheme`, at the end that is harder to read on, as measured from iOS 27.2 simulator
+  /// captures: #1F1F20 to #3A3A3C when dark; when light, #E6E6E8 to #EFF2F3 over Classic (taken as
+  /// #D8D8DC, for a margin) and #92928F over Ink's grey board (`InkBoard`, #969793).
+  static func selectedGlass(style: Style, in barScheme: ColorScheme) -> SRGBColor {
+    switch (style, barScheme) {
+      case (_, .dark),
+           (.timeline, _): .init(hex: 0x3A3A3C)
+      case (.ink, _): .init(hex: 0x92928F)
+      case (.classic, _): .init(hex: 0xD8D8DC)
+    }
+  }
 }
 
 // MARK: - SelectedTabColor
 
 /// How the selected tab shows its colour in the tab bar.
-enum SelectedTabColor {
+enum SelectedTabColor: Equatable {
   /// The label and the icon in this colour.
   case tint(SRGBColor)
   /// The label in the primary colour and the icon in this colour.
   case icon(SRGBColor)
+  /// The label and the icon in the primary colour.
+  case primary
 }
 
 // MARK: - TabText

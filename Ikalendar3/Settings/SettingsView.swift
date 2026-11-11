@@ -6,6 +6,7 @@
 //
 
 import IkaCore
+import IkaDesign
 import IkaIntents
 import SwiftUI
 
@@ -16,8 +17,9 @@ import SwiftUI
 ///
 /// Every control writes straight to the preferences store, which persists the value and which
 /// every screen observes, so a new Style or colour scheme applies at once. Settings and the pages
-/// it opens take the app's accent, ikalendar 2's orange (the `AppAccent` colour: #A25F00 in light,
-/// 4.5:1 on the grouped background; #FF9F0A in dark, 8.3:1 on a cell). iPhone and iPad present
+/// it opens take the app's accent, ikalendar 2's orange: text and glyphs the `AppAccent` colour
+/// (#A25F00 in light, 4.5:1 on the grouped background; #FF9F0A in dark, 8.3:1 on a cell), and
+/// switches that are on the orange fill (`accentFill`). iPhone and iPad present
 /// it from the tabs (`settingsPresentation(isPresented:)`); the Mac shows it in its standard
 /// Settings window, opened with Command-comma, without the iPhone-only rows.
 struct SettingsView: View {
@@ -102,6 +104,7 @@ struct SettingsView: View {
               : "arrow.left.and.line.vertical.and.arrow.right")
             .contentTransition(.symbolEffect(.replace))
         }
+        .tint(.accentFill)
       }
     }
   }
@@ -153,9 +156,13 @@ struct SettingsView: View {
   private var remindersSection: some View {
     Section {
       Toggle(ModeLabel.bigRun.text(in: language), isOn: reminderSwitch(.bigRun))
+        .tint(.accentFill)
       Toggle(ModeLabel.eggstraWork.text(in: language), isOn: reminderSwitch(.eggstraWork))
+        .tint(.accentFill)
       Toggle(ModeLabel.splatfest.text(in: language), isOn: reminderSwitch(.splatfest))
+        .tint(.accentFill)
       Toggle(ModeLabel.challenges.text(in: language), isOn: reminderSwitch(.challenge))
+        .tint(.accentFill)
 
       if areNotificationsOff, let url = Self.notificationSettingsURL {
         Button {
