@@ -94,10 +94,10 @@ struct ClassicSplatfestArt: View {
 
 // MARK: - ClassicSplatfestIcon
 
-/// The Splatfest's icon: Splatfest Battle's Mode icon stands in until ticket 53 draws one.
+/// The Splatfest's icon: the Splatfest mark in its team colours.
 struct ClassicSplatfestIcon: View {
   var body: some View {
-    ClassicPicture(name: BundledImage.name(for: ModeIcon.splatfestBattle, size: .medium))
+    ModeIconPicture(.splatfestBattle, size: .medium)
       .shadow(radius: ClassicMetrics.shadowRadius)
   }
 }

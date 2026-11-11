@@ -108,9 +108,9 @@ public struct FreshnessLabel<Content: Hashable & Sendable>: View {
 
 // MARK: - ModeIconImage
 
-/// A Mode's bundled icon in its own colours, at `side` points scaled with the caption text size,
-/// from the smallest pixel size that covers it. Decorative: the name beside it or the sentence
-/// around it says the Mode.
+/// A Mode's icon in its own colours (`ModeIconPicture`), at `side` points scaled with the caption
+/// text size, from the smallest pixel size that covers it. Decorative: the name beside it or the
+/// sentence around it says the Mode.
 public struct ModeIconImage: View {
   @Environment(\.displayScale) private var displayScale
   @ScaledMetric private var side: CGFloat
@@ -125,9 +125,7 @@ public struct ModeIconImage: View {
   public var body: some View {
     // The small icons are 64 pixels wide.
     let size: BundledImage.Size = side * displayScale > 64 ? .medium : .small
-    Image(decorative: BundledImage.name(for: icon, size: size), bundle: BundledImage.catalogBundle)
-      .resizable()
-      .scaledToFit()
+    ModeIconPicture(icon, size: size)
       .frame(width: side, height: side)
   }
 }

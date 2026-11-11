@@ -89,7 +89,7 @@ private struct ClassicModeStamp: View {
       && scenePhase == .active
       && style.opacity > 0
 
-    ClassicPicture(name: BundledImage.name(for: icon, size: .large))
+    ModeIconPicture(icon, size: .large)
       .mask(Self.fade)
       .frame(width: ClassicMetrics.Stamp.size, height: ClassicMetrics.Stamp.size)
       // The resting tilt is a pose, not a motion: under Reduce Motion it stays while the stamp
@@ -133,7 +133,7 @@ private struct ClassicModeBadge: View {
   let icon: ModeIcon
 
   var body: some View {
-    ClassicPicture(name: BundledImage.name(for: icon, size: .medium))
+    ModeIconPicture(icon, size: .medium)
       .frame(width: ClassicMetrics.Stamp.badgeImageSize, height: ClassicMetrics.Stamp.badgeImageSize)
       .frame(width: ClassicMetrics.Stamp.badgeSize, height: ClassicMetrics.Stamp.badgeSize)
       .clipShape(.circle)
