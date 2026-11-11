@@ -60,7 +60,8 @@ private struct ClassicModeStampDock: ViewModifier {
         ToolbarItem(placement: .principal) {
           Text(verbatim: title)
             .font(.headline)
-            .lineLimit(1)
+            // Shrunk to fit beside the bar's buttons rather than cut short, as Ink's title.
+            .scaledLimitedLine()
             .opacity(ModeStampMath.badgeOpacity(progress: dockProgress))
         }
         ToolbarItem(placement: .topBarTrailing) {
