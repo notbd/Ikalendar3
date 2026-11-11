@@ -122,21 +122,25 @@ private struct TimelineHatching: View {
 
 // MARK: - TimelineRuleLabel
 
-/// A Rule's icon and name.
+/// A Rule's icon and name, the icon growing with the text. Stacked, a name that wraps keeps the
+/// icon level with its first line.
 struct TimelineRuleLabel: View {
+  @ScaledMetric(relativeTo: .headline) private var iconSize: CGFloat = TimelineMetrics.ruleIconSize
+
   let rule: RuleID
   let terms: GameTerms
   let arrangement: CellArrangement
 
   var body: some View {
-    HStack(spacing: 8) {
+    HStack(alignment: arrangement == .stacked ? .top : .center, spacing: 8) {
       Image(decorative: BundledImage.name(for: rule, size: .medium), bundle: BundledImage.catalogBundle)
         .resizable()
         .scaledToFit()
-        .frame(width: TimelineMetrics.ruleIconSize, height: TimelineMetrics.ruleIconSize)
+        .frame(width: iconSize, height: iconSize)
       Text(verbatim: terms.name(of: rule))
         .ikaFont(.heavy, size: 18, relativeTo: .headline)
         .scaledLimitedLine(for: arrangement)
+        .lineHeight(TimelineMetrics.wrappedLineHeight)
         .foregroundStyle(.white)
     }
   }
@@ -207,10 +211,12 @@ struct TimelineNowTag: View {
 
 // MARK: - TimelineModeTag
 
-/// The mark of a Mode, an event or a kind of Shift: its icon, if any, and its label on a tag in
-/// its colour. From the first accessibility text size, a label wider than the slot wraps.
+/// The mark of a Mode, an event or a kind of Shift: its icon, if any, growing with the text, and
+/// its label on a tag in its colour. From the first accessibility text size, a label wider than
+/// the slot wraps.
 struct TimelineModeTag: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @ScaledMetric(relativeTo: .footnote) private var iconSize: CGFloat = TimelineMetrics.tagIconSize
 
   let icon: ModeIcon?
   let label: String
@@ -226,11 +232,12 @@ struct TimelineModeTag: View {
           .renderingMode(.template)
           .resizable()
           .scaledToFit()
-          .frame(width: 16, height: 16)
+          .frame(width: iconSize, height: iconSize)
       }
       Text(verbatim: label)
         .ikaFont(.heavy, size: 13, relativeTo: .footnote)
         .lineLimit(arrangement.lineLimit)
+        .lineHeight(TimelineMetrics.wrappedLineHeight)
     }
     .foregroundStyle(Color(colors.foreground))
     .padding(.horizontal, 7)

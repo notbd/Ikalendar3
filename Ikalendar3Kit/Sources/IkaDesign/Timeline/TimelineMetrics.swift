@@ -40,8 +40,10 @@ enum TimelineMetrics {
   static let pictureGap: CGFloat = 3
   /// A Stage picture's shape.
   static let pictureAspectRatio: CGFloat = 16 / 9
-  /// A Rule icon's side.
+  /// A Rule icon's side at the default text size.
   static let ruleIconSize: CGFloat = 26
+  /// The side of a Mode tag's icon at the default text size.
+  static let tagIconSize: CGFloat = 16
   /// A weapon's or the King Salmonid's side.
   static let weaponSize: CGFloat = 40
   /// The header's height, without the Series and Open strip.
@@ -67,7 +69,7 @@ enum TimelineMetrics {
   static let statusPadding: CGFloat = 18
   /// The distance between two stripes of a status panel's hatching.
   static let hatchPitch: CGFloat = 14
-  /// A Splatfest team's colour swatch.
+  /// A Splatfest team's colour swatch at the default text size.
   static let teamSwatchSize: CGFloat = 14
   /// The band of team colours a Splatfest card shows while its art is not downloaded.
   static let teamBandHeight: CGFloat = 8

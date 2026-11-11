@@ -99,6 +99,7 @@ public struct TimelineEventCard: View {
 struct TimelineSplatfestCard: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @ScaledMetric(relativeTo: .subheadline) private var swatchSize: CGFloat = TimelineMetrics.teamSwatchSize
   @TimeSettings private var time
 
   /// The Splatfest with its stored art, `nil` while none is downloaded.
@@ -172,14 +173,16 @@ struct TimelineSplatfestCard: View {
     }
   }
 
-  /// A team's swatch and its name in its colour, tinted to read on Timeline's panel.
+  /// A team's swatch, growing with the text, and its name in its colour, tinted to read on
+  /// Timeline's panel.
   private func team(named name: String, color: SRGBColor) -> some View {
     HStack(spacing: 8) {
       Circle()
         .fill(Color(color))
-        .frame(width: TimelineMetrics.teamSwatchSize, height: TimelineMetrics.teamSwatchSize)
+        .frame(width: swatchSize, height: swatchSize)
       Text(verbatim: name)
         .ikaFont(.heavy, size: 15, relativeTo: .subheadline)
+        .lineHeight(TimelineMetrics.wrappedLineHeight)
         .foregroundStyle(Color(color.readableTint(on: Style.timeline.panel(in: colorScheme), for: .text)))
         .fixedSize(horizontal: false, vertical: true)
     }
