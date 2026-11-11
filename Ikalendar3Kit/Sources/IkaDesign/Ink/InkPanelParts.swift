@@ -43,8 +43,10 @@ struct InkStateTag: View {
 
 // MARK: - InkPanelHeader
 
-/// A panel's top row: its time tag on the leading side, its tags on the trailing side. From the
-/// first accessibility text size the tags go under the time, so neither shrinks.
+/// A panel's top row: its time tag on the leading side, its tags on the trailing side. Where
+/// the row is too narrow for all of them at full size, as with two tags at a large text size,
+/// and always from the first accessibility text size, the tags go under the time, so neither
+/// shrinks.
 struct InkPanelHeader<Tags: View>: View {
   let timeRange: String
   let arrangement: CellArrangement
@@ -53,17 +55,24 @@ struct InkPanelHeader<Tags: View>: View {
   var body: some View {
     switch arrangement {
       case .sideBySide:
-        HStack(spacing: InkScreenMetrics.cardSpacing) {
-          InkTimeTag(Text(verbatim: timeRange))
-          Spacer(minLength: 0)
-          tags
+        ViewThatFits(in: .horizontal) {
+          HStack(spacing: InkScreenMetrics.cardSpacing) {
+            InkTimeTag(Text(verbatim: timeRange))
+            Spacer(minLength: 0)
+            tags
+          }
+          stack
         }
 
       case .stacked:
-        VStack(alignment: .leading, spacing: InkScreenMetrics.cardSpacing) {
-          InkTimeTag(Text(verbatim: timeRange))
-          HStack(spacing: InkScreenMetrics.cardSpacing) { tags }
-        }
+        stack
+    }
+  }
+
+  private var stack: some View {
+    VStack(alignment: .leading, spacing: InkScreenMetrics.cardSpacing) {
+      InkTimeTag(Text(verbatim: timeRange))
+      HStack(spacing: InkScreenMetrics.cardSpacing) { tags }
     }
   }
 }
