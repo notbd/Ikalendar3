@@ -66,7 +66,12 @@ struct ClassicSplatfestCard: View {
       // As a Challenge's name: past this size a long word of a title ("instrument") splits.
       .dynamicTypeSize(...ClassicMetrics.displayTitleLargestSize)
 
-      ClassicTeamList(splatfest: splatfest, terms: terms, arrangement: metrics.arrangement)
+      // On one row while the Splatfest is announced, where the card sits among the Rotations.
+      ClassicTeamList(
+        splatfest: splatfest,
+        terms: terms,
+        arrangement: metrics.arrangement,
+        prefersOneRow: now < splatfest.startTime)
 
       Text(verbatim: timeFormat.range(of: splatfest, now: now))
         .classicLines(for: metrics.arrangement)
@@ -130,8 +135,9 @@ struct ClassicSplatfestIcon: View {
 // MARK: - ClassicTeamList
 
 /// A Splatfest's teams, each a swatch of its feed colour beside its name, which is drawn in that
-/// colour tinted at run time until it reads at 4.5:1 on Classic's panel. Only teams whose names
-/// the terms carry are listed (`GameTerms.teams(of:)`), so a team colour never shows alone.
+/// colour tinted at run time until it reads at 4.5:1 on Classic's panel: in a column, or side by
+/// side when asked and all fit at full size. Only teams whose names the terms carry are listed
+/// (`GameTerms.teams(of:)`), so a team colour never shows alone.
 struct ClassicTeamList: View {
   typealias Scoped = ClassicMetrics.Splatfest
 
@@ -142,24 +148,40 @@ struct ClassicTeamList: View {
   let splatfest: Splatfest
   let terms: GameTerms
   let arrangement: CellArrangement
+  /// Whether the teams sit side by side when all three fit on one row at full size.
+  var prefersOneRow = false
 
   var body: some View {
-    VStack(alignment: .leading, spacing: Scoped.teamSpacingV) {
-      ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
-        let color: SRGBColor = .init(team.color)
+    if prefersOneRow {
+      ViewThatFits(in: .horizontal) {
+        HStack(spacing: Scoped.teamSpacingH) { teams }
+        column
+      }
+    }
+    else {
+      column
+    }
+  }
 
-        // The swatch beside a name's first line when the name wraps: the stacked line box is
-        // close to the glyphs, and a single line's box centres them.
-        HStack(alignment: arrangement == .stacked ? .top : .center, spacing: ClassicMetrics.Header.tagPaddingH) {
-          Circle()
-            .fill(Color(color))
-            .overlay(Circle().strokeBorder(.primary.opacity(0.25), lineWidth: 1))
-            .frame(width: swatchSize, height: swatchSize)
-          Text(verbatim: team.name)
-            .classicLines(for: arrangement)
-            .foregroundStyle(Color(color.readableTint(on: Style.classic.panel(in: colorScheme), for: .text)))
-            .ikaFont(.heavy, size: Scoped.teamFontSize, relativeTo: .headline)
-        }
+  private var column: some View {
+    VStack(alignment: .leading, spacing: Scoped.teamSpacingV) { teams }
+  }
+
+  private var teams: some View {
+    ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
+      let color: SRGBColor = .init(team.color)
+
+      // The swatch beside a name's first line when the name wraps: the stacked line box is
+      // close to the glyphs, and a single line's box centres them.
+      HStack(alignment: arrangement == .stacked ? .top : .center, spacing: ClassicMetrics.Header.tagPaddingH) {
+        Circle()
+          .fill(Color(color))
+          .overlay(Circle().strokeBorder(.primary.opacity(0.25), lineWidth: 1))
+          .frame(width: swatchSize, height: swatchSize)
+        Text(verbatim: team.name)
+          .classicLines(for: arrangement)
+          .foregroundStyle(Color(color.readableTint(on: Style.classic.panel(in: colorScheme), for: .text)))
+          .ikaFont(.heavy, size: Scoped.teamFontSize, relativeTo: .headline)
       }
     }
   }
