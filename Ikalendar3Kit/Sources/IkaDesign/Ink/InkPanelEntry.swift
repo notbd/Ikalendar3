@@ -43,6 +43,9 @@ enum InkPanelPlace: Hashable {
   case now(WindowProgress)
   /// The first after the current one, tagged "Next".
   case next
+  /// An announced event before it starts, tagged "Soon!" as the game tags one, so it is not
+  /// taken for the next Rotation or Shift.
+  case soon
   /// After the next one, untagged.
   case later
 

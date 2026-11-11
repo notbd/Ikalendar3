@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - InkEventCard
 
 /// Ink's compact card for one event, on a panel: the event's icon and name on a tag in its colour
-/// with "Now!" while it runs or "Next" before, what it plays (a Challenge's name, Rule and Stages;
+/// with "Now!" while it runs or "Soon!" before, what it plays (a Challenge's name, Rule and Stages;
 /// a Splatfest's art, title and teams; a Big Run's or an Eggstra Work's Stage and weapons), its
 /// times, and its progress while it runs.
 ///
@@ -51,7 +51,7 @@ public struct InkEventCard: View {
     let progress: WindowProgress? = item.isRunning(at: now) ? item.progress(at: now) : nil
 
     VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
-      header(kind, place: progress.map(InkPanelPlace.now) ?? .next)
+      header(kind, place: progress.map(InkPanelPlace.now) ?? .soon)
       content(kind)
       InkTimeTag(Text(verbatim: range))
       if let progress {

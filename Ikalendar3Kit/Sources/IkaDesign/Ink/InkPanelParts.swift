@@ -12,7 +12,8 @@ import SwiftUI
 // MARK: - InkStateTag
 
 /// A panel's state tag, turned like a sticker: "Now!" in the Mode's colour on the featured panel,
-/// "Next" in the game's purple on the next one, and none on later panels.
+/// "Next" in the game's purple on the next one, "Soon!" in the same purple on an announced
+/// event's card, and none on later panels.
 struct InkStateTag: View {
   @Environment(\.gameLanguage) private var language
   @Environment(\.colorScheme) private var colorScheme
@@ -30,6 +31,12 @@ struct InkStateTag: View {
         case .next:
           InkTagLabel(
             text: Text(verbatim: InkText.next.text(in: language)),
+            style: .tag,
+            colors: InkPair.nextTagText.colors(in: colorScheme))
+
+        case .soon:
+          InkTagLabel(
+            text: Text(verbatim: InkText.soon.text(in: language)),
             style: .tag,
             colors: InkPair.nextTagText.colors(in: colorScheme))
 

@@ -18,6 +18,8 @@ public enum InkText: String, CaseIterable, Sendable {
   /// "Next": the next panel's state tag, and the tag before the next item on the Live Activity
   /// and the watch's Mode pages.
   case next = "ink.next"
+  /// "Soon!": the state tag on an announced event's card, the game's own tag for one.
+  case soon = "ink.soon"
 
   /// The string in a text set.
   public func text(in language: GameLanguage) -> String {
