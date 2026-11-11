@@ -37,6 +37,7 @@ public struct ClassicChallengeScreenView: View {
   public var body: some View {
     ClassicScheduleList(
       icon: .challenge,
+      heading: .challenges(in: terms.language),
       reflowValue: screen.challenges.map(\.challenge.id))
     { metrics in
       if screen.challenges.isEmpty {
@@ -87,6 +88,7 @@ public struct ClassicSplatfestScreenView: View {
 
     ClassicScheduleList(
       icon: ModeIcon(RotationMode.splatfestBattle(screen.form)),
+      heading: ClassicHeading(splatfestBattle: screen.form, in: terms.language),
       reflowValue: (rows + afterwards).map(\.id))
     { metrics in
       Section {

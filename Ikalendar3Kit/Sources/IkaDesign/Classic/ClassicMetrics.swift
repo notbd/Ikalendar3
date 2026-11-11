@@ -126,11 +126,25 @@ enum ClassicMetrics {
   enum Stamp {
     static let size: CGFloat = 128
     static let offsetX: CGFloat = -10
-    static let offsetY: CGFloat = -90
+    /// From the top of the list, under the inline navigation bar: the stamp's top sits where
+    /// ikalendar 2's did, 6 points under the top of the bar's 44-point row, since ikalendar 2's
+    /// -90 hung it from under the 96 points of that row and the large title.
+    static let offsetY: CGFloat = -38
     /// The stamp's resting 2D tilt.
     static let rotationDegrees: Double = 8
     static let badgeSize: CGFloat = 44
     static let badgeImageSize: CGFloat = 27
+  }
+
+  /// The screen's name over the list, where ikalendar 2 showed the navigation bar's large title.
+  enum Heading {
+    /// What the heading leaves free at its trailing end for the stamp: the stamp's width and
+    /// inset plus a gap, less the list's own inset of its section headers.
+    static let stampClearance: CGFloat = 122
+    /// The smallest share a long name shrinks to, so it stays a title.
+    static let minimumScaleFactor: CGFloat = 0.6
+    /// Between the heading and the first row's header.
+    static let sectionSpacing: CGFloat = 8
   }
 }
 #endif
