@@ -73,6 +73,7 @@ struct SettingsView: View {
         Label(text(.defaultTab), systemImage: preferences.defaultMode.systemImage)
           .contentTransition(.symbolEffect(.replace))
       }
+      .modifier(ChoicePickerStyle())
     }
   }
 
@@ -86,6 +87,7 @@ struct SettingsView: View {
       } label: {
         Label(text(.colorScheme), systemImage: "circle.lefthalf.filled")
       }
+      .modifier(ChoicePickerStyle())
 
       if isPhone {
         Toggle(isOn: $preferences.shouldMinimizeTabBar) {
@@ -320,6 +322,28 @@ private struct SettingsToolbarItem: ViewModifier {
   }
 }
 #endif
+
+// MARK: - ChoicePickerStyle
+
+/// The style of a picker that shows its choice in its row: a menu, or on iPhone and iPad from the
+/// first accessibility text size a row that opens the options on a page of their own, since the
+/// menu's button cuts a long choice short there ("Regul…Battle").
+private struct ChoicePickerStyle: ViewModifier {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+  func body(content: Content) -> some View {
+    #if os(iOS)
+    if dynamicTypeSize.isAccessibilitySize {
+      content.pickerStyle(.navigationLink)
+    }
+    else {
+      content.pickerStyle(.menu)
+    }
+    #else
+    content
+    #endif
+  }
+}
 
 // MARK: - Option names
 

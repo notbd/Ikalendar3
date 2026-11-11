@@ -21,6 +21,7 @@ struct OnboardingView: View {
   @Environment(\.gameLanguage) private var language
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   /// Choreography timing, relative to the screen's appearance unless noted.
   private enum Timing {
@@ -57,7 +58,7 @@ struct OnboardingView: View {
         Spacer()
         button
       }
-      .containerRelativeFrame(.horizontal, count: isCompact ? 5 : 2, span: isCompact ? 4 : 1, spacing: 0)
+      .containerRelativeFrame(.horizontal, count: columnCount, span: columnSpan, spacing: 0)
       .padding()
     }
     .sensoryFeedback(Haptic.onboardingLanded, trigger: hasLanded)
@@ -115,6 +116,11 @@ struct OnboardingView: View {
 
     return Text(title)
       .ikaFont(.heavy, size: 42, relativeTo: .largeTitle)
+      // The face's own line gap spaces its lines twice as far apart as the system font's.
+      .lineHeight(.multiple(factor: 1.1))
+      // At the largest text sizes the name alone outgrows the screen: it shrinks rather than
+      // breaking or being cut off.
+      .minimumScaleFactor(0.5)
       .foregroundStyle(.primary)
       .modifier(Entrance(part: .title, hasStarted: hasEntered))
   }
@@ -125,6 +131,7 @@ struct OnboardingView: View {
     } label: {
       Text(AboutText.getStarted.text(in: language))
         .ikaFont(.heavy, size: 18, relativeTo: .headline)
+        .lineHeight(.multiple(factor: 1.1))
         .padding(.vertical, 10)
         .padding(.horizontal)
         .frame(maxWidth: .infinity)
@@ -143,6 +150,16 @@ struct OnboardingView: View {
 
   private var isCompact: Bool {
     horizontalSizeClass == .compact
+  }
+
+  /// The column's share of the width: four fifths on a compact width, half on a regular one, and
+  /// the whole compact width from the first accessibility text size, for the larger title.
+  private var columnCount: Int {
+    isCompact ? (dynamicTypeSize.isAccessibilitySize ? 1 : 5) : 2
+  }
+
+  private var columnSpan: Int {
+    isCompact ? (dynamicTypeSize.isAccessibilitySize ? 1 : 4) : 1
   }
 
   private var isPulsing: Bool {
