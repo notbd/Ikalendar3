@@ -42,6 +42,8 @@ enum TimelineMetrics {
   static let pictureAspectRatio: CGFloat = 16 / 9
   /// A Rule icon's side at the default text size.
   static let ruleIconSize: CGFloat = 26
+  /// The largest a Rule icon grows with the text.
+  static let ruleIconMaxSize: CGFloat = 34
   /// The side of a Mode tag's icon at the default text size.
   static let tagIconSize: CGFloat = 16
   /// A weapon's or the King Salmonid's side.

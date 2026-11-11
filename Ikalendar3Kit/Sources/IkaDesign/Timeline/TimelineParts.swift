@@ -122,8 +122,9 @@ private struct TimelineHatching: View {
 
 // MARK: - TimelineRuleLabel
 
-/// A Rule's icon and name, the icon growing with the text. Stacked, a name that wraps keeps the
-/// icon level with its first line.
+/// A Rule's icon and name, the icon growing with the text up to `ruleIconMaxSize`. Stacked, the
+/// icon moves above the name when the two do not fit on one line, so the name takes the full width
+/// and wraps between words, never inside one such as "Rainmaker".
 struct TimelineRuleLabel: View {
   @ScaledMetric(relativeTo: .headline) private var iconSize: CGFloat = TimelineMetrics.ruleIconSize
 
@@ -132,17 +133,42 @@ struct TimelineRuleLabel: View {
   let arrangement: CellArrangement
 
   var body: some View {
-    HStack(alignment: arrangement == .stacked ? .top : .center, spacing: 8) {
-      Image(decorative: BundledImage.name(for: rule, size: .medium), bundle: BundledImage.catalogBundle)
-        .resizable()
-        .scaledToFit()
-        .frame(width: iconSize, height: iconSize)
-      Text(verbatim: terms.name(of: rule))
-        .ikaFont(.heavy, size: 18, relativeTo: .headline)
-        .scaledLimitedLine(for: arrangement)
-        .lineHeight(TimelineMetrics.wrappedLineHeight)
-        .foregroundStyle(.white)
+    switch arrangement {
+      case .sideBySide:
+        HStack(spacing: 8) {
+          icon
+          name
+        }
+
+      case .stacked:
+        ViewThatFits(in: .horizontal) {
+          HStack(spacing: 8) {
+            icon
+            name.fixedSize()
+          }
+          VStack(alignment: .leading, spacing: 4) {
+            icon
+            name
+          }
+        }
     }
+  }
+
+  private var icon: some View {
+    let side: CGFloat = min(iconSize, TimelineMetrics.ruleIconMaxSize)
+
+    return Image(decorative: BundledImage.name(for: rule, size: .medium), bundle: BundledImage.catalogBundle)
+      .resizable()
+      .scaledToFit()
+      .frame(width: side, height: side)
+  }
+
+  private var name: some View {
+    Text(verbatim: terms.name(of: rule))
+      .ikaFont(.heavy, size: 18, relativeTo: .headline)
+      .scaledLimitedLine(for: arrangement)
+      .lineHeight(TimelineMetrics.wrappedLineHeight)
+      .foregroundStyle(.white)
   }
 }
 
