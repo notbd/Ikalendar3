@@ -51,7 +51,7 @@ struct ScheduleScreen<Content, StyleView: View>: View {
 
 // MARK: - EmptyScheduleScreenView
 
-/// The shared empty state as a screen, which pull to refresh still reaches.
+/// The shared empty state as a screen, which Try Again and pull to refresh both refresh.
 struct EmptyScheduleScreenView: View {
   @Environment(\.effects) private var effects
   @Environment(AppStatus.self) private var status
@@ -61,10 +61,16 @@ struct EmptyScheduleScreenView: View {
 
   var body: some View {
     ScrollView {
-      EmptyScheduleView()
-        .containerRelativeFrame(.vertical)
+      EmptyScheduleView {
+        Task { await refresh() }
+      }
+      .containerRelativeFrame(.vertical)
     }
     .navigationTitle(title)
-    .refreshable { await effects?.run(isRequested: true, reportingTo: status) }
+    .refreshable { await refresh() }
+  }
+
+  private func refresh() async {
+    await effects?.run(isRequested: true, reportingTo: status)
   }
 }

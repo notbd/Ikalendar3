@@ -219,6 +219,8 @@ struct AboutView: View {
 
         Text(text(.ikalendar2Note))
           .ikaFont(.light, size: 13, relativeTo: .footnote)
+          // The face's own line gap spaces its lines twice as far apart as the system font's.
+          .lineHeight(.multiple(factor: 1.25))
           .foregroundStyle(.secondary)
           .multilineTextAlignment(.leading)
           .lineLimit(2)

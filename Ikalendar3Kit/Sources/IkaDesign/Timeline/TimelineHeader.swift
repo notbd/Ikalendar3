@@ -54,9 +54,7 @@ struct TimelineBarTitle: View {
 
   var body: some View {
     HStack(spacing: 7) {
-      Image(decorative: BundledImage.name(for: icon, size: .medium), bundle: BundledImage.catalogBundle)
-        .resizable()
-        .scaledToFit()
+      ModeIconPicture(icon, size: .medium)
         .frame(width: TimelineMetrics.barStampSize, height: TimelineMetrics.barStampSize)
       Text(verbatim: name)
         .ikaFont(.heavy, size: 18, relativeTo: .headline)
@@ -83,9 +81,7 @@ private struct TimelineModeStamp: View {
   var body: some View {
     let style: ModeStampMath.DockStyle = ModeStampMath.dockStyle(progress: dockProgress, reduceMotion: reduceMotion)
 
-    Image(decorative: BundledImage.name(for: icon, size: .large), bundle: BundledImage.catalogBundle)
-      .resizable()
-      .scaledToFit()
+    ModeIconPicture(icon, size: .large)
       .frame(width: TimelineMetrics.stampSize, height: TimelineMetrics.stampSize)
       .scaleEffect(style.scale, anchor: .topTrailing)
       .opacity(style.opacity)
@@ -100,9 +96,7 @@ struct TimelineModeBadge: View {
   let icon: ModeIcon
 
   var body: some View {
-    Image(decorative: BundledImage.name(for: icon, size: .medium), bundle: BundledImage.catalogBundle)
-      .resizable()
-      .scaledToFit()
+    ModeIconPicture(icon, size: .medium)
       .frame(width: TimelineMetrics.badgeImageSize, height: TimelineMetrics.badgeImageSize)
       .frame(width: TimelineMetrics.badgeSize, height: TimelineMetrics.badgeSize)
       .adaptiveGlassEffect(isInteractive: false, in: .circle)

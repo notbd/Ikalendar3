@@ -254,10 +254,7 @@ struct TimelineModeTag: View {
     HStack(spacing: 4) {
       if let icon {
         // In the tag's text colour: the icon's own colour is the tag's.
-        Image(decorative: BundledImage.name(for: icon, size: .small), bundle: BundledImage.catalogBundle)
-          .renderingMode(.template)
-          .resizable()
-          .scaledToFit()
+        ModeIconPicture(icon, size: .small, renderingMode: .template)
           .frame(width: iconSize, height: iconSize)
       }
       Text(verbatim: label)

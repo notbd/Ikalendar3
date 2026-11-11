@@ -113,8 +113,7 @@ private struct InkModeStamp: View {
       ZStack {
         // A black outline, so an icon in the splat's own colour (Salmon Run's) still stands out.
         ForEach(Self.outlineOffsets, id: \.self) { offset in
-          iconImage
-            .renderingMode(.template)
+          ModeIconPicture(icon, size: .large, renderingMode: .template)
             .scaledToFit()
             .foregroundStyle(.black)
             .offset(offset)
@@ -142,9 +141,8 @@ extension InkModeStamp {
       height: sin(angle) * InkScreenMetrics.stampOutlineWidth)
   }
 
-  private var iconImage: Image {
-    Image(decorative: BundledImage.name(for: icon, size: .large), bundle: BundledImage.catalogBundle)
-      .resizable()
+  private var iconImage: ModeIconPicture {
+    ModeIconPicture(icon, size: .large)
   }
 }
 
@@ -156,10 +154,7 @@ private struct InkModeBadge: View {
   let icon: ModeIcon
 
   var body: some View {
-    Image(decorative: BundledImage.name(for: icon, size: .medium), bundle: BundledImage.catalogBundle)
-      .resizable()
-      .interpolation(.high)
-      .scaledToFit()
+    ModeIconPicture(icon, size: .medium)
       .frame(width: InkScreenMetrics.badgeIconSize, height: InkScreenMetrics.badgeIconSize)
       .frame(width: InkScreenMetrics.badgeSize, height: InkScreenMetrics.badgeSize)
       .clipShape(.circle)

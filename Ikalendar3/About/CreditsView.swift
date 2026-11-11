@@ -49,6 +49,8 @@ struct CreditsView: View {
           Text(text(.fontNote))
           Text(text(.disclaimer))
             .ikaFont(.light, size: 13, relativeTo: .footnote)
+            // The face's own line gap spaces its lines twice as far apart as the system font's.
+            .lineHeight(.multiple(factor: 1.25))
         }
       }
     }
@@ -63,7 +65,10 @@ struct CreditsView: View {
 
 // MARK: - CreditsRowText
 
-/// A Credits row's two lines: a name and, under it, an address or a licence.
+/// A Credits row's two lines: a name and, under it, an address or a licence. Primary and
+/// secondary even on a button, which would tint them. The name, a site or a work such as
+/// "splatoon3.ink", stays on one line and shrinks at the largest text sizes rather than breaking
+/// inside the word.
 private struct CreditsRowText: View {
   let title: String
   let subtitle: String
@@ -73,8 +78,10 @@ private struct CreditsRowText: View {
       Text(title)
         .foregroundStyle(Color.primary)
         .font(.system(.subheadline, design: .rounded, weight: .bold))
+        .lineLimit(1)
+        .minimumScaleFactor(0.6)
       Text(subtitle)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(Color.secondary)
         .font(.system(.footnote, design: .rounded))
     }
   }
@@ -96,9 +103,9 @@ private struct CreditsLinkRow: View {
       HStack {
         CreditsRowText(title: title, subtitle: url.shortened)
         Spacer()
+        // Secondary, as Settings' language row draws it.
         Image(systemName: "arrow.up.forward.app.fill")
-          .symbolRenderingMode(.hierarchical)
-          .foregroundStyle(.secondary)
+          .foregroundStyle(Color.secondary)
       }
     }
   }

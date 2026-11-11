@@ -73,6 +73,7 @@ struct SettingsView: View {
         Label(text(.defaultTab), systemImage: preferences.defaultMode.systemImage)
           .contentTransition(.symbolEffect(.replace))
       }
+      .modifier(ChoicePickerStyle())
     }
   }
 
@@ -86,6 +87,7 @@ struct SettingsView: View {
       } label: {
         Label(text(.colorScheme), systemImage: "circle.lefthalf.filled")
       }
+      .modifier(ChoicePickerStyle())
 
       if isPhone {
         Toggle(isOn: $preferences.shouldMinimizeTabBar) {
@@ -266,15 +268,12 @@ struct SettingsButton: View {
 }
 
 extension View {
-  /// Puts `SettingsButton` in the toolbar on iPhone and iPad. The Mac opens its Settings window
-  /// from the app menu or with Command-comma instead, so it has none.
+  /// Puts `SettingsButton` in the toolbar on iPhone and iPad, where `screenButtonPlacement` says.
+  /// The Mac opens its Settings window from the app menu or with Command-comma instead, so it has
+  /// none.
   func settingsButton(isPresented: Binding<Bool>, language: GameLanguage) -> some View {
     #if os(iOS)
-    toolbar {
-      ToolbarItem(placement: .topBarTrailing) {
-        SettingsButton(isPresented: isPresented, language: language)
-      }
-    }
+    modifier(SettingsToolbarItem(isPresented: isPresented, language: language))
     #else
     self
     #endif
@@ -302,6 +301,46 @@ extension View {
     }
     #else
     self
+    #endif
+  }
+}
+
+#if os(iOS)
+/// The toolbar item `settingsButton(isPresented:language:)` adds.
+private struct SettingsToolbarItem: ViewModifier {
+  @Environment(\.screenButtonPlacement) private var placement
+
+  @Binding var isPresented: Bool
+  let language: GameLanguage
+
+  func body(content: Content) -> some View {
+    content.toolbar {
+      ToolbarItem(placement: placement) {
+        SettingsButton(isPresented: $isPresented, language: language)
+      }
+    }
+  }
+}
+#endif
+
+// MARK: - ChoicePickerStyle
+
+/// The style of a picker that shows its choice in its row: a menu, or on iPhone and iPad from the
+/// first accessibility text size a row that opens the options on a page of their own, since the
+/// menu's button cuts a long choice short there ("Regul…Battle").
+private struct ChoicePickerStyle: ViewModifier {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+  func body(content: Content) -> some View {
+    #if os(iOS)
+    if dynamicTypeSize.isAccessibilitySize {
+      content.pickerStyle(.navigationLink)
+    }
+    else {
+      content.pickerStyle(.menu)
+    }
+    #else
+    content
     #endif
   }
 }

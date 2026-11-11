@@ -87,9 +87,7 @@ public struct InkEventCard: View {
 
     return layout {
       HStack(spacing: InkScreenMetrics.cardSpacing) {
-        Image(decorative: BundledImage.name(for: kind.icon, size: .medium), bundle: BundledImage.catalogBundle)
-          .resizable()
-          .scaledToFit()
+        ModeIconPicture(kind.icon, size: .medium)
           .frame(width: iconSize, height: iconSize)
         InkModeTag(Text(verbatim: kind.label.text(in: terms.language)), accent: kind.accent)
       }

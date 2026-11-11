@@ -18,6 +18,8 @@ import IkaCore
 public enum ScreenText: String, CaseIterable, Sendable {
   /// "No schedule yet": the shared empty state.
   case empty = "screen.empty"
+  /// "Check your connection and try again.", under the empty state's title.
+  case emptyDescription = "screen.empty.description"
   /// "Updated %@", with the fetch time.
   case fetchTime = "screen.fetchTime"
   /// "Nothing on right now".
@@ -30,6 +32,8 @@ public enum ScreenText: String, CaseIterable, Sendable {
   /// Japanese and Korean. Classic and Timeline join their ranges with it; Ink and the widgets
   /// write theirs through `ScheduleFormat`, with the locale's own joiner.
   case timeRange = "screen.timeRange"
+  /// "Try Again", the empty state's button.
+  case tryAgain = "screen.tryAgain"
 
   /// The string in a text set, its placeholders filled in.
   public func text(in language: GameLanguage, _ arguments: any CVarArg...) -> String {
