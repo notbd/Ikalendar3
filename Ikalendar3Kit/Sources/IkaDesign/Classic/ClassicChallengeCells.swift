@@ -58,6 +58,9 @@ struct ClassicChallengeSection: View {
         terms: terms,
         metrics: metrics,
         glide: glide)
+        // At its ideal height: the stack offers it less, and the Stage cards gave the cut to
+        // their names, which shrank to a few points.
+        .fixedSize(horizontal: false, vertical: true)
       if !texts.rulesText.isEmpty {
         Text(verbatim: texts.displayRulesText)
           .fixedSize(horizontal: false, vertical: true)
