@@ -58,8 +58,8 @@ struct OnboardingView: View {
         Spacer()
         button
       }
-      .containerRelativeFrame(.horizontal, count: columnCount, span: columnSpan, spacing: 0)
-      .padding()
+      .containerRelativeFrame(.horizontal) { width, _ in columnWidth(in: width) }
+      .padding(Self.margin)
     }
     .sensoryFeedback(Haptic.onboardingLanded, trigger: hasLanded)
     // The entrance, then the first bounce unless a tap has bounced the icon already.
@@ -152,15 +152,17 @@ struct OnboardingView: View {
     horizontalSizeClass == .compact
   }
 
-  /// The column's share of the width: four fifths on a compact width, half on a regular one, and
-  /// the whole compact width from the first accessibility text size, for the larger title.
-  private var columnCount: Int {
-    isCompact ? (dynamicTypeSize.isAccessibilitySize ? 1 : 5) : 2
+  /// The column's width in a container `width` wide: four fifths of a compact width, half of a
+  /// regular one, and from the first accessibility text size the whole compact width inside the
+  /// margins, for the larger title.
+  private func columnWidth(in width: CGFloat) -> CGFloat {
+    guard isCompact else { return width / 2 }
+
+    return dynamicTypeSize.isAccessibilitySize ? width - 2 * Self.margin : width * 4 / 5
   }
 
-  private var columnSpan: Int {
-    isCompact ? (dynamicTypeSize.isAccessibilitySize ? 1 : 4) : 1
-  }
+  /// The space around the column.
+  static private let margin: CGFloat = 16
 
   private var isPulsing: Bool {
     DecorativeMotion.buttonPulse.form(reduceMotion: reduceMotion) == .full
