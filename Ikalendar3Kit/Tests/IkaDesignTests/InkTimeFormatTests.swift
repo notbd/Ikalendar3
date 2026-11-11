@@ -26,10 +26,11 @@ struct InkTimeFormatTests {
 
   private func format(
     _ language: GameLanguage = .enUS,
+    timeZone: TimeZone = .gmt,
     hourCycle: Locale.HourCycle = .zeroToTwentyThree)
     -> InkTimeFormat
   {
-    .init(language: language, timeZone: .gmt, hourCycle: hourCycle)
+    .init(language: language, timeZone: timeZone, hourCycle: hourCycle)
   }
 
   // MARK: Windows within a day
@@ -66,6 +67,32 @@ struct InkTimeFormatTests {
     let window: Window = .init("2026-10-27T14:00:00Z", "2026-10-27T16:00:00Z")
 
     #expect(format().range(of: window, now: date("2026-10-20T15:00:00Z")) == "Tue, 10/27, 14:00 - 16:00")
+  }
+
+  // MARK: Time zones
+
+  @Test
+  func `Today is the player's day, not the day in UTC`() throws {
+    // 23:00 on Tuesday to 01:00 on Wednesday in Tokyo, read ten minutes into Wednesday there: one
+    // day in UTC, two days for the player.
+    let tokyo: TimeZone = try #require(TimeZone(identifier: "Asia/Tokyo"))
+    let rotation: Window = .init("2026-10-20T14:00:00Z", "2026-10-20T16:00:00Z")
+    let now = date("2026-10-20T15:10:00Z")
+
+    #expect(format(timeZone: tokyo).range(of: rotation, now: now) == "Tue 23:00 - 01:00")
+    #expect(format().range(of: rotation, now: now) == "14:00 - 16:00")
+  }
+
+  @Test
+  func `A Rotation over the end of daylight saving time shows the clock's times`() throws {
+    // Toronto's clocks go back from 02:00 to 01:00 at 06:00 UTC on 1 November 2026.
+    let toronto: TimeZone = try #require(TimeZone(identifier: "America/Toronto"))
+    let before: Window = .init("2026-11-01T04:00:00Z", "2026-11-01T06:00:00Z")
+    let after: Window = .init("2026-11-01T06:00:00Z", "2026-11-01T08:00:00Z")
+    let now = date("2026-11-01T05:00:00Z")
+
+    #expect(format(timeZone: toronto).range(of: before, now: now) == "00:00 - 01:00")
+    #expect(format(timeZone: toronto).range(of: after, now: now) == "01:00 - 03:00")
   }
 
   // MARK: Windows over days

@@ -38,6 +38,7 @@ struct CreditsView: View {
         Text(text(.licenses))
       } footer: {
         Text(text(.siteStrings))
+          .foregroundStyle(.readableSecondary)
       }
 
       Section {
@@ -52,6 +53,7 @@ struct CreditsView: View {
             // The face's own line gap spaces its lines twice as far apart as the system font's.
             .lineHeight(.multiple(factor: 1.25))
         }
+        .foregroundStyle(.readableSecondary)
       }
     }
     .formStyle(.grouped)
@@ -81,7 +83,7 @@ private struct CreditsRowText: View {
         .lineLimit(1)
         .minimumScaleFactor(0.6)
       Text(subtitle)
-        .foregroundStyle(Color.secondary)
+        .foregroundStyle(.readableSecondary)
         .font(.system(.footnote, design: .rounded))
     }
   }
@@ -105,7 +107,7 @@ private struct CreditsLinkRow: View {
         Spacer()
         // Secondary, as Settings' language row draws it.
         Image(systemName: "arrow.up.forward.app.fill")
-          .foregroundStyle(Color.secondary)
+          .foregroundStyle(.readableSecondary)
       }
     }
   }

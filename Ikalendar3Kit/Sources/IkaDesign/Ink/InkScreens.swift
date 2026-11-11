@@ -352,7 +352,8 @@ private struct InkFetchTimeTag: View {
     FetchTimeLabel(fetchTime: fetchTime, now: now, isStale: isStale)
       // The tag is black in both appearances.
       .environment(\.colorScheme, .dark)
-      .fixedSize()
+      // As wide as its text, and no wider than the screen: a long label wraps inside the tag.
+      .fixedSize(horizontal: false, vertical: true)
       .padding(.horizontal, InkMetrics.tagHorizontalPadding + 3)
       .padding(.vertical, InkMetrics.tagVerticalPadding + 2)
       .background(Color(InkPair.tagText.colors(in: .dark).background), in: SkewedRectangle(slant: InkMetrics.tagSlant))

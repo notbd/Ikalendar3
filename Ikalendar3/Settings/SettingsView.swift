@@ -133,7 +133,7 @@ struct SettingsView: View {
             Text(language.nativeName)
             Image(systemName: "arrow.up.forward.app.fill")
           }
-          .foregroundStyle(.secondary)
+          .foregroundStyle(.readableSecondary)
         } label: {
           Label {
             // A button tints its label; the title stays primary, as in ikalendar 2.
@@ -174,6 +174,7 @@ struct SettingsView: View {
     } footer: {
       if areNotificationsOff {
         Text(ReminderText.notificationsOff.text(in: language))
+          .foregroundStyle(.readableSecondary)
       }
     }
     // Again on return from the system's settings, where the player may have allowed them.
