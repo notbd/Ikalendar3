@@ -30,6 +30,8 @@ enum ClassicMetrics {
     static let tagCornerRadius: CGFloat = 8
     static let tagFontSize: CGFloat = 16
     static let tagPaddingH: CGFloat = 8
+    /// The white rim of a tag, where ikalendar 2's glass caught the light.
+    static let tagRimOpacity: Double = 0.25
     static let contentFontSize: CGFloat = 16
     /// Between a progress bar and its time left above it.
     static let progressSpacing: CGFloat = 4
