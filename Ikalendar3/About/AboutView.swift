@@ -93,7 +93,7 @@ struct AboutView: View {
 
       Text(verbatim: Ikalendar3App.name)
         .font(.system(.title, design: .rounded, weight: .bold))
-        .foregroundStyle(Color.accentColor)
+        .foregroundStyle(.tint)
 
       Text(text(.version, Self.version, Self.build))
         .font(.system(.subheadline, design: .monospaced))

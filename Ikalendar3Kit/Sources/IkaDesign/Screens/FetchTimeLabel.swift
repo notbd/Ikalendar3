@@ -43,7 +43,10 @@ public struct FetchTimeLabel: View {
       }
     }
     .font(.footnote)
-    .foregroundStyle(.secondary)
+    // Not the system's secondary, which reads 3.3:1 on Classic's grouped background in light:
+    // three quarters of the primary reads 9.9:1 there, 5.2:1 even on Ink's grey board, and 8.4:1
+    // or more on every dark ground.
+    .foregroundStyle(Color.primary.opacity(0.75))
     .multilineTextAlignment(.center)
     .frame(maxWidth: .infinity)
     .accessibilityElement(children: .combine)

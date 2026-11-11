@@ -103,7 +103,9 @@ private struct ClassicModeStamp: View {
       && style.opacity > 0
 
     ModeIconPicture(icon, size: .large)
-      .mask(Self.fade)
+      // The fade suits the game's one-piece icons. The Splatfest mark's drops, whose black outline
+      // vanishes on the black ground, would read as three loose ones, so the mark stays whole.
+      .mask(icon == .splatfestBattle ? Self.whole : Self.fade)
       .frame(width: ClassicMetrics.Stamp.size, height: ClassicMetrics.Stamp.size)
       // The resting tilt is a pose, not a motion: under Reduce Motion it stays while the stamp
       // fades, so the stamp looks the same; otherwise it eases out as the stamp docks.
@@ -135,6 +137,9 @@ private struct ClassicModeStamp: View {
     colors: [1, 0.95, 0.9, 0.85, 0.8, 0.7, 0.4, 0.2, 0.1, 0.05, 0].map { Color.black.opacity($0) },
     startPoint: .top,
     endPoint: .bottom)
+
+  /// No fade: the whole icon.
+  static private let whole: LinearGradient = .init(colors: [.black], startPoint: .top, endPoint: .bottom)
 }
 
 // MARK: - ClassicModeBadge

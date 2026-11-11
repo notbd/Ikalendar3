@@ -86,16 +86,26 @@ extension AppTab {
     }
   }
 
-  /// The selected tab's colour, as ikalendar 2 tints it: its Mode colour, or for the Splatfest
-  /// tab its first team's, in the nearest tint that reads as text on the tab bar's glass in
+  /// How the selected tab shows its colour, as ikalendar 2 tints it: its Mode colour, or for the
+  /// Splatfest tab its first team's, on the tab bar's glass over `style`'s ground in
   /// `colorScheme`. `nil` for a Splatfest with no team colours known.
-  func tint(in colorScheme: ColorScheme, splatfestColors: [SRGBColor]) -> SRGBColor? {
+  ///
+  /// The label and icon take the nearest tint of the colour that reads as text (4.5:1) on the
+  /// glass. Over Ink's grey board in light appearance no such tint still reads as the colour (the
+  /// glass behind the selected tab measures #92928F, where Regular Battle's would be #292E00), so
+  /// there the label stays primary and only the icon takes the colour, at the 3:1 icons need.
+  func selectedColor(style: Style, in colorScheme: ColorScheme, splatfestColors: [SRGBColor]) -> SelectedTabColor? {
     let base: SRGBColor? =
       switch self {
         case .mode(let tab): tab.color.base
         case .splatfest: splatfestColors.first
       }
-    return base?.readableTint(on: Self.tabBarGlass(in: colorScheme), for: .text)
+    guard let base else { return nil }
+
+    if style == .ink, colorScheme == .light {
+      return .icon(base.readableTint(on: Self.inkBoardGlass, for: .largeTextAndIcons))
+    }
+    return .tint(base.readableTint(on: Self.tabBarGlass(in: colorScheme), for: .text))
   }
 
   /// What the tab bar's glass shows behind its items over the app's own ground, at the end that
@@ -104,6 +114,20 @@ extension AppTab {
   static private func tabBarGlass(in colorScheme: ColorScheme) -> SRGBColor {
     colorScheme == .dark ? .init(hex: 0x3A3A3C) : .init(hex: 0xD8D8DC)
   }
+
+  /// The glass behind the selected tab over Ink's grey board (`InkBoard`, #969793) in light
+  /// appearance, as measured: #92928F, where black reads 6.7:1 and white 3.1:1.
+  static private let inkBoardGlass: SRGBColor = .init(hex: 0x92928F)
+}
+
+// MARK: - SelectedTabColor
+
+/// How the selected tab shows its colour in the tab bar.
+enum SelectedTabColor {
+  /// The label and the icon in this colour.
+  case tint(SRGBColor)
+  /// The label in the primary colour and the icon in this colour.
+  case icon(SRGBColor)
 }
 
 // MARK: - TabText

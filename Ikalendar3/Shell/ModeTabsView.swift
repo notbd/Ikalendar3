@@ -38,6 +38,10 @@ struct ModeTabsView: View {
     let snapshot = engine.snapshot
     let now = clock.now
     let selectedTab = snapshot.tab(in: status.selectedPlace, at: now)
+    let selectedColor = selectedTab.selectedColor(
+      style: preferences.style,
+      in: colorScheme,
+      splatfestColors: splatfestColors)
     // Every tap on a tab bar item reaches the setter, a second tap on the selected tab included
     // unless the interceptor below keeps it from the system.
     let selection: Binding = .init(
@@ -61,12 +65,21 @@ struct ModeTabsView: View {
           // so its toolbar buttons stay as they are.
           .tint(nil)
         } label: {
-          Label(tab.shortTitle(in: language), systemImage: tab.systemImage)
-            .accessibilityLabel(tab.title(in: language))
+          Label {
+            Text(verbatim: tab.shortTitle(in: language))
+          } icon: {
+            if tab == selectedTab, case .icon(let color) = selectedColor {
+              Image(uiImage: Self.symbol(tab.systemImage, in: color))
+            }
+            else {
+              Image(systemName: tab.systemImage)
+            }
+          }
+          .accessibilityLabel(tab.title(in: language))
         }
       }
     }
-    .tint(selectedTab.tint(in: colorScheme, splatfestColors: splatfestColors).map { Color($0) })
+    .tint(barTint(selectedColor))
     .interceptingTabReselection(isEnabled: selectedTab.repeatedSelectionAction != .scrollToTop) {
       status.select(selectedTab)
     }
@@ -109,6 +122,21 @@ struct ModeTabsView: View {
           .transition(menuTransition)
       }
     }
+  }
+
+  /// The tab bar's tint: the selected tab's colour, or the primary colour where only its icon
+  /// takes the colour (`SelectedTabColor.icon`).
+  private func barTint(_ color: SelectedTabColor?) -> Color? {
+    switch color {
+      case .tint(let color): Color(color)
+      case .icon: .primary
+      case nil: nil
+    }
+  }
+
+  /// The symbol drawn in `color` as it is, which the tab bar's tint leaves alone.
+  static private func symbol(_ systemName: String, in color: SRGBColor) -> UIImage {
+    (UIImage(systemName: systemName) ?? UIImage()).withTintColor(UIColor(Color(color)), renderingMode: .alwaysOriginal)
   }
 
   /// The menu grows from the selected tab, or fades under Reduce Motion.
