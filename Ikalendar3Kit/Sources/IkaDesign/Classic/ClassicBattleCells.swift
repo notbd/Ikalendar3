@@ -217,9 +217,9 @@ struct ClassicBattlePrimaryCell: View {
 
 // MARK: - ClassicPrimaryRuleTitle
 
-/// The featured Rotation's Rule name, large and heavy, at the size that also fits every other
-/// Rule's, so the title keeps one size from Rotation to Rotation; wrapped at full size when
-/// stacked.
+/// The featured Rotation's Rule name, large in the light face as ikalendar 2 set it, at the size
+/// that also fits every other Rule's, so the title keeps one size from Rotation to Rotation;
+/// wrapped at full size when stacked.
 struct ClassicPrimaryRuleTitle: View {
   let rule: RuleID
   let terms: GameTerms
@@ -243,7 +243,7 @@ struct ClassicPrimaryRuleTitle: View {
   private func title(_ name: String) -> some View {
     Text(verbatim: name)
       .scaledLimitedLine(for: arrangement)
-      .ikaFont(.heavy, size: ClassicMetrics.BattlePrimary.ruleTitleFontSize, relativeTo: .title)
+      .ikaFont(.light, size: ClassicMetrics.BattlePrimary.ruleTitleFontSize, relativeTo: .title)
   }
 }
 
