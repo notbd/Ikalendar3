@@ -77,12 +77,16 @@ enum InkScreenMetrics {
 
   // MARK: Events
 
+  /// A running text's line height as a multiple of its size. The light face's own line box is
+  /// nearly twice its size, which spreads a paragraph apart.
+  static let runningTextLineHeight: CGFloat = 1.3
+
   /// An event card's Mode icon, square, before Dynamic Type.
   static let eventIconSize: CGFloat = 28
   /// A Challenge's Rule icon, square, before Dynamic Type.
   static let challengeRuleIconSize: CGFloat = 26
-  /// The swatch of a Splatfest team's colour before its name, at the default text size.
-  static let teamSwatchSize: CGSize = .init(width: 22, height: 12)
+  /// The space between two of a Challenge's window rows.
+  static let windowRowSpacing: CGFloat = 7
   /// The opacity of a Challenge window that has ended.
   static let endedWindowOpacity: Double = 0.45
 
