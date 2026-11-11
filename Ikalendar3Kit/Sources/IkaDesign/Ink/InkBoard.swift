@@ -15,10 +15,12 @@ import SwiftUI
 /// The panels are the same dark cards on both. Decoration, so VoiceOver skips it.
 ///
 /// Widgets keep `InkBackground`, the dotted black, in both appearances.
-struct InkBoard: View {
+public struct InkBoard: View {
   @Environment(\.colorScheme) private var colorScheme
 
-  var body: some View {
+  public init() { }
+
+  public var body: some View {
     Color(InkPair.boardText.colors(in: colorScheme).background)
       .overlay {
         DotPattern(pitch: InkMetrics.backgroundDotPitch, radius: InkMetrics.backgroundDotRadius)
