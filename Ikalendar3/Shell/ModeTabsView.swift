@@ -18,7 +18,8 @@ import SwiftUI
 /// runs. An iPad window of compact width shows them too (`WindowLayout.tabs`).
 ///
 /// It plays ikalendar 2's Mode switch haptic, shows the failed-refresh toast above the tab bar
-/// (`AppRootView` keeps it), and shows Settings from each tab's toolbar. A second tap on the
+/// (`AppRootView` keeps it), and shows Settings and the track button at the leading end of each
+/// tab's toolbar, which leaves the trailing end to the Style's Mode stamp. A second tap on the
 /// selected Anarchy or Splatfest tab shows the Series and Open (or Open and Pro) menu above it.
 struct ModeTabsView: View {
   @Environment(RefreshEngine.self) private var engine
@@ -46,6 +47,7 @@ struct ModeTabsView: View {
             screen(for: tab)
               .settingsButton(isPresented: $status.isSettingsPresented, language: language)
           }
+          .environment(\.screenButtonPlacement, .topBarLeading)
           .overlay(alignment: .bottomLeading) {
             tabMenu(for: tab)
               .animation(menuAnimation, value: status.presentedMenu)
@@ -108,6 +110,14 @@ struct ModeTabsView: View {
   private var menuAnimation: Animation {
     reduceMotion ? Motion.crossFade : .snappy
   }
+}
+
+// MARK: - Screen buttons
+
+extension EnvironmentValues {
+  /// Where a screen puts its toolbar buttons, Settings and the track button: the trailing end,
+  /// or the leading end in the tabs, where the trailing end holds the Mode stamp's badge.
+  @Entry var screenButtonPlacement: ToolbarItemPlacement = .topBarTrailing
 }
 
 // MARK: - Tab bar minimizing

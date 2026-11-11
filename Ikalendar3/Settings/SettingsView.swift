@@ -266,15 +266,12 @@ struct SettingsButton: View {
 }
 
 extension View {
-  /// Puts `SettingsButton` in the toolbar on iPhone and iPad. The Mac opens its Settings window
-  /// from the app menu or with Command-comma instead, so it has none.
+  /// Puts `SettingsButton` in the toolbar on iPhone and iPad, where `screenButtonPlacement` says.
+  /// The Mac opens its Settings window from the app menu or with Command-comma instead, so it has
+  /// none.
   func settingsButton(isPresented: Binding<Bool>, language: GameLanguage) -> some View {
     #if os(iOS)
-    toolbar {
-      ToolbarItem(placement: .topBarTrailing) {
-        SettingsButton(isPresented: isPresented, language: language)
-      }
-    }
+    modifier(SettingsToolbarItem(isPresented: isPresented, language: language))
     #else
     self
     #endif
@@ -305,6 +302,24 @@ extension View {
     #endif
   }
 }
+
+#if os(iOS)
+/// The toolbar item `settingsButton(isPresented:language:)` adds.
+private struct SettingsToolbarItem: ViewModifier {
+  @Environment(\.screenButtonPlacement) private var placement
+
+  @Binding var isPresented: Bool
+  let language: GameLanguage
+
+  func body(content: Content) -> some View {
+    content.toolbar {
+      ToolbarItem(placement: placement) {
+        SettingsButton(isPresented: $isPresented, language: language)
+      }
+    }
+  }
+}
+#endif
 
 // MARK: - Option names
 
