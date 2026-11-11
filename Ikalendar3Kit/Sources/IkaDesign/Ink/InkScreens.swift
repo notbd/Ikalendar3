@@ -46,7 +46,7 @@ public struct InkBattleScreenView: View {
       later: screen.later)
 
     InkScheduleList(
-      heading: InkModeHeading(mode),
+      heading: ModeNameAndForm(mode),
       icon: ModeIcon(mode),
       accent: InkAccent(ModeColor(mode)),
       title: screen.mode.name(in: terms.language),
@@ -125,7 +125,7 @@ public struct InkSalmonRunScreenView: View {
       later: screen.later)
 
     InkScheduleList(
-      heading: InkModeHeading(.salmonRun),
+      heading: ModeNameAndForm(.salmonRun),
       icon: .salmonRun,
       accent: InkAccent(.salmonRun),
       title: Mode.salmonRun.name(in: terms.language),
@@ -169,7 +169,7 @@ public struct InkSalmonRunScreenView: View {
 struct InkScheduleList<ReflowValue: Equatable, Panels: View>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-  let heading: InkModeHeading
+  let heading: ModeNameAndForm
   /// The stamp's icon.
   let icon: ModeIcon
   /// The stamp's splat and the heading's form tag.
@@ -218,14 +218,14 @@ struct InkScheduleList<ReflowValue: Equatable, Panels: View>: View {
 /// The stamp lies under the first panel: the panel covers the splat's lower edge by a fixed
 /// amount whatever the name's height, and the splat runs off the screen's trailing edge, so it
 /// meets its neighbours on purpose and never covers a tag. On iPhone its top rises into the
-/// navigation bar's row beside a short name, so the first panel sits higher. From the first accessibility text size
+/// navigation bar's row, so the first panel sits higher. From the first accessibility text size
 /// the name sits under a smaller stamp at full width instead, so it wraps rather than truncates.
 private struct InkModeHeadingView: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.gameLanguage) private var language
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-  let heading: InkModeHeading
+  let heading: ModeNameAndForm
   let icon: ModeIcon
   let accent: InkAccent
   let arrangement: CellArrangement
@@ -259,14 +259,23 @@ private struct InkModeHeadingView: View {
   }
 
   private var name: some View {
-    VStack(alignment: .leading, spacing: InkScreenMetrics.headingSpacing) {
-      Text(verbatim: heading.name.text(in: language))
-        .inkFont(.title)
-        // The heavy face's tall line box leaves a gap between wrapped lines that the game's
-        // headings do not have.
-        .lineHeight(.tight)
-        .foregroundStyle(Color(InkPair.boardText.colors(in: colorScheme).foreground))
-        .fixedSize(horizontal: false, vertical: true)
+    let text: String = heading.name.text(in: language)
+    let balanced: String = InkBalancedName.balanced(text)
+
+    return VStack(alignment: .leading, spacing: InkScreenMetrics.headingSpacing) {
+      // On one line at the first size that fits beside the stamp, so every Mode's heading is
+      // one height and the first panel starts at one place. A name too long for the smallest
+      // size, as in a narrow column, goes on two lines broken between words at the full size,
+      // limited to the lines it has, so a word too wide shrinks and never breaks.
+      ViewThatFits(in: .horizontal) {
+        ForEach(InkScreenMetrics.titleSizes, id: \.self) { size in
+          title(text, size: size)
+            .lineLimit(1)
+        }
+        title(balanced, size: InkTextStyle.title.size)
+          .scaledLimitedLine(lineLimit: balanced.contains("\n") ? 2 : 1)
+      }
+      .foregroundStyle(Color(InkPair.boardText.colors(in: colorScheme).foreground))
       if let form = heading.form {
         InkModeTag(Text(verbatim: form.text(in: language)), accent: accent)
       }
@@ -274,6 +283,15 @@ private struct InkModeHeadingView: View {
     .padding(.leading, InkScreenMetrics.headingLeadingPadding)
     .accessibilityElement(children: .combine)
     .accessibilityAddTraits(.isHeader)
+  }
+
+  /// `name` in the title's face at `size`, which scales with Dynamic Type as the title does.
+  private func title(_ name: String, size: CGFloat) -> some View {
+    Text(verbatim: name)
+      .ikaFont(InkTextStyle.title.role, size: size, relativeTo: InkTextStyle.title.textStyle)
+      // The heavy face's tall line box leaves a gap between wrapped lines that the game's
+      // headings do not have.
+      .lineHeight(.tight)
   }
 
   /// How far the stamp rises into the navigation bar's row: on iPhone, where the row's trailing
@@ -349,15 +367,28 @@ private struct InkFetchTimeTag: View {
   let isStale: Bool
 
   var body: some View {
+    // As wide as its text where that fits on one line. A label too long for the column, as at
+    // the largest text sizes, takes the column's width and wraps inside the tag.
+    ViewThatFits(in: .horizontal) {
+      tag(label.fixedSize())
+      tag(label.fixedSize(horizontal: false, vertical: true))
+    }
+    .frame(maxWidth: .infinity)
+  }
+
+  /// The label, in the dark appearance the black tag needs in both appearances.
+  private var label: some View {
     FetchTimeLabel(fetchTime: fetchTime, now: now, isStale: isStale)
-      // The tag is black in both appearances.
       .environment(\.colorScheme, .dark)
-      // As wide as its text, and no wider than the screen: a long label wraps inside the tag.
-      .fixedSize(horizontal: false, vertical: true)
+  }
+
+  private func tag(_ label: some View) -> some View {
+    label
       .padding(.horizontal, InkMetrics.tagHorizontalPadding + 3)
       .padding(.vertical, InkMetrics.tagVerticalPadding + 2)
-      .background(Color(InkPair.tagText.colors(in: .dark).background), in: SkewedRectangle(slant: InkMetrics.tagSlant))
-      .frame(maxWidth: .infinity)
+      .background(
+        Color(InkPair.tagText.colors(in: .dark).background),
+        in: SkewedRectangle(slant: InkMetrics.tagSlant))
   }
 }
 #endif

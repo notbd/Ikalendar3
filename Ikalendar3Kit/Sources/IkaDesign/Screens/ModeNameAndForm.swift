@@ -1,5 +1,5 @@
 //
-//  InkModeHeading.swift
+//  ModeNameAndForm.swift
 //  Ikalendar3
 //
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
@@ -7,12 +7,13 @@
 
 import IkaCore
 
-// MARK: - InkModeHeading
+// MARK: - ModeNameAndForm
 
-/// How Ink names a Mode over its list and on the watch's rows: the Mode's name in the heavy face
-/// and, for Anarchy Battle and Splatfest Battle, its form (Series or Open, Open or Pro) on a tag
-/// under it, as the game's menu does. The Challenge and Splatfest screens are headed this way too.
-public struct InkModeHeading: Equatable, Sendable {
+/// A Mode's name in two parts, as the game's menu shows it: the name and, for Anarchy Battle and
+/// Splatfest Battle, the form apart from it (Series or Open, Open or Pro). Ink's and Classic's
+/// headings and the watch's rows show the form under the name; the Challenge and Splatfest
+/// screens are headed this way too. One rule, so every Style splits a name alike.
+public struct ModeNameAndForm: Equatable, Sendable {
   /// The Mode's name.
   public let name: ModeLabel
   /// The form under the name, or `nil` for a Mode with one form.
@@ -55,7 +56,7 @@ public struct InkModeHeading: Equatable, Sendable {
   }
 }
 
-extension InkModeHeading {
+extension ModeNameAndForm {
   /// The heading over the Challenge screen.
   static let challenges: Self = .init(name: .challenges, form: nil)
 }

@@ -1,5 +1,5 @@
 //
-//  InkRuleNameTests.swift
+//  InkBalancedNameTests.swift
 //  Ikalendar3
 //
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
@@ -8,8 +8,9 @@
 import Testing
 @testable import IkaDesign
 
-/// Pins that a Rule's name in a later panel's column breaks only between words.
-struct InkRuleNameTests {
+/// Pins that a name set on two lines, a Rule's in a later panel's column or a Mode's in a narrow
+/// heading, breaks only between words.
+struct InkBalancedNameTests {
   @Test(arguments: [
     ("Turf War", "Turf\nWar"),
     ("Splat Zones", "Splat\nZones"),
@@ -17,16 +18,16 @@ struct InkRuleNameTests {
     ("Clam Blitz", "Clam\nBlitz"),
   ])
   func `A name of two words breaks between them`(name: String, lines: String) {
-    #expect(InkRuleName.balanced(name) == lines)
+    #expect(InkBalancedName.balanced(name) == lines)
   }
 
   @Test
   func `A name of one word stays whole, so it can only shrink`() {
-    #expect(InkRuleName.balanced("Rainmaker") == "Rainmaker")
+    #expect(InkBalancedName.balanced("Rainmaker") == "Rainmaker")
   }
 
   @Test
   func `A longer name breaks at the space nearest its middle`() {
-    #expect(InkRuleName.balanced("Guerre de territoire") == "Guerre de\nterritoire")
+    #expect(InkBalancedName.balanced("Guerre de territoire") == "Guerre de\nterritoire")
   }
 }

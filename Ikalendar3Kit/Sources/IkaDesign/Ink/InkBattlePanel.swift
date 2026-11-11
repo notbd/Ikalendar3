@@ -118,7 +118,7 @@ struct InkBattlePanel: View {
   /// that fits, else on two lines broken between words, which shrink rather than break a word.
   private var secondaryRuleText: some View {
     let name: String = terms.name(of: setting.rule)
-    let balanced: String = InkRuleName.balanced(name)
+    let balanced: String = InkBalancedName.balanced(name)
 
     return Group {
       switch metrics.arrangement {

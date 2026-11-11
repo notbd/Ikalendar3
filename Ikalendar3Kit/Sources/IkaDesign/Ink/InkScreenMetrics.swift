@@ -27,6 +27,9 @@ enum InkScreenMetrics {
 
   /// The space before the Mode name, which lines it up with a panel's content.
   static let headingLeadingPadding: CGFloat = 4
+  /// The sizes the Mode name steps down through to stay on one line beside the stamp, from the
+  /// title's own: "Splatfest Battle" needs the last on a 393 pt screen.
+  static let titleSizes: [CGFloat] = [InkTextStyle.title.size, 29, 27, 25]
   /// The space between the Mode name and its form tag.
   static let headingSpacing: CGFloat = 8
   /// The splat behind the stamp, square.
@@ -47,8 +50,9 @@ enum InkScreenMetrics {
   /// The width beside the Mode name the stamp takes: the splat's part on the screen and a gap.
   static let stampReserve: CGFloat = splatSize - stampBleed - screenPadding + 6
   /// How far the stamp may rise into the navigation bar's row on iPhone, whose trailing end is
-  /// free: the row's height.
-  static let stampRise: CGFloat = 44
+  /// free: most of the row's height, which leaves the heading as tall as a one-line name with
+  /// its form tag.
+  static let stampRise: CGFloat = 40
   /// The splat's part above the first panel: the heading's least height beside the stamp where
   /// the stamp stays under the bar.
   static let splatHeightAbovePanel: CGFloat = splatSize - splatPanelOverlap - panelSpacing

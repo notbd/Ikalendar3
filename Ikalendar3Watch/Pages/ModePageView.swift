@@ -23,7 +23,7 @@ struct ModePageView: View {
   var body: some View {
     VStack(alignment: .leading, spacing: WatchMetrics.rowSpacing) {
       PageHeading(
-        heading: InkModeHeading(page.summary),
+        heading: ModeNameAndForm(page.summary),
         accent: InkAccent(ModeColor(page.summary)),
         language: terms.language)
       VStack(alignment: .leading, spacing: WatchMetrics.rowSpacing) {
@@ -56,7 +56,7 @@ struct ModePageView: View {
 /// A Mode's name in the heavy face, readable on the top of its tint in `accent`, with its form on
 /// a tag: over a Mode page and its later list. VoiceOver reads it as a header.
 struct PageHeading: View {
-  let heading: InkModeHeading
+  let heading: ModeNameAndForm
   let accent: InkAccent
   let language: GameLanguage
 

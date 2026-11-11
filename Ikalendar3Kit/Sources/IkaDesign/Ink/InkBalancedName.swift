@@ -1,15 +1,16 @@
 //
-//  InkRuleName.swift
+//  InkBalancedName.swift
 //  Ikalendar3
 //
 //  Copyright (c) TIANWEI ZHANG. All rights reserved.
 //
 
-// MARK: - InkRuleName
+// MARK: - InkBalancedName
 
-/// How a Rule's name is set in a later panel's narrow column: it may take two lines, but only
+/// How a name is set where it is too wide for one line, such as a Rule's name in a later
+/// panel's narrow column or a Mode's name in a narrow heading: it may take two lines, but only
 /// between words, never inside one.
-enum InkRuleName {
+enum InkBalancedName {
   /// `name` on two lines, broken at the space nearest its middle ("Tower" over "Control"), or
   /// unchanged when it is one word. The break is written into the text, so a line that is still
   /// too wide can only shrink.
