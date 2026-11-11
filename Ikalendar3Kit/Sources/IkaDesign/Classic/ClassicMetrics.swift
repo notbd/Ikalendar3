@@ -81,6 +81,12 @@ enum ClassicMetrics {
     static let stageFontSize: CGFloat = 12
   }
 
+  /// The featured place's text when no Rotation or Shift is on.
+  enum Status {
+    static let fontSize: CGFloat = 26
+    static let paddingV: CGFloat = 8
+  }
+
   /// A Shift's cell.
   enum Shift {
     static let cellSpacing: CGFloat = 10

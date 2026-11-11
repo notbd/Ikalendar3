@@ -151,18 +151,21 @@ struct ClassicPicture: View {
 
 // MARK: - ClassicStatusCell
 
-/// The featured place when no Rotation or Shift is on: why, in the cell's own words.
+/// The featured place when no Rotation or Shift is on: why, in the cell's own words, set as the
+/// featured Rotation's Rule name it stands in for, so it reads as the answer to "Now:" rather
+/// than as a note.
 struct ClassicStatusCell: View {
   let text: String
   let arrangement: CellArrangement
 
   var body: some View {
     Text(verbatim: text)
+      // Its one line at Classic's line height too, so the cell is no taller than its words.
+      .lineHeight(.multiple(factor: ClassicMetrics.wrappedLineHeightFactor))
       .classicLines(for: arrangement)
-      .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
-      .foregroundStyle(.secondary)
+      .ikaFont(.light, size: ClassicMetrics.Status.fontSize, relativeTo: .title2)
       .frame(maxWidth: .infinity, alignment: .leading)
-      .padding(.vertical, ClassicMetrics.Shift.cellPaddingV)
+      .padding(.vertical, ClassicMetrics.Status.paddingV)
   }
 }
 
