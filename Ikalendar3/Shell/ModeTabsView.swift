@@ -57,8 +57,8 @@ struct ModeTabsView: View {
               .animation(menuAnimation, value: status.presentedMenu)
           }
           .refreshFailureToast()
-          // The Mode colour below tints the tab bar only: the screen keeps the system's tint, so
-          // its toolbar buttons stay as they are.
+          // The tab view's Mode colour tints the tab bar only: the screen keeps the system's tint,
+          // so its toolbar buttons stay as they are.
           .tint(nil)
         } label: {
           Label(tab.shortTitle(in: language), systemImage: tab.systemImage)
