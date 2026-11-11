@@ -13,7 +13,7 @@ import SwiftUI
 
 /// Timeline's Battle Mode screen, after SplatNet 3's schedule page: a black header with the Mode,
 /// the Series and Open strip on Anarchy, an announced Splatfest's card, then every Rotation top to
-/// bottom on a Mode-colour time axis with 24-hour pins, the current one's progress filled in along
+/// bottom on a Mode-colour time axis with start pins, the current one's progress filled in along
 /// the axis.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store. Pull to
@@ -42,17 +42,16 @@ public struct TimelineBattleScreenView: View {
   public var body: some View {
     let entries: [TimelineEntry<Rotation>] = TimelineEntry.entries(of: screen)
     let color: TimelineTint = .init(ModeColor(screen.mode))
+    let format: TimelineFormat = time.timelineFormat(terms.language)
     let writer: SentenceWriter = time.writer(terms)
 
     TimelineScheduleList(
       icon: ModeIcon(Mode.battle(screen.mode)),
       title: screen.mode.name(in: terms.language),
       headerName: screen.mode.timelineHeaderName(in: terms.language),
+      strip: screen.mode.isAnarchy ? TimelineFormStrip(shown: screen.mode, language: terms.language) : nil,
       reflowValue: entries.map(\.id))
     {
-      if screen.mode.isAnarchy {
-        TimelineFormStrip(shown: screen.mode, language: terms.language)
-      }
       if let card = screen.announcedSplatfest {
         TimelineSplatfestCard(card: card, terms: terms, now: now)
           .padding(.horizontal, TimelineMetrics.contentTrailing)
@@ -61,7 +60,7 @@ public struct TimelineBattleScreenView: View {
     } axis: { arrangement in
       TimelineAxis(
         entries: entries,
-        format: time.timelineFormat(terms.language),
+        format: format,
         arrangement: arrangement)
       { entry in
         switch entry {
@@ -93,8 +92,6 @@ public struct TimelineBattleScreenView: View {
       FetchTimeLabel(fetchTime: screen.fetchTime, now: now, isStale: isStale)
     }
   }
-
-  private var format: ScheduleFormat { time.format(terms.language) }
 }
 
 // MARK: - BattleMode
@@ -209,14 +206,21 @@ public struct TimelineBackground: View {
 // MARK: - TimelineScheduleList
 
 /// What every Timeline screen shares: SplatNet 3's dark page under the black header, the axis sized
-/// for the text size, entries moving into place as the clock changes them and, on iPhone and
-/// iPad, the header's stamp docking into the navigation bar badge, the inline title fading in
-/// with it.
+/// for the text size, and entries moving into place as the clock changes them.
+///
+/// At iPhone width the header is the navigation bar itself: the bar turns black and holds the
+/// Mode's stamp and name, and the strip of forms stays pinned under it, so the Rotations start
+/// right below and the form stays in sight while the list scrolls. Elsewhere the header and strip
+/// lead the list; on iPad the header's stamp docks into the navigation bar badge as the list
+/// scrolls, the inline title fading in with it.
 ///
 /// The page stays dark in light appearance until ticket 57 designs Timeline's light look, so the
 /// list and the navigation bar take the dark scheme.
 struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowValue: Equatable>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  #if os(iOS)
+  @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+  #endif
 
   /// How far the header's stamp has docked into the navigation bar badge.
   @State private var dockProgress: Double = 0
@@ -226,8 +230,10 @@ struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowVal
   let title: String
   /// The Mode's name in the header.
   let headerName: String
+  /// The strip of forms under the header, on Anarchy and Splatfest Battle.
+  var strip: TimelineFormStrip?
   let reflowValue: ReflowValue
-  /// What sits between the header and the axis: the strip of forms, a Splatfest's card.
+  /// What sits between the header and the axis, such as a Splatfest's card.
   @ViewBuilder let aboveAxis: () -> AboveAxis
   @ViewBuilder let axis: (CellArrangement) -> Axis
   @ViewBuilder let footer: () -> Footer
@@ -239,7 +245,10 @@ struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowVal
 
       ScrollView {
         VStack(spacing: 0) {
-          TimelineHeader(icon: icon, name: headerName, dockProgress: dockProgress, arrangement: arrangement)
+          if !isHeaderInBar {
+            TimelineHeader(icon: icon, name: headerName, dockProgress: dockProgress, arrangement: arrangement)
+            strip
+          }
           aboveAxis()
           axis(arrangement)
           footer()
@@ -250,16 +259,69 @@ struct TimelineScheduleList<AboveAxis: View, Axis: View, Footer: View, ReflowVal
       }
       // A colour, not a view, so the page runs under the bars too.
       .background(TimelinePalette.page)
-      .environment(\.colorScheme, .dark)
       #if os(iOS)
-      .modeStampDock(icon: icon, title: title, dockProgress: $dockProgress)
+      .timelineHeader(
+        isInBar: isHeaderInBar,
+        icon: icon,
+        title: title,
+        headerName: headerName,
+        strip: strip,
+        dockProgress: $dockProgress)
       #endif
+      .environment(\.colorScheme, .dark)
     }
+  }
+
+  /// Whether the navigation bar is the header: at iPhone width, where a header under the bar
+  /// would leave the bar's own row empty.
+  private var isHeaderInBar: Bool {
+    #if os(iOS)
+    horizontalSizeClass == .compact
+    #else
+    false
+    #endif
   }
 }
 
 #if os(iOS)
 extension View {
+  /// Puts the header in the navigation bar with the strip pinned under it when `isInBar`, else
+  /// docks the list's header stamp into the bar badge as the list scrolls.
+  @ViewBuilder
+  fileprivate func timelineHeader(
+    isInBar: Bool,
+    icon: ModeIcon,
+    title: String,
+    headerName: String,
+    strip: TimelineFormStrip?,
+    dockProgress: Binding<Double>)
+    -> some View
+  {
+    if isInBar {
+      safeAreaInset(edge: .top, spacing: 0) {
+        // The header's black runs on up behind the bar, over the list as it scrolls.
+        VStack(spacing: 0) {
+          strip
+        }
+        .frame(maxWidth: .infinity)
+        .background(alignment: .bottom) {
+          TimelinePalette.header
+            .ignoresSafeArea(edges: .top)
+        }
+      }
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbarColorScheme(.dark, for: .navigationBar)
+      .toolbar {
+        ToolbarItem(placement: .principal) {
+          TimelineBarTitle(icon: icon, name: headerName)
+        }
+      }
+    }
+    else {
+      modeStampDock(icon: icon, title: title, dockProgress: dockProgress)
+    }
+  }
+
   /// Tracks how far the list has scrolled from rest into `dockProgress`, with ticket 12's stamp
   /// math, and shows the navigation bar badge and the inline title fading in with it.
   ///

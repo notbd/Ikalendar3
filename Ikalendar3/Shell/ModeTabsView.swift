@@ -17,9 +17,12 @@ import SwiftUI
 /// Challenge and Salmon Run, with the Splatfest tab in Regular Battle's place while a Splatfest
 /// runs. An iPad window of compact width shows them too (`WindowLayout.tabs`).
 ///
-/// It plays ikalendar 2's Mode switch haptic, shows the failed-refresh toast above the tab bar
-/// (`AppRootView` keeps it), and shows Settings from each tab's toolbar. A second tap on the
-/// selected Anarchy or Splatfest tab shows the Series and Open (or Open and Pro) menu above it.
+/// Each tab shows its short name (`AppTab.shortTitle(in:)`), and VoiceOver reads the full one;
+/// the selected tab takes its Mode colour, as in ikalendar 2. It plays ikalendar 2's Mode switch
+/// haptic, shows the failed-refresh toast above the tab bar (`AppRootView` keeps it), and shows
+/// Settings and the track button at the leading end of each tab's toolbar, which leaves the
+/// trailing end to the Style's Mode stamp. A second tap on the selected Anarchy or Splatfest tab
+/// shows the Series and Open (or Open and Pro) menu above it.
 struct ModeTabsView: View {
   @Environment(RefreshEngine.self) private var engine
   @Environment(AppClock.self) private var clock
@@ -27,12 +30,15 @@ struct ModeTabsView: View {
   @Environment(PreferenceStore.self) private var preferences
   @Environment(\.gameLanguage) private var language
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
+  @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
     @Bindable var status = status
     let snapshot = engine.snapshot
     let now = clock.now
     let selectedTab = snapshot.tab(in: status.selectedPlace, at: now)
+    let selectedColor = selectedTab.selectedColor(style: preferences.style, in: colorScheme)
+    let barScheme: ColorScheme = AppTab.barColorScheme(style: preferences.style, in: colorScheme)
     // Every tap on a tab bar item reaches the setter, a second tap on the selected tab included
     // unless the interceptor below keeps it from the system.
     let selection: Binding = .init(
@@ -46,16 +52,34 @@ struct ModeTabsView: View {
             screen(for: tab)
               .settingsButton(isPresented: $status.isSettingsPresented, language: language)
           }
+          .environment(\.screenButtonPlacement, .topBarLeading)
           .overlay(alignment: .bottomLeading) {
             tabMenu(for: tab)
               .animation(menuAnimation, value: status.presentedMenu)
           }
           .refreshFailureToast()
+          // The tab view's Mode colour tints the tab bar only: the screen keeps the system's tint,
+          // so its toolbar buttons stay as they are.
+          .tint(nil)
+          // Only where the bar's appearance differs from the app's (Timeline in light): any
+          // preference here also drops the selected tab's tint.
+          .toolbarColorScheme(barScheme == colorScheme ? nil : barScheme, for: .tabBar)
         } label: {
-          Label(tab.title(in: language), systemImage: tab.systemImage)
+          Label {
+            Text(verbatim: tab.shortTitle(in: language))
+          } icon: {
+            if tab == selectedTab, case .icon(let color) = selectedColor {
+              Image(uiImage: Self.symbol(tab.systemImage, in: color))
+            }
+            else {
+              Image(systemName: tab.systemImage)
+            }
+          }
+          .accessibilityLabel(tab.title(in: language))
         }
       }
     }
+    .tint(barTint(selectedColor))
     .interceptingTabReselection(isEnabled: selectedTab.repeatedSelectionAction != .scrollToTop) {
       status.select(selectedTab)
     }
@@ -100,6 +124,21 @@ struct ModeTabsView: View {
     }
   }
 
+  /// The tab bar's tint: the selected tab's colour, or the primary colour where only its icon
+  /// takes a colour or it has none (`SelectedTabColor`).
+  private func barTint(_ color: SelectedTabColor) -> Color {
+    switch color {
+      case .tint(let color): Color(color)
+      case .icon,
+           .primary: .primary
+    }
+  }
+
+  /// The symbol drawn in `color` as it is, which the tab bar's tint leaves alone.
+  static private func symbol(_ systemName: String, in color: SRGBColor) -> UIImage {
+    (UIImage(systemName: systemName) ?? UIImage()).withTintColor(UIColor(Color(color)), renderingMode: .alwaysOriginal)
+  }
+
   /// The menu grows from the selected tab, or fades under Reduce Motion.
   private var menuTransition: AnyTransition {
     reduceMotion ? .opacity : .scale(scale: 0.6, anchor: .bottomLeading).combined(with: .opacity)
@@ -108,6 +147,14 @@ struct ModeTabsView: View {
   private var menuAnimation: Animation {
     reduceMotion ? Motion.crossFade : .snappy
   }
+}
+
+// MARK: - Screen buttons
+
+extension EnvironmentValues {
+  /// Where a screen puts its toolbar buttons, Settings and the track button: the trailing end,
+  /// or the leading end in the tabs, where the trailing end holds the Mode stamp's badge.
+  @Entry var screenButtonPlacement: ToolbarItemPlacement = .topBarTrailing
 }
 
 // MARK: - Tab bar minimizing

@@ -43,9 +43,7 @@ public struct SummaryRing: View {
   public var body: some View {
     ZStack {
       ProgressRing(share: share, color: color, lineWidth: lineWidth)
-      Image(decorative: BundledImage.name(for: icon, size: .small), bundle: BundledImage.catalogBundle)
-        .resizable()
-        .scaledToFit()
+      ModeIconPicture(icon, size: .small)
         .padding(iconInset)
     }
     .accessibilityHidden(true)

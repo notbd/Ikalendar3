@@ -25,28 +25,50 @@ enum InkScreenMetrics {
 
   // MARK: Heading and stamp
 
-  /// The space above the Mode heading and below it, before the first panel.
-  static let headingPadding: EdgeInsets = .init(top: 10, leading: 4, bottom: 24, trailing: 0)
+  /// The space before the Mode name, which lines it up with a panel's content.
+  static let headingLeadingPadding: CGFloat = 4
+  /// The sizes the Mode name steps down through to stay on one line beside the stamp, from the
+  /// title's own: "Splatfest Battle" needs the last on a 393 pt screen.
+  static let titleSizes: [CGFloat] = [InkTextStyle.title.size, 29, 27, 25]
   /// The space between the Mode name and its form tag.
-  static let headingSpacing: CGFloat = 9
+  static let headingSpacing: CGFloat = 8
   /// The splat behind the stamp, square.
-  static let splatSize: CGFloat = 190
+  static let splatSize: CGFloat = 156
   /// The Mode icon on the splat, square.
-  static let stampIconSize: CGFloat = 100
+  static let stampIconSize: CGFloat = 68
   /// The black outline around the stamp's icon.
-  static let stampOutlineWidth: CGFloat = 2.5
+  static let stampOutlineWidth: CGFloat = 2
   /// The stamp's turn at rest.
   static let stampAngle: Angle = .degrees(-10)
-  /// How far the stamp reaches past the screen's trailing edge.
-  static let stampTrailingOverhang: CGFloat = 4
-  /// The share of the screen's width the heading leaves to the stamp beside it.
-  static let stampReservedShare: CGFloat = 0.42
-  /// How far the splat's lower edge may reach over the first panel's tape.
-  static let splatPanelOverlap: CGFloat = 24
+  /// How far the splat's shadow falls from it.
+  static let splatShadowOffset: CGSize = .init(width: 3, height: 5)
+  /// How far the splat runs off the screen's trailing edge: far enough to read as cut on
+  /// purpose.
+  static let stampBleed: CGFloat = 22
+  /// How far the first panel covers the splat's lower edge.
+  static let splatPanelOverlap: CGFloat = 30
+  /// The width beside the Mode name the stamp takes: the splat's part on the screen and a gap.
+  static let stampReserve: CGFloat = splatSize - stampBleed - screenPadding + 6
+  /// How far the stamp may rise into the navigation bar's row on iPhone, whose trailing end is
+  /// free: most of the row's height, which leaves the heading as tall as a one-line name with
+  /// its form tag.
+  static let stampRise: CGFloat = 40
+  /// The splat's part above the first panel: the heading's least height beside the stamp where
+  /// the stamp stays under the bar.
+  static let splatHeightAbovePanel: CGFloat = splatSize - splatPanelOverlap - panelSpacing
+  /// The stamp's scale over the Mode name, from the first accessibility text size.
+  static let stackedStampScale: CGFloat = 0.72
   /// The navigation bar badge the stamp docks into, round.
   static let badgeSize: CGFloat = 44
   /// The Mode icon in the badge.
   static let badgeIconSize: CGFloat = 28
+
+  // MARK: Note
+
+  /// The space above and below a note's sentence, inside its panel.
+  static let notePadding: CGFloat = 8
+  /// The distance between a note's hatch stripes.
+  static let noteHatchPitch: CGFloat = 18
 
   // MARK: Panels
 
@@ -63,12 +85,16 @@ enum InkScreenMetrics {
 
   // MARK: Events
 
+  /// A running text's line height as a multiple of its size. The light face's own line box is
+  /// nearly twice its size, which spreads a paragraph apart.
+  static let runningTextLineHeight: CGFloat = 1.3
+
   /// An event card's Mode icon, square, before Dynamic Type.
   static let eventIconSize: CGFloat = 28
   /// A Challenge's Rule icon, square, before Dynamic Type.
   static let challengeRuleIconSize: CGFloat = 26
-  /// The swatch of a Splatfest team's colour before its name, at the default text size.
-  static let teamSwatchSize: CGSize = .init(width: 22, height: 12)
+  /// The space between two of a Challenge's window rows.
+  static let windowRowSpacing: CGFloat = 7
   /// The opacity of a Challenge window that has ended.
   static let endedWindowOpacity: Double = 0.45
 

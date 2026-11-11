@@ -6,6 +6,7 @@
 //
 
 import IkaCore
+import IkaDesign
 import IkaIntents
 import SwiftUI
 
@@ -15,7 +16,10 @@ import SwiftUI
 /// only), Appearance, Style, Language, Reminders, then About and Credits.
 ///
 /// Every control writes straight to the preferences store, which persists the value and which
-/// every screen observes, so a new Style or colour scheme applies at once. iPhone and iPad present
+/// every screen observes, so a new Style or colour scheme applies at once. Settings and the pages
+/// it opens take the app's accent, ikalendar 2's orange: text and glyphs the `AppAccent` colour
+/// (#A25F00 in light, 4.5:1 on the grouped background; #FF9F0A in dark, 8.3:1 on a cell), and
+/// switches that are on the orange fill (`accentFill`). iPhone and iPad present
 /// it from the tabs (`settingsPresentation(isPresented:)`); the Mac shows it in its standard
 /// Settings window, opened with Command-comma, without the iPhone-only rows.
 struct SettingsView: View {
@@ -51,6 +55,8 @@ struct SettingsView: View {
       }
       #endif
     }
+    // On the stack, so the pages it opens (About, Credits) take it too.
+    .tint(Color(.appAccent))
     #if os(macOS)
     // The Settings window can stay open after every schedule window closes, so it applies the
     // scheme itself.
@@ -73,6 +79,7 @@ struct SettingsView: View {
         Label(text(.defaultTab), systemImage: preferences.defaultMode.systemImage)
           .contentTransition(.symbolEffect(.replace))
       }
+      .modifier(ChoicePickerStyle())
     }
   }
 
@@ -86,6 +93,7 @@ struct SettingsView: View {
       } label: {
         Label(text(.colorScheme), systemImage: "circle.lefthalf.filled")
       }
+      .modifier(ChoicePickerStyle())
 
       if isPhone {
         Toggle(isOn: $preferences.shouldMinimizeTabBar) {
@@ -96,6 +104,7 @@ struct SettingsView: View {
               : "arrow.left.and.line.vertical.and.arrow.right")
             .contentTransition(.symbolEffect(.replace))
         }
+        .tint(.accentFill)
       }
     }
   }
@@ -127,7 +136,7 @@ struct SettingsView: View {
             Text(language.nativeName)
             Image(systemName: "arrow.up.forward.app.fill")
           }
-          .foregroundStyle(.secondary)
+          .foregroundStyle(.readableSecondary)
         } label: {
           Label {
             // A button tints its label; the title stays primary, as in ikalendar 2.
@@ -147,9 +156,13 @@ struct SettingsView: View {
   private var remindersSection: some View {
     Section {
       Toggle(ModeLabel.bigRun.text(in: language), isOn: reminderSwitch(.bigRun))
+        .tint(.accentFill)
       Toggle(ModeLabel.eggstraWork.text(in: language), isOn: reminderSwitch(.eggstraWork))
+        .tint(.accentFill)
       Toggle(ModeLabel.splatfest.text(in: language), isOn: reminderSwitch(.splatfest))
+        .tint(.accentFill)
       Toggle(ModeLabel.challenges.text(in: language), isOn: reminderSwitch(.challenge))
+        .tint(.accentFill)
 
       if areNotificationsOff, let url = Self.notificationSettingsURL {
         Button {
@@ -168,6 +181,7 @@ struct SettingsView: View {
     } footer: {
       if areNotificationsOff {
         Text(ReminderText.notificationsOff.text(in: language))
+          .foregroundStyle(.readableSecondary)
       }
     }
     // Again on return from the system's settings, where the player may have allowed them.
@@ -266,15 +280,12 @@ struct SettingsButton: View {
 }
 
 extension View {
-  /// Puts `SettingsButton` in the toolbar on iPhone and iPad. The Mac opens its Settings window
-  /// from the app menu or with Command-comma instead, so it has none.
+  /// Puts `SettingsButton` in the toolbar on iPhone and iPad, where `screenButtonPlacement` says.
+  /// The Mac opens its Settings window from the app menu or with Command-comma instead, so it has
+  /// none.
   func settingsButton(isPresented: Binding<Bool>, language: GameLanguage) -> some View {
     #if os(iOS)
-    toolbar {
-      ToolbarItem(placement: .topBarTrailing) {
-        SettingsButton(isPresented: isPresented, language: language)
-      }
-    }
+    modifier(SettingsToolbarItem(isPresented: isPresented, language: language))
     #else
     self
     #endif
@@ -302,6 +313,46 @@ extension View {
     }
     #else
     self
+    #endif
+  }
+}
+
+#if os(iOS)
+/// The toolbar item `settingsButton(isPresented:language:)` adds.
+private struct SettingsToolbarItem: ViewModifier {
+  @Environment(\.screenButtonPlacement) private var placement
+
+  @Binding var isPresented: Bool
+  let language: GameLanguage
+
+  func body(content: Content) -> some View {
+    content.toolbar {
+      ToolbarItem(placement: placement) {
+        SettingsButton(isPresented: $isPresented, language: language)
+      }
+    }
+  }
+}
+#endif
+
+// MARK: - ChoicePickerStyle
+
+/// The style of a picker that shows its choice in its row: a menu, or on iPhone and iPad from the
+/// first accessibility text size a row that opens the options on a page of their own, since the
+/// menu's button cuts a long choice short there ("Regul…Battle").
+private struct ChoicePickerStyle: ViewModifier {
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+  func body(content: Content) -> some View {
+    #if os(iOS)
+    if dynamicTypeSize.isAccessibilitySize {
+      content.pickerStyle(.navigationLink)
+    }
+    else {
+      content.pickerStyle(.menu)
+    }
+    #else
+    content
     #endif
   }
 }

@@ -77,37 +77,98 @@ struct TimelineShiftContent: View {
 
 // MARK: - TimelineStatusContent
 
-/// Why no Rotation or Shift is on: paused until a return time, or nothing current.
+/// Why no Rotation or Shift is on: paused until a return time, or nothing current. It takes the
+/// current slot's place as a panel hatched like a closed lane, so it reads as the state of now
+/// and not as a missing picture.
 struct TimelineStatusContent: View {
   let text: String
 
   var body: some View {
     Text(verbatim: text)
-      .ikaFont(.light, size: 16, relativeTo: .body)
+      .ikaFont(.heavy, size: 18, relativeTo: .headline)
+      .lineHeight(TimelineMetrics.wrappedLineHeight)
       .foregroundStyle(.white)
       .fixedSize(horizontal: false, vertical: true)
+      .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.horizontal, TimelineMetrics.cardPadding)
+      .padding(.vertical, TimelineMetrics.statusPadding)
+      .background {
+        TimelineHatching()
+          .background(TimelinePalette.strip)
+      }
+      .clipShape(.rect(cornerRadius: TimelineMetrics.pictureCornerRadius))
+  }
+}
+
+// MARK: - TimelineHatching
+
+/// Faint diagonal stripes, as the game hatches a closed area.
+private struct TimelineHatching: View {
+  var body: some View {
+    Canvas { context, size in
+      let pitch: CGFloat = TimelineMetrics.hatchPitch
+      var path: Path = .init()
+      var x: CGFloat = -size.height
+      while x < size.width {
+        path.move(to: CGPoint(x: x, y: size.height))
+        path.addLine(to: CGPoint(x: x + size.height, y: 0))
+        x += pitch
+      }
+      context.stroke(path, with: .color(TimelinePalette.hatch), lineWidth: pitch / 2)
+    }
+    .accessibilityHidden(true)
   }
 }
 
 // MARK: - TimelineRuleLabel
 
-/// A Rule's icon and name.
+/// A Rule's icon and name, the icon growing with the text up to `ruleIconMaxSize`. Stacked, the
+/// icon moves above the name when the two do not fit on one line, so the name takes the full width
+/// and wraps between words, never inside one such as "Rainmaker".
 struct TimelineRuleLabel: View {
+  @ScaledMetric(relativeTo: .headline) private var iconSize: CGFloat = TimelineMetrics.ruleIconSize
+
   let rule: RuleID
   let terms: GameTerms
   let arrangement: CellArrangement
 
   var body: some View {
-    HStack(spacing: 8) {
-      Image(decorative: BundledImage.name(for: rule, size: .medium), bundle: BundledImage.catalogBundle)
-        .resizable()
-        .scaledToFit()
-        .frame(width: TimelineMetrics.ruleIconSize, height: TimelineMetrics.ruleIconSize)
-      Text(verbatim: terms.name(of: rule))
-        .ikaFont(.heavy, size: 18, relativeTo: .headline)
-        .scaledLimitedLine(for: arrangement)
-        .foregroundStyle(.white)
+    switch arrangement {
+      case .sideBySide:
+        HStack(spacing: 8) {
+          icon
+          name
+        }
+
+      case .stacked:
+        ViewThatFits(in: .horizontal) {
+          HStack(spacing: 8) {
+            icon
+            name.fixedSize()
+          }
+          VStack(alignment: .leading, spacing: 4) {
+            icon
+            name
+          }
+        }
     }
+  }
+
+  private var icon: some View {
+    let side: CGFloat = min(iconSize, TimelineMetrics.ruleIconMaxSize)
+
+    return Image(decorative: BundledImage.name(for: rule, size: .medium), bundle: BundledImage.catalogBundle)
+      .resizable()
+      .scaledToFit()
+      .frame(width: side, height: side)
+  }
+
+  private var name: some View {
+    Text(verbatim: terms.name(of: rule))
+      .ikaFont(.heavy, size: 18, relativeTo: .headline)
+      .scaledLimitedLine(for: arrangement)
+      .lineHeight(TimelineMetrics.wrappedLineHeight)
+      .foregroundStyle(.white)
   }
 }
 
@@ -176,10 +237,12 @@ struct TimelineNowTag: View {
 
 // MARK: - TimelineModeTag
 
-/// The mark of a Mode, an event or a kind of Shift: its icon, if any, and its label on a tag in
-/// its colour. From the first accessibility text size, a label wider than the slot wraps.
+/// The mark of a Mode, an event or a kind of Shift: its icon, if any, growing with the text, and
+/// its label on a tag in its colour. From the first accessibility text size, a label wider than
+/// the slot wraps.
 struct TimelineModeTag: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+  @ScaledMetric(relativeTo: .footnote) private var iconSize: CGFloat = TimelineMetrics.tagIconSize
 
   let icon: ModeIcon?
   let label: String
@@ -191,15 +254,13 @@ struct TimelineModeTag: View {
     HStack(spacing: 4) {
       if let icon {
         // In the tag's text colour: the icon's own colour is the tag's.
-        Image(decorative: BundledImage.name(for: icon, size: .small), bundle: BundledImage.catalogBundle)
-          .renderingMode(.template)
-          .resizable()
-          .scaledToFit()
-          .frame(width: 16, height: 16)
+        ModeIconPicture(icon, size: .small, renderingMode: .template)
+          .frame(width: iconSize, height: iconSize)
       }
       Text(verbatim: label)
         .ikaFont(.heavy, size: 13, relativeTo: .footnote)
         .lineLimit(arrangement.lineLimit)
+        .lineHeight(TimelineMetrics.wrappedLineHeight)
     }
     .foregroundStyle(Color(colors.foreground))
     .padding(.horizontal, 7)

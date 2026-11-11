@@ -43,7 +43,7 @@ public struct FetchTimeLabel: View {
       }
     }
     .font(.footnote)
-    .foregroundStyle(.secondary)
+    .foregroundStyle(.readableSecondary)
     .multilineTextAlignment(.center)
     .frame(maxWidth: .infinity)
     .accessibilityElement(children: .combine)

@@ -20,6 +20,8 @@ enum InkMetrics {
   static let tagHorizontalPadding: CGFloat = 9
   /// The space above and below a tag's text.
   static let tagVerticalPadding: CGFloat = 2
+  /// A wrapped tag's line height as a multiple of its text size.
+  static let wrappedTagLineHeight: CGFloat = 1.25
 
   // MARK: Panel
 

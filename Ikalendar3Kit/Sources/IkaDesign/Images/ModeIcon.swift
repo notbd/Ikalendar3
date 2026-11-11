@@ -17,7 +17,8 @@ public enum ModeIcon: String, CaseIterable, Sendable {
   case anarchy
   case xBattle = "x"
   case challenge
-  /// Splatfest Battle. A placeholder stands in until the drawn icon lands.
+  /// Splatfest Battle. `ModeIconPicture` draws it as the Splatfest mark; the bundled picture is a
+  /// grey placeholder.
   case splatfestBattle = "splatfest"
   case salmonRun = "salmon-run"
   case bigRun = "big-run"

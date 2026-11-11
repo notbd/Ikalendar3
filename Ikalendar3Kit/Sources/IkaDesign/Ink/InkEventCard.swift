@@ -12,7 +12,7 @@ import SwiftUI
 // MARK: - InkEventCard
 
 /// Ink's compact card for one event, on a panel: the event's icon and name on a tag in its colour
-/// with "Now!" while it runs or "Next" before, what it plays (a Challenge's name, Rule and Stages;
+/// with "Now!" while it runs or "Soon!" before, what it plays (a Challenge's name, Rule and Stages;
 /// a Splatfest's art, title and teams; a Big Run's or an Eggstra Work's Stage and weapons), its
 /// times, and its progress while it runs.
 ///
@@ -51,7 +51,7 @@ public struct InkEventCard: View {
     let progress: WindowProgress? = item.isRunning(at: now) ? item.progress(at: now) : nil
 
     VStack(alignment: .leading, spacing: InkScreenMetrics.panelRowSpacing) {
-      header(kind, place: progress.map(InkPanelPlace.now) ?? .next)
+      header(kind, place: progress.map(InkPanelPlace.now) ?? .soon)
       content(kind)
       InkTimeTag(Text(verbatim: range))
       if let progress {
@@ -69,6 +69,8 @@ public struct InkEventCard: View {
       width = newWidth
     }
     .inkPanel()
+    // Also where the card stands alone, on a sheet or the iPad event strip.
+    .environment(\.inkSetsWrappedTagsClose, true)
     .task(id: art) {
       artImage = art.flatMap(Image.init(storedFile:))
     }
@@ -86,18 +88,25 @@ public struct InkEventCard: View {
       }
 
     return layout {
-      HStack(spacing: InkScreenMetrics.cardSpacing) {
-        Image(decorative: BundledImage.name(for: kind.icon, size: .medium), bundle: BundledImage.catalogBundle)
-          .resizable()
-          .scaledToFit()
-          .frame(width: iconSize, height: iconSize)
-        InkModeTag(Text(verbatim: kind.label.text(in: terms.language)), accent: kind.accent)
+      // The name goes under its icon where the row cannot hold it on one line, as at the largest
+      // text sizes, so it never breaks inside a word beside the icon.
+      ViewThatFits(in: .horizontal) {
+        HStack(spacing: InkScreenMetrics.cardSpacing) { name(kind) }
+        VStack(alignment: .leading, spacing: InkScreenMetrics.cardSpacing) { name(kind) }
       }
       if arrangement == .sideBySide {
         Spacer(minLength: 0)
       }
       InkStateTag(place: place, accent: kind.accent)
     }
+  }
+
+  /// The event's icon and its name tag.
+  @ViewBuilder
+  private func name(_ kind: InkEventKind) -> some View {
+    ModeIconPicture(kind.icon, size: .medium)
+      .frame(width: iconSize, height: iconSize)
+    InkModeTag(Text(verbatim: kind.label.text(in: terms.language)), accent: kind.accent)
   }
 
   // MARK: Content
@@ -132,15 +141,9 @@ public struct InkEventCard: View {
 
   // MARK: Parts
 
-  /// A Challenge window's range as a Rotation's, with the weekday since it is announced days
-  /// ahead; an event spanning days with each end's date.
+  /// The event's start and end, as every Ink panel writes a window.
   private var range: String {
-    switch item {
-      case .challenge(let window): format.timeRange(of: window, withWeekday: true)
-      case .splatfest,
-           .bigRun,
-           .eggstraWork: format.dateRange(of: item)
-    }
+    format.range(of: item, now: now)
   }
 
   /// A Splatfest's stored art; the other events have none.
@@ -152,7 +155,7 @@ public struct InkEventCard: View {
 
   private var arrangement: CellArrangement { dynamicTypeSize.isAccessibilitySize ? .stacked : .sideBySide }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 

@@ -33,6 +33,15 @@ struct InkPairTests {
   }
 
   @Test
+  func `A screen's board is the widgets' black in dark appearance and lighter than a panel in light`() {
+    let dark: ColorPair = InkPair.boardText.colors(in: .dark)
+    let light: ColorPair = InkPair.boardText.colors(in: .light)
+
+    #expect(dark == InkPair.backgroundText.colors(in: .dark))
+    #expect(light.background.relativeLuminance > Style.ink.panel(in: .light).relativeLuminance)
+  }
+
+  @Test
   func `Background and tags are the game's black`() {
     for colorScheme: ColorScheme in ColorScheme.allCases {
       #expect(InkPair.backgroundText.colors(in: colorScheme).background == .black)

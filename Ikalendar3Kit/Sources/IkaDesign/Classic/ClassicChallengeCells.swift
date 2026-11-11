@@ -11,9 +11,9 @@ import SwiftUI
 
 // MARK: - ClassicChallengeSection
 
-/// One Challenge in Classic's Challenge list: a cell with its name, description, Rule, Stages and
-/// rules text, then one row per window with ikalendar 2's "Now:" and "Next:" tags, the current
-/// window carrying its progress bar.
+/// One Challenge in Classic's Challenge list, under its kind's tag: a cell with its name,
+/// description, Rule, Stages and rules text, then one row per window with ikalendar 2's "Now:"
+/// and "Next:" tags, the current window carrying its progress bar.
 struct ClassicChallengeSection: View {
   typealias Scoped = ClassicMetrics.Challenge
 
@@ -34,6 +34,12 @@ struct ClassicChallengeSection: View {
       ForEach(listing.windows, id: \.window) { window in
         windowRow(window)
       }
+    } header: {
+      // Headed as Classic heads every row, here by its kind on the Mode colour, as an event card
+      // and a Big Run are, which also keeps the card's top clear of the Mode stamp.
+      ClassicKindTag(text: ModeLabel.challenges.text(in: terms.language), color: .challenge)
+        // The screen and the card's sentence name the Challenge.
+        .accessibilityHidden(true)
     }
   }
 
@@ -45,11 +51,15 @@ struct ClassicChallengeSection: View {
 
     return VStack(alignment: .leading, spacing: Scoped.cellSpacingV) {
       Text(verbatim: texts.name)
-        .scaledLimitedLine(for: metrics.arrangement)
+        .classicLines(for: metrics.arrangement)
         .ikaFont(.heavy, size: Scoped.nameFontSize, relativeTo: .title2)
+        // The heavy face is wide: past this size its longest word ("Jump-a-thon") no longer fits a
+        // 390-point iPhone's cell and splits.
+        .dynamicTypeSize(...ClassicMetrics.displayTitleLargestSize)
       if !texts.description.isEmpty {
         Text(verbatim: texts.displayDescription)
           .fixedSize(horizontal: false, vertical: true)
+          .lineHeight(.multiple(factor: ClassicMetrics.wrappedLineHeightFactor))
           .ikaFont(.light, size: Scoped.descriptionFontSize, relativeTo: .headline)
       }
       ClassicBattleSecondaryCell(
@@ -58,10 +68,14 @@ struct ClassicChallengeSection: View {
         terms: terms,
         metrics: metrics,
         glide: glide)
+        // At its ideal height: the stack offers it less, and the Stage cards gave the cut to
+        // their names, which shrank to a few points.
+        .fixedSize(horizontal: false, vertical: true)
       if !texts.rulesText.isEmpty {
         Text(verbatim: texts.displayRulesText)
           .fixedSize(horizontal: false, vertical: true)
-          .foregroundStyle(.secondary)
+          .lineHeight(.multiple(factor: ClassicMetrics.wrappedLineHeightFactor))
+          .foregroundStyle(.classicSecondary)
           .ikaFont(.light, size: Scoped.rulesTextFontSize, relativeTo: .footnote)
       }
     }
@@ -85,7 +99,7 @@ struct ClassicChallengeSection: View {
           ClassicTag(text: tag.text(in: terms.language))
         }
         Text(verbatim: timeFormat.battleRange(from: marked.window.startTime, to: marked.window.endTime, now: now))
-          .scaledLimitedLine(for: metrics.arrangement)
+          .classicLines(for: metrics.arrangement)
           .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       }
 
@@ -99,7 +113,7 @@ struct ClassicChallengeSection: View {
       }
     }
     .frame(maxWidth: .infinity, alignment: .leading)
-    .foregroundStyle(marked.mark == .over ? .secondary : .primary)
+    .foregroundStyle(marked.mark == .over ? AnyShapeStyle(.classicSecondary) : AnyShapeStyle(.primary))
     .accessibilityElement(children: .ignore)
     .accessibilityLabel(writer.sentence(
       for: ChallengeWindow(challenge: listing.challenge, window: marked.window),

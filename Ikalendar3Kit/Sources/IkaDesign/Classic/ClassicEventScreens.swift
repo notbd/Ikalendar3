@@ -37,11 +37,16 @@ public struct ClassicChallengeScreenView: View {
   public var body: some View {
     ClassicScheduleList(
       icon: .challenge,
+      heading: .challenges(in: terms.language),
       reflowValue: screen.challenges.map(\.challenge.id))
     { metrics in
       if screen.challenges.isEmpty {
         Section {
           ClassicStatusCell(text: ScreenText.nothingCurrent.text(in: terms.language), arrangement: metrics.arrangement)
+        } header: {
+          // As a Battle Mode's screen says why nothing is on.
+          ClassicTag(text: ClassicText.now.text(in: terms.language))
+            .accessibilityHidden(true)
         }
       }
       ForEach(screen.challenges, id: \.challenge.id) { listing in
@@ -87,11 +92,10 @@ public struct ClassicSplatfestScreenView: View {
 
     ClassicScheduleList(
       icon: ModeIcon(RotationMode.splatfestBattle(screen.form)),
+      heading: ClassicHeading(splatfestBattle: screen.form, in: terms.language),
       reflowValue: (rows + afterwards).map(\.id))
     { metrics in
-      Section {
-        ClassicSplatfestCard(card: screen.card, terms: terms, now: now, metrics: metrics)
-      }
+      ClassicSplatfestSection(card: screen.card, terms: terms, now: now, metrics: metrics)
       if let tricolor = screen.tricolorTurfWar {
         ClassicTricolorSection(tricolor: tricolor, terms: terms, now: now, metrics: metrics)
       }

@@ -21,6 +21,7 @@ struct OnboardingView: View {
   @Environment(\.gameLanguage) private var language
   @Environment(\.accessibilityReduceMotion) private var reduceMotion
   @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+  @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
   /// Choreography timing, relative to the screen's appearance unless noted.
   private enum Timing {
@@ -57,8 +58,8 @@ struct OnboardingView: View {
         Spacer()
         button
       }
-      .containerRelativeFrame(.horizontal, count: isCompact ? 5 : 2, span: isCompact ? 4 : 1, spacing: 0)
-      .padding()
+      .containerRelativeFrame(.horizontal) { width, _ in columnWidth(in: width) }
+      .padding(Self.margin)
     }
     .sensoryFeedback(Haptic.onboardingLanded, trigger: hasLanded)
     // The entrance, then the first bounce unless a tap has bounced the icon already.
@@ -106,15 +107,22 @@ struct OnboardingView: View {
       .squashBounce(trigger: iconBounces, amplitude: .onboarding)
   }
 
-  /// "Welcome to ikalendar3", the name in the accent colour.
+  /// "Welcome to ikalendar3", the name in the app's accent.
   private var title: some View {
     var title: AttributedString = .init(AboutText.welcome.text(in: language, Ikalendar3App.name))
     if let name = title.range(of: Ikalendar3App.name) {
-      title[name].foregroundColor = .accentColor
+      title[name].foregroundColor = Color(.appAccent)
     }
 
     return Text(title)
       .ikaFont(.heavy, size: 42, relativeTo: .largeTitle)
+      // The face's own line gap spaces its lines twice as far apart as the system font's.
+      .lineHeight(.multiple(factor: 1.1))
+      // Past the second accessibility size the name alone outgrows a 6.1-inch screen and would
+      // break inside the word, so the 42-point title grows no further; it shrinks rather than being
+      // cut off when the screen is short.
+      .dynamicTypeSize(...DynamicTypeSize.accessibility2)
+      .minimumScaleFactor(0.5)
       .foregroundStyle(.primary)
       .modifier(Entrance(part: .title, hasStarted: hasEntered))
   }
@@ -125,11 +133,15 @@ struct OnboardingView: View {
     } label: {
       Text(AboutText.getStarted.text(in: language))
         .ikaFont(.heavy, size: 18, relativeTo: .headline)
+        .lineHeight(.multiple(factor: 1.1))
         .padding(.vertical, 10)
         .padding(.horizontal)
         .frame(maxWidth: .infinity)
+        // On the accent fill (`accentFill`): 9.6:1 in light, 10.2:1 in dark.
+        .foregroundStyle(.black)
     }
     .buttonStyle(.glassProminent)
+    .tint(.accentFill)
     .sensoryFeedback(Haptic.done, trigger: preferences.shouldShowOnboarding) { _, isShown in !isShown }
     .modifier(Entrance(part: .button, hasStarted: hasEntered))
     .phaseAnimator([1, 0.95], trigger: buttonPulses) { content, scale in
@@ -144,6 +156,18 @@ struct OnboardingView: View {
   private var isCompact: Bool {
     horizontalSizeClass == .compact
   }
+
+  /// The column's width in a container `width` wide: four fifths of a compact width, half of a
+  /// regular one, and from the first accessibility text size the whole compact width inside the
+  /// margins, for the larger title.
+  private func columnWidth(in width: CGFloat) -> CGFloat {
+    guard isCompact else { return width / 2 }
+
+    return dynamicTypeSize.isAccessibilitySize ? width - 2 * Self.margin : width * 4 / 5
+  }
+
+  /// The space around the column.
+  static private let margin: CGFloat = 16
 
   private var isPulsing: Bool {
     DecorativeMotion.buttonPulse.form(reduceMotion: reduceMotion) == .full

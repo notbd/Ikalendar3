@@ -93,11 +93,11 @@ struct AboutView: View {
 
       Text(verbatim: Ikalendar3App.name)
         .font(.system(.title, design: .rounded, weight: .bold))
-        .foregroundStyle(Color.accentColor)
+        .foregroundStyle(.tint)
 
       Text(text(.version, Self.version, Self.build))
         .font(.system(.subheadline, design: .monospaced))
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.readableSecondary)
     }
     .frame(maxWidth: .infinity)
     .padding(.top, 36)
@@ -219,7 +219,9 @@ struct AboutView: View {
 
         Text(text(.ikalendar2Note))
           .ikaFont(.light, size: 13, relativeTo: .footnote)
-          .foregroundStyle(.secondary)
+          // The face's own line gap spaces its lines twice as far apart as the system font's.
+          .lineHeight(.multiple(factor: 1.25))
+          .foregroundStyle(.readableSecondary)
           .multilineTextAlignment(.leading)
           .lineLimit(2)
           .minimumScaleFactor(0.5)

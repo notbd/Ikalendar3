@@ -16,6 +16,19 @@ import SwiftUI
 enum ClassicMetrics {
   /// The shadow under pictures and icons.
   static let shadowRadius: CGFloat = 2
+  /// The line height of a text that wraps, as a multiple of its font size. SplatNet 3's faces set a
+  /// line box twice their size, made for their Han glyphs, which leaves wrapped Latin lines about
+  /// a line apart.
+  static let wrappedLineHeightFactor: CGFloat = 1.2
+  /// The largest text size a title in the heavy face grows to, a Challenge's or a Splatfest's: its
+  /// longest words then still fit a 390-point iPhone's cell.
+  static let displayTitleLargestSize: DynamicTypeSize = .accessibility1
+  /// Secondary text in light appearance (`ClassicSecondaryStyle`): 4.5:1 on Classic's white cells
+  /// and on the grouped ground around them.
+  static let secondaryTextLight: SRGBColor = .init(hex: 0x6C6C70)
+  /// What the game's icons sit on in light appearance (`ClassicIconGround`): white reaches 3:1 on
+  /// it with room to spare, so the lightest icons keep their edges.
+  static let iconGroundLight: SRGBColor = .init(hex: 0x3A3A3C)
 
   /// A Stage name on its glass label.
   enum StageLabel {
@@ -30,6 +43,8 @@ enum ClassicMetrics {
     static let tagCornerRadius: CGFloat = 8
     static let tagFontSize: CGFloat = 16
     static let tagPaddingH: CGFloat = 8
+    /// The white rim of a tag, where ikalendar 2's glass caught the light.
+    static let tagRimOpacity: Double = 0.25
     static let contentFontSize: CGFloat = 16
     /// Between a progress bar and its time left above it.
     static let progressSpacing: CGFloat = 4
@@ -43,6 +58,8 @@ enum ClassicMetrics {
     static let cellPaddingBottom: CGFloat = 6
     static let ruleSectionSpacing: CGFloat = 8
     static let ruleTitleFontSize: CGFloat = 48
+    /// The Rule name's size when the cell stacks.
+    static let ruleTitleStackedFontSize: CGFloat = 22
     static let ruleTitlePaddingV: CGFloat = 4
     static let remainingTimeFontSize: CGFloat = 15
     static let stageCornerRadius: CGFloat = 12
@@ -62,6 +79,12 @@ enum ClassicMetrics {
     static let stageSpacingV: CGFloat = 4
     static let stageCornerRadius: CGFloat = 12
     static let stageFontSize: CGFloat = 12
+  }
+
+  /// The featured place's text when no Rotation or Shift is on.
+  enum Status {
+    static let fontSize: CGFloat = 26
+    static let paddingV: CGFloat = 8
   }
 
   /// A Shift's cell.
@@ -106,6 +129,8 @@ enum ClassicMetrics {
     static let iconSize: CGFloat = 32
     static let titleFontSize: CGFloat = 24
     static let teamSpacingV: CGFloat = 6
+    /// Between teams side by side.
+    static let teamSpacingH: CGFloat = 16
     static let teamSwatchSize: CGFloat = 16
     static let teamFontSize: CGFloat = 18
     static let timeFontSize: CGFloat = 15
@@ -126,11 +151,32 @@ enum ClassicMetrics {
   enum Stamp {
     static let size: CGFloat = 128
     static let offsetX: CGFloat = -10
-    static let offsetY: CGFloat = -90
+    /// From the top of the list, under the inline navigation bar: the stamp's top sits 6 points
+    /// over the top of the bar's 44-point row, which holds nothing at its trailing end at rest
+    /// since Settings moved to the leading end. ikalendar 2's stamp sat 12 points lower, beside
+    /// its Settings button; raised, it needs less room under the heading (`Heading.minimumHeight`).
+    static let offsetY: CGFloat = -50
     /// The stamp's resting 2D tilt.
     static let rotationDegrees: Double = 8
     static let badgeSize: CGFloat = 44
     static let badgeImageSize: CGFloat = 27
+  }
+
+  /// The screen's name over the list, where ikalendar 2 showed the navigation bar's large title.
+  enum Heading {
+    /// What the heading leaves free at its trailing end for the stamp: the stamp's width and
+    /// inset plus a gap, less the list's own inset of its section headers.
+    static let stampClearance: CGFloat = 122
+    /// The smallest share a long name shrinks to, so it stays a title.
+    static let minimumScaleFactor: CGFloat = 0.6
+    /// Between the heading and the first row's header.
+    static let sectionSpacing: CGFloat = 8
+    /// The heading's least height, so the first row starts under the stamp's visible part at any
+    /// width, a narrow iPad column's too, where the row cannot pass beside it: the stamp ends 5%
+    /// opaque at 90% of its height, which its tilt lowers to 85 points under the list's top at its
+    /// trailing corner, less the 12 points it is raised by; the first row's header starts 22
+    /// points under the heading's end.
+    static let minimumHeight: CGFloat = 52
   }
 }
 #endif

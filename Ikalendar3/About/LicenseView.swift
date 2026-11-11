@@ -6,6 +6,7 @@
 //
 
 import IkaCore
+import IkaDesign
 import SwiftUI
 
 // MARK: - LicenseView
@@ -51,7 +52,7 @@ struct LicenseView: View {
       VStack(alignment: .leading) {
         Text(verbatim: String(license.repository.path(percentEncoded: false).trimmingPrefix("/")))
           .font(.caption)
-          .foregroundStyle(.secondary)
+          .foregroundStyle(.readableSecondary)
         Text(verbatim: license.name)
           .font(.title3.bold())
       }

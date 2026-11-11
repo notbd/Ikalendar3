@@ -57,7 +57,7 @@ struct LaterListView: View {
     ScrollView {
       VStack(spacing: WatchMetrics.rowSpacing) {
         PageHeading(
-          heading: InkModeHeading(page.mode),
+          heading: ModeNameAndForm(page.mode),
           accent: InkAccent(ModeColor(page.mode)),
           language: terms.language)
           .padding(.leading, WatchMetrics.rowSpacing)

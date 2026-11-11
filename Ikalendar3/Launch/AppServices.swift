@@ -114,10 +114,12 @@ extension AppServices {
 // MARK: - Environment
 
 extension View {
-  /// Injects the services and the app language, which picks every string, game term and Han
-  /// face. In Debug, a fixture launch's time zone replaces SwiftUI's; nothing else sets it.
+  /// Injects the services, the app language, which picks every string, game term and Han face,
+  /// and the current Splatfest's team colours, which the Splatfest mark draws. In Debug, a fixture
+  /// launch's time zone replaces SwiftUI's; nothing else sets it.
   func environment(_ services: AppServices) -> some View {
-    environment(services.engine)
+    modifier(SplatfestTeamColors(engine: services.engine))
+      .environment(services.engine)
       .environment(\.effects, services.effects)
       .environment(services.preferences)
       .environment(services.clock)
@@ -135,6 +137,19 @@ extension EnvironmentValues {
   /// The effects shell, which every refresh control runs; `nil` only where no services are
   /// injected.
   @Entry var effects: EffectsShell?
+}
+
+// MARK: - SplatfestTeamColors
+
+/// Hands the current Splatfest's team colours down to every Splatfest mark, following the
+/// engine's snapshot.
+private struct SplatfestTeamColors: ViewModifier {
+  let engine: RefreshEngine
+
+  func body(content: Content) -> some View {
+    content
+      .environment(\.splatfestTeamColors, engine.snapshot.splatfest?.teamColors.map(SRGBColor.init) ?? [])
+  }
 }
 
 // MARK: - SharedStorage

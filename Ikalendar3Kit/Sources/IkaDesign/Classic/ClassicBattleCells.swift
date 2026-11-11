@@ -106,7 +106,8 @@ struct ClassicBattleSection: View {
       }
       if let window = row.window {
         Text(verbatim: timeFormat.battleRange(from: window.startTime, to: window.endTime, now: now))
-          .scaledLimitedLine(for: metrics.arrangement)
+          .classicLines(for: metrics.arrangement)
+          .foregroundStyle(.classicSecondary)
           .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       }
     }
@@ -189,6 +190,9 @@ struct ClassicBattlePrimaryCell: View {
     HStack(alignment: .center, spacing: Scoped.ruleSectionSpacing) {
       ClassicPicture(name: BundledImage.name(for: setting.rule, size: .large))
         .shadow(radius: ClassicMetrics.shadowRadius)
+        .classicIconGroundInLight(
+          padding: ClassicMetrics.BattleSecondary.ruleImagePadding,
+          in: .rect(cornerRadius: ClassicMetrics.BattleSecondary.ruleImageCornerRadius))
         .frame(height: metrics.arrangement == .stacked ? metrics.length(.battleRuleSectionHeight) : nil)
         .layoutPriority(1)
         .matchedGeometryEffect(id: GlidePart.ruleIcon, in: glide)
@@ -207,8 +211,8 @@ struct ClassicBattlePrimaryCell: View {
   private var remainingTime: some View {
     Text(verbatim: ClassicText.timeLeft.text(in: terms.language, timeFormat.span(progress.timeLeft)))
       .countdownRoll(value: now)
-      .scaledLimitedLine(for: metrics.arrangement)
-      .foregroundStyle(.secondary)
+      .classicLines(for: metrics.arrangement)
+      .foregroundStyle(.classicSecondary)
       .ikaFont(.light, size: Scoped.remainingTimeFontSize, relativeTo: .headline)
   }
 
@@ -217,9 +221,10 @@ struct ClassicBattlePrimaryCell: View {
 
 // MARK: - ClassicPrimaryRuleTitle
 
-/// The featured Rotation's Rule name, large and heavy, at the size that also fits every other
-/// Rule's, so the title keeps one size from Rotation to Rotation; wrapped at full size when
-/// stacked.
+/// The featured Rotation's Rule name, large in the light face as ikalendar 2 set it, at the size
+/// that also fits every other Rule's, so the title keeps one size from Rotation to Rotation.
+/// When stacked it wraps at a title's size instead: side by side, 48 points is only the largest
+/// size the fitting starts from, and grown to an accessibility size it would split "Rainmaker".
 struct ClassicPrimaryRuleTitle: View {
   let rule: RuleID
   let terms: GameTerms
@@ -241,9 +246,13 @@ struct ClassicPrimaryRuleTitle: View {
   }
 
   private func title(_ name: String) -> some View {
-    Text(verbatim: name)
-      .scaledLimitedLine(for: arrangement)
-      .ikaFont(.heavy, size: ClassicMetrics.BattlePrimary.ruleTitleFontSize, relativeTo: .title)
+    let size: CGFloat = arrangement == .stacked
+      ? ClassicMetrics.BattlePrimary.ruleTitleStackedFontSize
+      : ClassicMetrics.BattlePrimary.ruleTitleFontSize
+
+    return Text(verbatim: name)
+      .classicLines(for: arrangement)
+      .ikaFont(.light, size: size, relativeTo: .title)
   }
 }
 
@@ -296,7 +305,7 @@ struct ClassicBattleSecondaryCell: View {
       .shadow(radius: ClassicMetrics.shadowRadius)
       .frame(height: metrics.length(.battleSecondaryRuleImageHeight))
       .padding(Scoped.ruleImagePadding)
-      .adaptiveGlassEffect(in: .rect(cornerRadius: Scoped.ruleImageCornerRadius))
+      .classicIconGround(in: .rect(cornerRadius: Scoped.ruleImageCornerRadius))
       .matchedGeometryEffect(id: GlidePart.ruleIcon, in: glide, isSource: false)
   }
 
@@ -319,7 +328,7 @@ struct ClassicBattleSecondaryCell: View {
 
   private func title(_ name: String) -> some View {
     Text(verbatim: name)
-      .scaledLimitedLine(for: metrics.arrangement)
+      .classicLines(for: metrics.arrangement)
       .ikaFont(.light, size: Scoped.ruleFontSize, relativeTo: .body)
   }
 
@@ -340,6 +349,11 @@ struct ClassicBattleSecondaryCell: View {
 /// A battle Stage's picture with its name: on a glass label over the picture in the featured
 /// cell, under the picture in a later one and whenever the cell stacks, where a wrapped name
 /// would cover the picture.
+///
+/// A name under its picture is centred on it, as the Rule's name is under its icon. ikalendar 2
+/// set it flush right, which read as one alignment while its narrower face kept names shorter
+/// than the picture; SplatNet 3's face fills most of the width with a long name, so flush right
+/// read as centred for one name and flush right for the other.
 struct ClassicBattleStageCard: View {
   /// Which cell the card sits in.
   enum Role {
@@ -367,12 +381,12 @@ struct ClassicBattleStageCard: View {
 
       case (.primary, .stacked),
            (.secondary, _):
-        VStack(alignment: .trailing, spacing: ClassicMetrics.BattleSecondary.stageSpacingV) {
+        VStack(spacing: ClassicMetrics.BattleSecondary.stageSpacingV) {
           picture
             .layoutPriority(1)
           Text(verbatim: name)
-            .scaledLimitedLine(for: arrangement)
-            .multilineTextAlignment(.trailing)
+            .classicLines(for: arrangement)
+            .multilineTextAlignment(.center)
             .ikaFont(.light, size: ClassicMetrics.BattleSecondary.stageFontSize, relativeTo: .body)
         }
     }

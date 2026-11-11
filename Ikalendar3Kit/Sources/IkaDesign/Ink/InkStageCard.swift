@@ -22,12 +22,17 @@ public struct InkStageCard: View {
   private let stage: StageID
   private let name: Text
   private let imageSize: BundledImage.Size
+  private let nameReachesTrailingEdge: Bool
 
-  /// The card of `stage`, labelled `name`, drawn from its bundled picture at `imageSize`.
-  public init(stage: StageID, name: Text, imageSize: BundledImage.Size) {
+  /// The card of `stage`, labelled `name`, drawn from its bundled picture at `imageSize`. The
+  /// name tag keeps the same inset from both of the picture's sides, or with
+  /// `nameReachesTrailingEdge` only from the leading one, where a long name needs the card's
+  /// whole width, as on a small card.
+  public init(stage: StageID, name: Text, imageSize: BundledImage.Size, nameReachesTrailingEdge: Bool = false) {
     self.stage = stage
     self.name = name
     self.imageSize = imageSize
+    self.nameReachesTrailingEdge = nameReachesTrailingEdge
   }
 
   public var body: some View {
@@ -36,7 +41,8 @@ public struct InkStageCard: View {
     ZStack(alignment: Alignment(horizontal: .leading, vertical: .stagePictureBottom)) {
       picture
       InkTagLabel(text: name, style: .caption, colors: InkPair.tagText.colors(in: colorScheme))
-        .padding(.horizontal, InkMetrics.stageNameInset)
+        .padding(.leading, InkMetrics.stageNameInset)
+        .padding(.trailing, nameReachesTrailingEdge ? 0 : InkMetrics.stageNameInset)
         .alignmentGuide(.stagePictureBottom) { dimensions in
           straddlesEdge
             ? dimensions[VerticalAlignment.center]

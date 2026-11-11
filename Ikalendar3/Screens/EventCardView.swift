@@ -45,7 +45,7 @@ struct StyleBackground: View {
   var body: some View {
     switch preferences.style {
       case .classic: Self.classic
-      case .ink: InkBackground()
+      case .ink: InkBoard()
       case .timeline: TimelineBackground()
     }
   }

@@ -9,6 +9,28 @@
 import IkaCore
 import SwiftUI
 
+// MARK: - ClassicSplatfestSection
+
+/// The Splatfest card's row, headed as Classic heads every row: by a tag, here the grey one an
+/// event without a Mode colour takes, as Tricolor Turf War's. The header also keeps the card clear
+/// of the Mode stamp's lower half, as the "Now:" header keeps a Rotation's cell.
+struct ClassicSplatfestSection: View {
+  let card: SplatfestCard
+  let terms: GameTerms
+  let now: Date
+  let metrics: CellMetrics
+
+  var body: some View {
+    Section {
+      ClassicSplatfestCard(card: card, terms: terms, now: now, metrics: metrics)
+    } header: {
+      ClassicTag(text: ModeLabel.splatfest.text(in: terms.language))
+        // The card's sentence names the Splatfest.
+        .accessibilityHidden(true)
+    }
+  }
+}
+
 // MARK: - ClassicSplatfestCard
 
 /// Classic's Splatfest card, on the Splatfest screen and on Regular Battle's screen while a
@@ -38,14 +60,22 @@ struct ClassicSplatfestCard: View {
           .frame(width: iconSize, height: iconSize)
         Text(verbatim: terms.splatfest(splatfest.id).title)
           .fixedSize(horizontal: false, vertical: true)
+          .lineHeight(.multiple(factor: ClassicMetrics.wrappedLineHeightFactor))
           .ikaFont(.heavy, size: Scoped.titleFontSize, relativeTo: .title2)
       }
+      // As a Challenge's name: past this size a long word of a title ("instrument") splits.
+      .dynamicTypeSize(...ClassicMetrics.displayTitleLargestSize)
 
-      ClassicTeamList(splatfest: splatfest, terms: terms, arrangement: metrics.arrangement)
+      // On one row while the Splatfest is announced, where the card sits among the Rotations.
+      ClassicTeamList(
+        splatfest: splatfest,
+        terms: terms,
+        arrangement: metrics.arrangement,
+        prefersOneRow: now < splatfest.startTime)
 
       Text(verbatim: timeFormat.range(of: splatfest, now: now))
-        .scaledLimitedLine(for: metrics.arrangement)
-        .foregroundStyle(.secondary)
+        .classicLines(for: metrics.arrangement)
+        .foregroundStyle(.classicSecondary)
         .ikaFont(.light, size: Scoped.timeFontSize, relativeTo: .subheadline)
 
       if splatfest.isRunning(at: now) {
@@ -94,10 +124,10 @@ struct ClassicSplatfestArt: View {
 
 // MARK: - ClassicSplatfestIcon
 
-/// The Splatfest's icon: Splatfest Battle's Mode icon stands in until ticket 53 draws one.
+/// The Splatfest's icon: the Splatfest mark in its team colours.
 struct ClassicSplatfestIcon: View {
   var body: some View {
-    ClassicPicture(name: BundledImage.name(for: ModeIcon.splatfestBattle, size: .medium))
+    ModeIconPicture(.splatfestBattle, size: .medium)
       .shadow(radius: ClassicMetrics.shadowRadius)
   }
 }
@@ -105,8 +135,9 @@ struct ClassicSplatfestIcon: View {
 // MARK: - ClassicTeamList
 
 /// A Splatfest's teams, each a swatch of its feed colour beside its name, which is drawn in that
-/// colour tinted at run time until it reads at 4.5:1 on Classic's panel. Only teams whose names
-/// the terms carry are listed (`GameTerms.teams(of:)`), so a team colour never shows alone.
+/// colour tinted at run time until it reads at 4.5:1 on Classic's panel: in a column, or side by
+/// side when asked and all fit at full size. Only teams whose names the terms carry are listed
+/// (`GameTerms.teams(of:)`), so a team colour never shows alone.
 struct ClassicTeamList: View {
   typealias Scoped = ClassicMetrics.Splatfest
 
@@ -117,22 +148,40 @@ struct ClassicTeamList: View {
   let splatfest: Splatfest
   let terms: GameTerms
   let arrangement: CellArrangement
+  /// Whether the teams sit side by side when all three fit on one row at full size.
+  var prefersOneRow = false
 
   var body: some View {
-    VStack(alignment: .leading, spacing: Scoped.teamSpacingV) {
-      ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
-        let color: SRGBColor = .init(team.color)
+    if prefersOneRow {
+      ViewThatFits(in: .horizontal) {
+        HStack(spacing: Scoped.teamSpacingH) { teams }
+        column
+      }
+    }
+    else {
+      column
+    }
+  }
 
-        HStack(spacing: ClassicMetrics.Header.tagPaddingH) {
-          Circle()
-            .fill(Color(color))
-            .overlay(Circle().strokeBorder(.primary.opacity(0.25), lineWidth: 1))
-            .frame(width: swatchSize, height: swatchSize)
-          Text(verbatim: team.name)
-            .scaledLimitedLine(for: arrangement)
-            .foregroundStyle(Color(color.readableTint(on: Style.classic.panel(in: colorScheme), for: .text)))
-            .ikaFont(.heavy, size: Scoped.teamFontSize, relativeTo: .headline)
-        }
+  private var column: some View {
+    VStack(alignment: .leading, spacing: Scoped.teamSpacingV) { teams }
+  }
+
+  private var teams: some View {
+    ForEach(Array(terms.teams(of: splatfest).enumerated()), id: \.offset) { _, team in
+      let color: SRGBColor = .init(team.color)
+
+      // The swatch beside a name's first line when the name wraps: the stacked line box is
+      // close to the glyphs, and a single line's box centres them.
+      HStack(alignment: arrangement == .stacked ? .top : .center, spacing: ClassicMetrics.Header.tagPaddingH) {
+        Circle()
+          .fill(Color(color))
+          .overlay(Circle().strokeBorder(.primary.opacity(0.25), lineWidth: 1))
+          .frame(width: swatchSize, height: swatchSize)
+        Text(verbatim: team.name)
+          .classicLines(for: arrangement)
+          .foregroundStyle(Color(color.readableTint(on: Style.classic.panel(in: colorScheme), for: .text)))
+          .ikaFont(.heavy, size: Scoped.teamFontSize, relativeTo: .headline)
       }
     }
   }
@@ -185,7 +234,8 @@ struct ClassicTricolorSection: View {
       layout {
         ClassicTag(text: ModeLabel.tricolor.text(in: terms.language))
         Text(verbatim: timeFormat.battleRange(from: tricolor.item.startTime, to: tricolor.item.endTime, now: now))
-          .scaledLimitedLine(for: metrics.arrangement)
+          .classicLines(for: metrics.arrangement)
+          .foregroundStyle(.classicSecondary)
           .ikaFont(.light, size: ClassicMetrics.Header.contentFontSize, relativeTo: .headline)
       }
       .accessibilityElement(children: .combine)
@@ -213,10 +263,10 @@ struct ClassicProgressBar: View {
     VStack(alignment: .trailing, spacing: ClassicMetrics.Header.progressSpacing) {
       Text(verbatim: ClassicText.timeLeft.text(in: terms.language, timeFormat.span(progress.timeLeft)))
         .countdownRoll(value: now)
-        .scaledLimitedLine(for: arrangement)
+        .classicLines(for: arrangement)
         .fixedSize(horizontal: false, vertical: true)
         .multilineTextAlignment(.trailing)
-        .foregroundStyle(.secondary)
+        .foregroundStyle(.classicSecondary)
         .ikaFont(.light, size: ClassicMetrics.BattlePrimary.remainingTimeFontSize, relativeTo: .headline)
       ProgressView(value: progress.sharePassed)
         .tint(tint)

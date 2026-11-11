@@ -12,8 +12,8 @@ import SwiftUI
 // MARK: - InkBattleScreenView
 
 /// Ink's Battle Mode screen: ikalendar 2's primary and secondary layout on the game's materials.
-/// The Mode's heading and stamp over the dotted background, an announced Splatfest's card on
-/// Regular Battle's screen, the current Rotation's taped panel, then a panel per later Rotation.
+/// The Mode's heading and stamp on the board, an announced Splatfest's card on Regular Battle's
+/// screen, the current Rotation's taped panel, then a panel per later Rotation.
 /// A finished Rotation leaves and the next glides into the featured panel.
 ///
 /// Like every Style's screen, it receives `IkaCore` values only and reads no store. Pull to
@@ -46,7 +46,7 @@ public struct InkBattleScreenView: View {
       later: screen.later)
 
     InkScheduleList(
-      heading: InkModeHeading(mode),
+      heading: ModeNameAndForm(mode),
       icon: ModeIcon(mode),
       accent: InkAccent(ModeColor(mode)),
       title: screen.mode.name(in: terms.language),
@@ -62,7 +62,7 @@ public struct InkBattleScreenView: View {
         case .running:
           EmptyView()
         case .paused(let returnTime):
-          InkNote(text: ScreenText.paused.text(in: terms.language, format.time(returnTime, relativeTo: now)))
+          InkNote(text: ScreenText.paused.text(in: terms.language, format.time(returnTime, now: now)))
         case .nothingCurrent:
           InkNote(text: ScreenText.nothingCurrent.text(in: terms.language))
       }
@@ -74,7 +74,7 @@ public struct InkBattleScreenView: View {
             setting: setting,
             terms: terms,
             accent: InkAccent(ModeColor(screen.mode)),
-            timeRange: format.timeRange(of: entry.item),
+            timeRange: format.range(of: entry.item, now: now),
             writer: writer,
             metrics: metrics)
             .accessibilityElement(children: .ignore)
@@ -84,7 +84,7 @@ public struct InkBattleScreenView: View {
     }
   }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 
@@ -125,7 +125,7 @@ public struct InkSalmonRunScreenView: View {
       later: screen.later)
 
     InkScheduleList(
-      heading: InkModeHeading(.salmonRun),
+      heading: ModeNameAndForm(.salmonRun),
       icon: .salmonRun,
       accent: InkAccent(.salmonRun),
       title: Mode.salmonRun.name(in: terms.language),
@@ -150,26 +150,26 @@ public struct InkSalmonRunScreenView: View {
     InkShiftPanel(
       entry: entry,
       terms: terms,
-      timeRange: format.timeRange(of: entry.item, withWeekday: true),
+      timeRange: format.range(of: entry.item, now: now),
       writer: writer,
       metrics: metrics)
       .accessibilityElement(children: .ignore)
       .accessibilityLabel(writer.sentence(for: entry.item, at: now))
   }
 
-  private var format: ScheduleFormat { time.format(terms.language) }
+  private var format: InkTimeFormat { time.inkFormat(terms.language) }
   private var writer: SentenceWriter { time.writer(terms) }
 }
 
 // MARK: - InkScheduleList
 
-/// What every Ink screen shares around its panels: the dotted background, the heading and the
-/// docking stamp, the panels' metrics for the screen's width and text size, the reflow when a
-/// panel leaves, and the fetch time at the end.
+/// What every Ink screen shares around its panels: the board, the heading with the Mode stamp
+/// that docks into the bar, the panels' metrics for the screen's width and text size, the reflow
+/// when a panel leaves, and the fetch time at the end.
 struct InkScheduleList<ReflowValue: Equatable, Panels: View>: View {
   @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-  let heading: InkModeHeading
+  let heading: ModeNameAndForm
   /// The stamp's icon.
   let icon: ModeIcon
   /// The stamp's splat and the heading's form tag.
@@ -191,15 +191,9 @@ struct InkScheduleList<ReflowValue: Equatable, Panels: View>: View {
 
     ScrollView {
       LazyVStack(spacing: InkScreenMetrics.panelSpacing) {
-        InkModeHeadingView(
-          heading: heading,
-          accent: accent,
-          arrangement: metrics.arrangement,
-          stampReserve: width * InkScreenMetrics.stampReservedShare)
+        InkModeHeadingView(heading: heading, icon: icon, accent: accent, arrangement: metrics.arrangement)
         panels(metrics)
-        FetchTimeLabel(fetchTime: fetchTime, now: now, isStale: isStale)
-          // On Ink's black background in both appearances, until ticket 56 designs the light one.
-          .environment(\.colorScheme, .dark)
+        InkFetchTimeTag(fetchTime: fetchTime, now: now, isStale: isStale)
       }
       .padding(.horizontal, InkScreenMetrics.screenPadding)
       .padding(.bottom, InkScreenMetrics.panelSpacing)
@@ -210,68 +204,191 @@ struct InkScheduleList<ReflowValue: Equatable, Panels: View>: View {
       }
     }
     .listReflow(value: reflowValue)
-    .background { InkBackground().ignoresSafeArea() }
-    .inkModeStamp(icon: icon, accent: accent, title: title)
+    .environment(\.inkSetsWrappedTagsClose, true)
+    .background { InkBoard().ignoresSafeArea() }
+    .inkModeStampDock(icon: icon, title: title)
   }
 }
 
 // MARK: - InkModeHeadingView
 
 /// The Mode's name over the list in the heavy face, with Anarchy Battle's or Splatfest Battle's
-/// form on a tag in the accent under it. It leaves the trailing side to the stamp and is at least as tall as the splat,
-/// and
-/// from the first accessibility text size sits under the stamp at full width instead, so the name
-/// wraps rather than truncates.
+/// form on a tag in the accent under it, and the Mode stamp on the trailing side.
+///
+/// The stamp lies under the first panel: the panel covers the splat's lower edge by a fixed
+/// amount whatever the name's height, and the splat runs off the screen's trailing edge, so it
+/// meets its neighbours on purpose and never covers a tag. On iPhone its top rises into the
+/// navigation bar's row, so the first panel sits higher. From the first accessibility text size
+/// the name sits under a smaller stamp at full width instead, so it wraps rather than truncates.
 private struct InkModeHeadingView: View {
   @Environment(\.colorScheme) private var colorScheme
   @Environment(\.gameLanguage) private var language
+  @Environment(\.horizontalSizeClass) private var horizontalSizeClass
 
-  let heading: InkModeHeading
+  let heading: ModeNameAndForm
+  let icon: ModeIcon
   let accent: InkAccent
   let arrangement: CellArrangement
-  /// The width beside the heading the stamp takes.
-  let stampReserve: CGFloat
 
   var body: some View {
-    VStack(alignment: .leading, spacing: InkScreenMetrics.headingSpacing) {
-      Text(verbatim: heading.name.text(in: language))
-        .inkFont(.title)
-        // The heavy face's tall line box leaves a gap between wrapped lines that the game's
-        // headings do not have.
-        .lineHeight(.tight)
-        .foregroundStyle(Color(InkPair.backgroundText.colors(in: colorScheme).foreground))
-        .fixedSize(horizontal: false, vertical: true)
+    switch arrangement {
+      case .sideBySide:
+        name
+          .padding(.trailing, InkScreenMetrics.stampReserve)
+          // At least as tall as the splat is above the first panel, less what the stamp may
+          // rise into the bar's row. The name starts at the top there, right under the bar.
+          .frame(
+            maxWidth: .infinity,
+            minHeight: InkScreenMetrics.splatHeightAbovePanel - stampRise,
+            alignment: stampRise > 0 ? .topLeading : .leading)
+          .background(alignment: .bottomTrailing) {
+            stamp()
+              .offset(y: InkScreenMetrics.panelSpacing + InkScreenMetrics.splatPanelOverlap)
+          }
+
+      case .stacked:
+        VStack(alignment: .leading, spacing: 0) {
+          // Smaller over a name this large, which leaves the stamp a row of its own.
+          stamp(scale: InkScreenMetrics.stackedStampScale)
+            .frame(height: InkScreenMetrics.splatSize * InkScreenMetrics.stackedStampScale, alignment: .top)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+            .padding(.top, -stampRise)
+          name
+        }
+    }
+  }
+
+  private var name: some View {
+    let text: String = heading.name.text(in: language)
+    let balanced: String = InkBalancedName.balanced(text)
+
+    return VStack(alignment: .leading, spacing: InkScreenMetrics.headingSpacing) {
+      // On one line at the first size that fits beside the stamp, so every Mode's heading is
+      // one height and the first panel starts at one place. A name too long for the smallest
+      // size, as in a narrow column, goes on two lines broken between words at the full size,
+      // limited to the lines it has, so a word too wide shrinks and never breaks.
+      ViewThatFits(in: .horizontal) {
+        ForEach(InkScreenMetrics.titleSizes, id: \.self) { size in
+          title(text, size: size)
+            .lineLimit(1)
+        }
+        title(balanced, size: InkTextStyle.title.size)
+          .scaledLimitedLine(lineLimit: balanced.contains("\n") ? 2 : 1)
+      }
+      .foregroundStyle(Color(InkPair.boardText.colors(in: colorScheme).foreground))
       if let form = heading.form {
         InkModeTag(Text(verbatim: form.text(in: language)), accent: accent)
       }
     }
-    .padding(InkScreenMetrics.headingPadding)
-    .padding(.trailing, arrangement == .sideBySide ? stampReserve : 0)
-    .padding(.top, arrangement == .stacked ? InkScreenMetrics.splatSize : 0)
-    // Beside the stamp, the first panel starts under the splat, so the splat never covers its
-    // state tag.
-    .frame(
-      maxWidth: .infinity,
-      minHeight: arrangement == .sideBySide ? InkScreenMetrics.splatSize - InkScreenMetrics.splatPanelOverlap : nil,
-      alignment: .topLeading)
+    .padding(.leading, InkScreenMetrics.headingLeadingPadding)
     .accessibilityElement(children: .combine)
     .accessibilityAddTraits(.isHeader)
+  }
+
+  /// `name` in the title's face at `size`, which scales with Dynamic Type as the title does.
+  private func title(_ name: String, size: CGFloat) -> some View {
+    Text(verbatim: name)
+      .ikaFont(InkTextStyle.title.role, size: size, relativeTo: InkTextStyle.title.textStyle)
+      // The heavy face's tall line box leaves a gap between wrapped lines that the game's
+      // headings do not have.
+      .lineHeight(.tight)
+  }
+
+  /// How far the stamp rises into the navigation bar's row: on iPhone, where the row's trailing
+  /// end is free at rest. An iPad's and a Mac's toolbars hold buttons there.
+  private var stampRise: CGFloat {
+    horizontalSizeClass == .compact ? InkScreenMetrics.stampRise : 0
+  }
+
+  /// The stamp at `scale` of its size, reaching past the screen's trailing edge.
+  private func stamp(scale: CGFloat = 1) -> some View {
+    InkModeStamp(icon: icon, accent: accent)
+      .scaleEffect(scale, anchor: .topTrailing)
+      .offset(x: InkScreenMetrics.screenPadding + InkScreenMetrics.stampBleed)
   }
 }
 
 // MARK: - InkNote
 
 /// A taped panel in the featured place that says why nothing is current: a pause by a Splatfest,
-/// with the return time, or nothing on right now.
+/// with the return time, or nothing on right now. The sentence stands in the heavy face on a
+/// hatched panel, like a shutter pulled down, so the place reads as closed and not as missing.
 struct InkNote: View {
   let text: String
 
   var body: some View {
     Text(verbatim: text)
-      .inkFont(.label)
+      .inkFont(.headline)
+      .lineHeight(.tight)
       .fixedSize(horizontal: false, vertical: true)
       .frame(maxWidth: .infinity, alignment: .leading)
+      .padding(.vertical, InkScreenMetrics.notePadding)
+      .background {
+        InkHatch(pitch: InkScreenMetrics.noteHatchPitch)
+          .fill(InkDecoration.noteHatch)
+          .clipShape(RoughRectangle(roughness: InkMetrics.panelRoughness, step: InkMetrics.panelRoughStep))
+          // Out to the panel's edge, under the tape.
+          .padding(-InkMetrics.panelPadding)
+          .accessibilityHidden(true)
+      }
       .inkPanel(isTaped: true)
+  }
+}
+
+// MARK: - InkHatch
+
+/// Diagonal stripes leaning like Ink's tags, every `pitch` points, each half a pitch wide.
+private struct InkHatch: Shape {
+  let pitch: CGFloat
+
+  func path(in rect: CGRect) -> Path {
+    // A stripe runs from the bottom edge up to the top edge, `rect.height` further along.
+    var path: Path = .init()
+    var start: CGFloat = rect.minX - rect.height
+    while start < rect.maxX {
+      path.move(to: CGPoint(x: start, y: rect.maxY))
+      path.addLine(to: CGPoint(x: start + rect.height, y: rect.minY))
+      path.addLine(to: CGPoint(x: start + rect.height + pitch / 2, y: rect.minY))
+      path.addLine(to: CGPoint(x: start + pitch / 2, y: rect.maxY))
+      path.closeSubpath()
+      start += pitch
+    }
+    return path
+  }
+}
+
+// MARK: - InkFetchTimeTag
+
+/// The fetch time at the end of the list, on a black tag like a time: readable on the board in
+/// both appearances.
+private struct InkFetchTimeTag: View {
+  let fetchTime: Date
+  let now: Date
+  let isStale: Bool
+
+  var body: some View {
+    // As wide as its text where that fits on one line. A label too long for the column, as at
+    // the largest text sizes, takes the column's width and wraps inside the tag.
+    ViewThatFits(in: .horizontal) {
+      tag(label.fixedSize())
+      tag(label.fixedSize(horizontal: false, vertical: true))
+    }
+    .frame(maxWidth: .infinity)
+  }
+
+  /// The label, in the dark appearance the black tag needs in both appearances.
+  private var label: some View {
+    FetchTimeLabel(fetchTime: fetchTime, now: now, isStale: isStale)
+      .environment(\.colorScheme, .dark)
+  }
+
+  private func tag(_ label: some View) -> some View {
+    label
+      .padding(.horizontal, InkMetrics.tagHorizontalPadding + 3)
+      .padding(.vertical, InkMetrics.tagVerticalPadding + 2)
+      .background(
+        Color(InkPair.tagText.colors(in: .dark).background),
+        in: SkewedRectangle(slant: InkMetrics.tagSlant))
   }
 }
 #endif
